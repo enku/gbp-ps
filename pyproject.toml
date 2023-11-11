@@ -1,0 +1,45 @@
+[project]
+name = "gbp-ps"
+version = "0.1.0"
+description = "Store and report GBP build status"
+authors = [
+    {name = "Albert Hopkins", email = "marduk@letterboxes.org"},
+]
+dependencies = [
+    "gentoo-build-publisher @ git+https://github.com/enku/gentoo-build-publisher",
+]
+requires-python = ">=3.11"
+readme = "README.md"
+license = {text = "GPL3+"}
+
+[build-system]
+requires = ["pdm-backend"]
+build-backend = "pdm.backend"
+
+[tool.pdm.dev-dependencies]
+dev = [
+    "mypy>=1.7.0",
+    "black>=23.11.0",
+    "isort>=5.12.0",
+    "pylint>=3.0.2",
+    "coverage[toml]>=7.3.2",
+    "django-stubs>=4.2.6",
+    "pylint-django>=2.5.5",
+]
+
+[tool.mypy]
+plugins =["mypy_django_plugin.main"]
+exclude = ["/migrations/"]
+files = ["src/gbp_ps"]
+mypy_path = ["tests"]
+strict = true
+
+[tool.pylint.master]
+load-plugins = "pylint_django,pylint.extensions.bad_builtin"
+django-settings-module = "settings"
+init-hook = "import sys; sys.path.insert(0, 'tests')"
+bad-functions = "print"
+ignore = ["/migrations/"]
+
+[tool.django-stubs]
+django_settings_module = "settings"
