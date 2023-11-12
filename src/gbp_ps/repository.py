@@ -53,4 +53,6 @@ class Repository:
 
     def get_processes(self) -> Iterable[BuildProcess]:
         """Return the process records from the repository"""
-        return (model.to_object() for model in self.model.objects.all())
+        return (
+            model.to_object() for model in self.model.objects.order_by("start_time")
+        )
