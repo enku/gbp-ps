@@ -1,6 +1,6 @@
 [project]
 name = "gbp-ps"
-version = "0.1.0"
+dynamic = ["version"]
 description = "Store and report GBP build status"
 authors = [
     {name = "Albert Hopkins", email = "marduk@letterboxes.org"},
@@ -18,6 +18,9 @@ gbp_ps = "gbp_ps.graphql"
 [build-system]
 requires = ["pdm-backend"]
 build-backend = "pdm.backend"
+
+[tool.pdm]
+version = { source = "scm" }
 
 [tool.pdm.dev-dependencies]
 dev = [
