@@ -43,6 +43,10 @@ def resolve_mutation_add_build_process(
 
     If the process already exists in the table, it is updated with the new value
     """
+    # Don't bother when the phase is empty.
+    if not process["phase"]:
+        return
+
     build_process = make_build_process(process)
 
     try:

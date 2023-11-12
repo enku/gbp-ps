@@ -113,6 +113,13 @@ class AddBuildProcessesTests(TestCase):
         [p_obj] = Repository().get_processes()
         self.assertEqual(p_obj.phase, "postinst")
 
+    def test_empty_phase_does_not_get_added(self) -> None:
+        p_dict = build_process_dict(make_build_process(phase="", add_to_repo=False))
+        result = graphql(self.query, {"process": p_dict})
+
+        self.assertNotIn("errors", result)
+        self.assertEqual(gbp_ps.get_processes(include_final=True), [])
+
 
 def build_process_dict(build_process: BuildProcess) -> dict[str, Any]:
     bp_dict = asdict(build_process)

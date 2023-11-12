@@ -10,7 +10,7 @@ LOCAL_TIMEZONE = dt.timezone(dt.timedelta(days=-1, seconds=61200), "PDT")
 
 def make_build_process(**kwargs: Any) -> BuildProcess:
     """Create (and save) a BuildProcess"""
-    repo = Repository()
+    add_to_repo = kwargs.pop("add_to_repo", True)
     attrs: dict[str, Any] = {
         "build_host": "jenkins",
         "build_id": "1031",
@@ -21,6 +21,7 @@ def make_build_process(**kwargs: Any) -> BuildProcess:
     }
     attrs.update(**kwargs)
     build_process = BuildProcess(**attrs)
-    repo.add_process(build_process)
+    if add_to_repo:
+        Repository().add_process(build_process)
 
     return build_process
