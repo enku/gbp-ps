@@ -4,8 +4,6 @@ from __future__ import annotations
 from collections.abc import Iterable
 from typing import Any
 
-import django.db.utils
-
 from gbp_ps.exceptions import RecordAlreadyExists, RecordNotFoundError
 from gbp_ps.types import BuildProcess
 
@@ -26,6 +24,9 @@ class Repository:
 
         If the process already exists in the repo, RecordAlreadyExists is raised
         """
+        # pylint: disable=import-outside-toplevel
+        import django.db.utils
+
         build_process_model = self.model.from_object(process)
 
         try:
