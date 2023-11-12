@@ -7,7 +7,6 @@ from django.test import TestCase
 
 from gbp_ps import add_process, get_processes, update_process
 from gbp_ps.exceptions import RecordAlreadyExists, RecordNotFoundError
-from gbp_ps.repository import Repository
 from gbp_ps.types import BuildProcess
 
 
@@ -16,7 +15,6 @@ class GetProcessesTests(TestCase):
         self.assertEqual(get_processes(), [])
 
     def test_with_process(self) -> None:
-        repo = Repository()
         build_process = BuildProcess(
             machine="babette",
             build_id="1031",
@@ -25,14 +23,13 @@ class GetProcessesTests(TestCase):
             phase="postrm",
             start_time=dt.datetime(2023, 11, 11, 12, 20, 52, tzinfo=dt.timezone.utc),
         )
-        repo.add_process(build_process)
+        add_process(build_process)
 
         self.assertEqual(get_processes(), [build_process])
 
 
 class AddProcessTests(TestCase):
     def test(self) -> None:
-        repo = Repository()
         build_process = BuildProcess(
             machine="babette",
             build_id="1031",
@@ -46,7 +43,6 @@ class AddProcessTests(TestCase):
 
     def test_when_already_exists(self) -> None:
         # Records should key on machine, build_id, build_host, package
-        repo = Repository()
         build_process = BuildProcess(
             machine="babette",
             build_id="1031",
@@ -58,12 +54,11 @@ class AddProcessTests(TestCase):
         add_process(build_process)
 
         with self.assertRaises(RecordAlreadyExists):
-            repo.add_process(build_process)
+            add_process(build_process)
 
 
 class UpdateProcessTests(TestCase):
     def test(self) -> None:
-        repo = Repository()
         build_process = BuildProcess(
             machine="babette",
             build_id="1031",
@@ -72,7 +67,7 @@ class UpdateProcessTests(TestCase):
             phase="postrm",
             start_time=dt.datetime(2023, 11, 11, 12, 20, 52, tzinfo=dt.timezone.utc),
         )
-        repo.add_process(build_process)
+        add_process(build_process)
 
         build_process = replace(build_process, phase="postinst")
 

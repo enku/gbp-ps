@@ -1,0 +1,25 @@
+type BuildProcess {
+  id: String!
+  machine: String!
+  buildHost: String!
+  package: String!
+  phase: String!
+  startTime: DateTime
+}
+
+input BuildProcessInput {
+  id: String!
+  machine: String!
+  buildHost: String!
+  package: String!
+  phase: String!
+  startTime: DateTime
+}
+
+extend type Query {
+  buildProcesses: [BuildProcess!]!
+}
+
+extend type Mutation {
+  addBuildProcess(process: BuildProcessInput!): Error
+}
