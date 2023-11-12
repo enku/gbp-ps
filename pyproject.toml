@@ -47,3 +47,7 @@ ignore = ["/migrations/"]
 
 [tool.django-stubs]
 django_settings_module = "settings"
+
+[tool.coverage.run]
+source = ["gbp_ps"]
+omit = ["src/gbp_ps/migrations/*"]
