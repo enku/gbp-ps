@@ -58,6 +58,27 @@ class GetProcessesTests(TestCase):
             result["data"]["buildProcesses"], [build_process_dict(build_process)]
         )
 
+    def test_non_empty_with_final_processes(self) -> None:
+        live_process = make_build_process(package="sys-apps/systemd-254.5-r1")
+        make_build_process(package="sys-libs/efivar-38", phase="clean")
+
+        result = graphql(self.query)
+
+        self.assertNotIn("errors", result)
+        self.assertEqual(
+            result["data"]["buildProcesses"], [build_process_dict(live_process)]
+        )
+
+    def test_non_empty_with_final_processes_included(self) -> None:
+        make_build_process(package="sys-apps/systemd-254.5-r1")
+        make_build_process(package="sys-libs/efivar-38", phase="clean")
+        query = "{buildProcesses(includeFinal: true) { machine id package startTime }}"
+
+        result = graphql(query)
+
+        self.assertNotIn("errors", result)
+        self.assertEqual(len(result["data"]["buildProcesses"]), 2)
+
 
 class AddBuildProcessesTests(TestCase):
     query = """
@@ -103,15 +124,16 @@ def build_process_dict(build_process: BuildProcess) -> dict[str, Any]:
 
 def make_build_process(**kwargs: Any) -> BuildProcess:
     repo = Repository()
-    build_process = BuildProcess(
-        machine="babette",
-        build_id="1031",
-        build_host="jenkins",
-        package="sys-apps/systemd-254.5-r1",
-        phase="compile",
-        start_time=dt.datetime(2023, 11, 11, 12, 20, 52, tzinfo=dt.timezone.utc),
-        **kwargs,
-    )
+    attrs: dict[str, Any] = {
+        "build_host": "jenkins",
+        "build_id": "1031",
+        "machine": "babbette",
+        "package": "sys-apps/systemd-254.5-r1",
+        "phase": "compile",
+        "start_time": dt.datetime(2023, 11, 11, 12, 20, 52, tzinfo=dt.timezone.utc),
+    }
+    attrs.update(**kwargs)
+    build_process = BuildProcess(**attrs)
     repo.add_process(build_process)
 
     return build_process

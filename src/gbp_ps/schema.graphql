@@ -17,7 +17,7 @@ input BuildProcessInput {
 }
 
 extend type Query {
-  buildProcesses: [BuildProcess!]!
+  buildProcesses(includeFinal: Boolean): [BuildProcess!]!
 }
 
 extend type Mutation {

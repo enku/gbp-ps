@@ -15,9 +15,13 @@ resolvers = [query := ObjectType("Query"), mutation := ObjectType("Mutation")]
 
 @query.field("buildProcesses")
 def resolve_query_build_processes(
-    _obj: Any, _info: GraphQLResolveInfo
+    _obj: Any, _info: GraphQLResolveInfo, *, includeFinal: bool = False
 ) -> list[dict[str, Any]]:
-    """Return the list of BuildProcesses"""
+    """Return the list of BuildProcesses
+
+    If includeFinal is True also include processes in their "final" phase. The default
+    value is False.
+    """
     return [
         {
             "build_host": process.build_host,
@@ -27,7 +31,7 @@ def resolve_query_build_processes(
             "phase": process.phase,
             "start_time": process.start_time,
         }
-        for process in gbp_ps.get_processes()
+        for process in gbp_ps.get_processes(include_final=includeFinal)
     ]
 
 
