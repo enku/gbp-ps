@@ -1,7 +1,7 @@
 """CLI unit tests for gbp-ps"""
 # pylint: disable=missing-docstring
 import io
-from argparse import Namespace, ArgumentParser
+from argparse import ArgumentParser, Namespace
 from unittest import mock
 
 import rich.console
