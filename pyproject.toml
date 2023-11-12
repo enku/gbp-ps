@@ -7,6 +7,8 @@ authors = [
 ]
 dependencies = [
     "ariadne>=0.21",
+    "gbpcli>=1.6.0",
+    "rich>=13.6.0",
 ]
 requires-python = ">=3.11"
 readme = "README.md"
@@ -14,6 +16,9 @@ license = {text = "GPL3+"}
 
 [project.entry-points."gentoo_build_publisher.graphql-schema"]
 gbp_ps = "gbp_ps.graphql"
+
+[project.entry-points."gbpcli.subcommands"]
+ps = "gbp_ps.ps"
 
 [build-system]
 requires = ["pdm-backend"]
@@ -32,6 +37,9 @@ dev = [
     "django-stubs>=4.2.6",
     "pylint-django>=2.5.5",
     "gentoo-build-publisher @ git+https://github.com/enku/gentoo-build-publisher",
+    "requests>=2.31.0",
+    "types-requests>=2.31.0.10",
+    "rich>=13.6.0",
 ]
 
 [tool.mypy]

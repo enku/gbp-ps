@@ -1,7 +1,6 @@
 """Tests for the GraphQL interface for gbp-ps"""
 # pylint: disable=missing-docstring
 
-import datetime as dt
 from dataclasses import asdict
 from typing import Any
 
@@ -11,6 +10,8 @@ from django.test.client import Client
 import gbp_ps
 from gbp_ps.repository import Repository
 from gbp_ps.types import BuildProcess
+
+from . import make_build_process
 
 
 def graphql(query: str, variables: dict[str, Any] | None = None) -> Any:
@@ -120,20 +121,3 @@ def build_process_dict(build_process: BuildProcess) -> dict[str, Any]:
     bp_dict["startTime"] = bp_dict.pop("start_time").isoformat()
 
     return bp_dict
-
-
-def make_build_process(**kwargs: Any) -> BuildProcess:
-    repo = Repository()
-    attrs: dict[str, Any] = {
-        "build_host": "jenkins",
-        "build_id": "1031",
-        "machine": "babbette",
-        "package": "sys-apps/systemd-254.5-r1",
-        "phase": "compile",
-        "start_time": dt.datetime(2023, 11, 11, 12, 20, 52, tzinfo=dt.timezone.utc),
-    }
-    attrs.update(**kwargs)
-    build_process = BuildProcess(**attrs)
-    repo.add_process(build_process)
-
-    return build_process
