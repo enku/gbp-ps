@@ -108,7 +108,7 @@ def make_build_process(**kwargs: Any) -> BuildProcess:
         build_id="1031",
         build_host="jenkins",
         package="sys-apps/systemd-254.5-r1",
-        phase="postrm",
+        phase="compile",
         start_time=dt.datetime(2023, 11, 11, 12, 20, 52, tzinfo=dt.timezone.utc),
         **kwargs,
     )

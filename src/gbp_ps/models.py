@@ -17,7 +17,7 @@ class BuildProcess(models.Model):
     build_id = models.CharField(max_length=255)
     build_host = models.CharField(max_length=255)
     package = models.CharField(max_length=255)
-    phase = models.CharField(max_length=255)
+    phase = models.CharField(max_length=255, db_index=True)
     start_time = models.DateTimeField()
 
     class Meta:

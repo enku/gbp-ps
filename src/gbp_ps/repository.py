@@ -9,6 +9,8 @@ import django.db.utils
 from gbp_ps.exceptions import RecordAlreadyExists, RecordNotFoundError
 from gbp_ps.types import BuildProcess
 
+FINAL_PROCESS_PHASES = {"", "clean", "cleanrm", "postrm"}
+
 
 class Repository:
     """Django ORM-based BuildProcess repository"""
@@ -51,8 +53,14 @@ class Repository:
         build_process_model.phase = process.phase
         build_process_model.save()
 
-    def get_processes(self) -> Iterable[BuildProcess]:
-        """Return the process records from the repository"""
-        return (
-            model.to_object() for model in self.model.objects.order_by("start_time")
-        )
+    def get_processes(self, include_final: bool = False) -> Iterable[BuildProcess]:
+        """Return the process records from the repository
+
+        If include_final is True also include processes in their "final" phase. The
+        default value is False.
+        """
+        query = self.model.objects.order_by("start_time")
+        if not include_final:
+            query = query.exclude(phase__in=FINAL_PROCESS_PHASES)
+
+        return (model.to_object() for model in query)
