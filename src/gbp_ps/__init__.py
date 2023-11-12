@@ -8,6 +8,12 @@ def get_processes() -> list[BuildProcess]:
     """Return the list of build processes"""
     return list(Repository().get_processes())
 
+
+def add_process(process: BuildProcess) -> None:
+    """Add the given process to the database"""
+    Repository().add_process(process)
+
+
 def update_process(process: BuildProcess) -> None:
     """Update the process in the database"""
     Repository().update_process(process)
