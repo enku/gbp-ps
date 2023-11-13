@@ -120,6 +120,13 @@ class AddBuildProcessesTests(TestCase):
         self.assertNotIn("errors", result)
         self.assertEqual(gbp_ps.get_processes(include_final=True), [])
 
+    def test_empty_machine_does_not_get_added(self) -> None:
+        p_dict = build_process_dict(make_build_process(machine="", add_to_repo=False))
+        result = graphql(self.query, {"process": p_dict})
+
+        self.assertNotIn("errors", result)
+        self.assertEqual(gbp_ps.get_processes(include_final=True), [])
+
 
 def build_process_dict(build_process: BuildProcess) -> dict[str, Any]:
     bp_dict = asdict(build_process)
