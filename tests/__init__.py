@@ -1,5 +1,6 @@
 """gbp-ps tests"""
 import datetime as dt
+from dataclasses import asdict
 from typing import Any
 
 from gbp_ps.repository import Repository
@@ -25,3 +26,13 @@ def make_build_process(**kwargs: Any) -> BuildProcess:
         Repository().add_process(build_process)
 
     return build_process
+
+
+def build_process_dict(build_process: BuildProcess) -> dict[str, Any]:
+    """Return BuildProcess as a GraphQL dict"""
+    bp_dict = asdict(build_process)
+    bp_dict["buildHost"] = bp_dict.pop("build_host")
+    bp_dict["id"] = bp_dict.pop("build_id")
+    bp_dict["startTime"] = bp_dict.pop("start_time").isoformat()
+
+    return bp_dict

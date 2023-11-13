@@ -117,3 +117,10 @@ gbp ps
 
 This should display the process table.  When no processes are building the
 output will be empty.
+
+There is also a "continuous" mode where gbp-ps will display the ebuild processes
+continuously on the screen:
+
+```sh
+gbp ps -c
+```

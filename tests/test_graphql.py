@@ -1,7 +1,6 @@
 """Tests for the GraphQL interface for gbp-ps"""
 # pylint: disable=missing-docstring
 
-from dataclasses import asdict
 from typing import Any
 
 from django.test import TestCase
@@ -9,9 +8,8 @@ from django.test.client import Client
 
 import gbp_ps
 from gbp_ps.repository import Repository
-from gbp_ps.types import BuildProcess
 
-from . import make_build_process
+from . import build_process_dict, make_build_process
 
 
 def graphql(query: str, variables: dict[str, Any] | None = None) -> Any:
@@ -126,12 +124,3 @@ class AddBuildProcessesTests(TestCase):
 
         self.assertNotIn("errors", result)
         self.assertEqual(gbp_ps.get_processes(include_final=True), [])
-
-
-def build_process_dict(build_process: BuildProcess) -> dict[str, Any]:
-    bp_dict = asdict(build_process)
-    bp_dict["buildHost"] = bp_dict.pop("build_host")
-    bp_dict["id"] = bp_dict.pop("build_id")
-    bp_dict["startTime"] = bp_dict.pop("start_time").isoformat()
-
-    return bp_dict

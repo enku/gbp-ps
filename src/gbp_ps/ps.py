@@ -1,26 +1,28 @@
 """Show currently building packages"""
 import argparse
 import datetime as dt
-from typing import Any
+import time
+from typing import Any, Callable, TypeAlias
 
 from gbpcli import GBP, Console, render
 from gbpcli.graphql import check
 from rich import box
+from rich.live import Live
 from rich.table import Table
 
+ModeHandler = Callable[[argparse.Namespace, GBP, Console], int]
+ProcessList: TypeAlias = list[dict[str, Any]]
 
-def handler(args: argparse.Namespace, gbp: GBP, console: Console) -> int:
-    """Show currently building packages"""
-    # NOTE: This was unintentional, but ^ GBP can only see the queries for the "gbpcli"
-    # distribution.  It needs a collector like gentoo-build-publisher has a collector
-    # for schemas
-    gbp.query._distribution = "gbp_ps"  # pylint: disable=protected-access
-    processes: list[dict[str, Any]] = check(gbp.query.get_processes())["buildProcesses"]
 
-    if not processes:
-        return 0
-
-    table = Table(title="Processes", box=box.ROUNDED, title_style="header", style="box")
+def create_table(processes: ProcessList, args: argparse.Namespace) -> Table:
+    """Return a rich Table given the list of processes"""
+    table = Table(
+        title="Ebuild Processes",
+        box=box.ROUNDED,
+        expand=True,
+        title_style="header",
+        style="box",
+    )
     table.add_column("Machine", header_style="header")
     table.add_column("ID", header_style="header")
     table.add_column("Package", header_style="header")
@@ -31,6 +33,7 @@ def handler(args: argparse.Namespace, gbp: GBP, console: Console) -> int:
         table.add_column("Node", header_style="header")
 
     for process in processes:
+        phase = process["phase"]
         row = [
             render.format_machine(process["machine"], args),
             render.format_build_number(process["id"]),
@@ -40,18 +43,72 @@ def handler(args: argparse.Namespace, gbp: GBP, console: Console) -> int:
                     render.LOCAL_TIMEZONE
                 )
             ),
-            f"[tag]{process['phase']}[/tag]",
+            f"[{phase}_phase]{phase:9}[/{phase}_phase]",
         ]
         if args.node:
             row.append(process["buildHost"])
         table.add_row(*row)
 
-    console.out.print(table)
+    return table
+
+
+def single_handler(args: argparse.Namespace, gbp: GBP, console: Console) -> int:
+    """Handler for the single-mode run of `gbp ps`"""
+    processes: ProcessList
+
+    if processes := check(gbp.query.get_processes())["buildProcesses"]:
+        console.out.print(create_table(processes, args))
+
     return 0
+
+
+def continuous_handler(args: argparse.Namespace, gbp: GBP, console: Console) -> int:
+    """Handler for the continuous-mode run of `gbp ps`"""
+
+    def update() -> Table:
+        return create_table(check(gbp.query.get_processes())["buildProcesses"], args)
+
+    console.out.clear()
+    with Live(update(), console=console.out) as live:
+        try:
+            while True:
+                time.sleep(args.update_interval)
+                live.update(update())
+        except KeyboardInterrupt:
+            pass
+    return 0
+
+
+MODES = [single_handler, continuous_handler]
+
+
+def handler(args: argparse.Namespace, gbp: GBP, console: Console) -> int:
+    """Show currently building packages"""
+    # NOTE: This was unintentional, but ^ GBP can only see the queries for the "gbpcli"
+    # distribution.  It needs a collector like gentoo-build-publisher has a collector
+    # for schemas
+    gbp.query._distribution = "gbp_ps"  # pylint: disable=protected-access
+
+    mode: ModeHandler = MODES[args.continuous]
+    return mode(args, gbp, console)
 
 
 def parse_args(parser: argparse.ArgumentParser) -> None:
     """Set subcommand arguments"""
     parser.add_argument(
         "--node", action="store_true", default=False, help="display the build node"
+    )
+    parser.add_argument(
+        "--continuous",
+        "-c",
+        action="store_true",
+        default=False,
+        help="Run and continuously poll and update",
+    )
+    parser.add_argument(
+        "--update-interval",
+        "-i",
+        type=int,
+        default=1,
+        help="In continuous mode, the interval, in seconds, between updates",
     )
