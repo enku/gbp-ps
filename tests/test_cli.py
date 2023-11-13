@@ -26,7 +26,7 @@ def string_console() -> tuple[Console, io.StringIO, io.StringIO]:
 
     return (
         Console(
-            out=rich.console.Console(file=out, theme=Theme(DEFAULT_THEME)),
+            out=rich.console.Console(file=out, width=100, theme=Theme(DEFAULT_THEME)),
             err=rich.console.Console(file=err),
         ),
         out,
