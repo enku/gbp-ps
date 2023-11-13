@@ -51,7 +51,7 @@ index 0000000..b4dff41
 +++ b/base/configs/etc-portage/bashrc
 @@ -0,0 +1,11 @@
 +# This is ugly :(
-+if [[ ${EBUILD_PHASE} != depend ]]; then
++if [[ "${BUILD_HOST}" && ${EBUILD_PHASE} != depend ]]; then
 +    WGET_BODY=\{\"query\":\ \"mutation\ \{addBuildProcess\(process:\{machine:\\\"${BUILD_MACHINE}\\\",buildHost:\\\"${BUILD_HOST}\\\",package:\\\"${P}\\\",id:\\\"${BUILD_NUMBER}\\\",phase:\\\"${EBUILD_PHASE}\\\",startTime:\\\""$(date -u +%Y-%m-%mT%H:%M:%S.%N+00:00)"\\\"\}\)\{message\}\}\",\ \"variables\":\ null\}
 +    wget \
 +        --output-document=- \
