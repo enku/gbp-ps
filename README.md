@@ -26,49 +26,30 @@ The gbp-ps package includes a plugin for Gentoo Build Publisher that includes
 a table for keeping package build "processes" and a GraphQL interface for
 updating the process table. Each machine's build then updates the table via
 GraphQL during each phase of the build. This is done via the
-`/etc/portage/bashrc` file.  For example I make the following change to my
-[machines repo](https://github.com/enku/gbp-machines):
+`/etc/portage/bashrc` file.  For example each of my machines'
+`/etc/portage/bashrc` contain the following:
 
-```diff
-diff --git a/Makefile b/Makefile
-index 05f2492..189e322 100644
---- a/Makefile
-+++ b/Makefile
-@@ -9,6 +9,10 @@ BUILD_PUBLISHER_URL ?= http://localhost/
- archive := build.tar.gz
- container := $(machine)-root
- chroot := buildah run \
-+  --env=BUILD_MACHINE=$(machine) \
-+  --env=BUILD_NUMBER=$(BUILD_NUMBER) \
-+  --env=BUILD_NUMBER=$(BUILD_NUMBER) \
-+  --env=BUILD_HOST=$(shell hostnamectl hostname) \
-   --volume /proc:/proc \
-   --volume "$(CURDIR)"/Makefile.container:/Makefile.gbp \
-   --mount=type=tmpfs,tmpfs-mode=755,destination=/run $(container) \
-diff --git a/base/configs/etc-portage/bashrc b/base/configs/etc-portage/bashrc
-new file mode 100644
-index 0000000..2bd752b
---- /dev/null
-+++ b/base/configs/etc-portage/bashrc
-@@ -0,0 +1,11 @@
-+# This is ugly :(
-+if [[ -f /Makefile.gbp && "${EBUILD_PHASE}" != depend ]]; then
-+    WGET_BODY=\{\"query\":\ \"mutation\ \{addBuildProcess\(process:\{machine:\\\"${BUILD_MACHINE}\\\",buildHost:\\\"${BUILD_HOST}\\\",package:\\\"${CATEGORY}/${PF}\\\",id:\\\"${BUILD_NUMBER}\\\",phase:\\\"${EBUILD_PHASE}\\\",startTime:\\\""$(date -u +%Y-%m-%mT%H:%M:%S.%N+00:00)"\\\"\}\)\{message\}\}\",\ \"variables\":\ null\}
-+    wget \
-+        --output-document=- \
-+        --no-check-certificate \
-+        --header="Content-type: application/json" \
-+        --method=POST \
-+        --body-data="${WGET_BODY}" \
-+        http://gbp/graphql
-+fi
+```bash
+if [[ -f /Makefile.gbp && "${EBUILD_PHASE}" != depend ]]; then
+    WGET_BODY=\{\"query\":\ \"mutation\ \{addBuildProcess\(process:\{machine:\\\"${BUILD_MACHINE}\\\",buildHost:\\\"${BUILD_HOST}\\\",package:\\\"${CATEGORY}/${PF}\\\",id:\\\"${BUILD_NUMBER}\\\",phase:\\\"${EBUILD_PHASE}\\\",startTime:\\\""$(date -u +%Y-%m-%mT%H:%M:%S.%N+00:00)"\\\"\}\)\{message\}\}\",\ \"variables\":\ null\}
+    wget \
+        --output-document=- \
+        --no-check-certificate \
+        --header="Content-type: application/json" \
+        --method=POST \
+        --body-data="${WGET_BODY}" \
+        http://gbp/graphql
+fi
 ```
 
-The changes to the `Makefile` are to include some needed environment variables
-to the build container. Then I add a `/etc/portage/bashrc` that uses the
-included environment variables in addition to ebuild environment variables to
-make a GraphQL query to the GBP server.  This is done for each phase (except
-"depend") of the build process.
+The environment variables `BUILD_HOST`, `BUILD_NUMBER` and `BUILD_MACHINE` are
+exported into the build container. The latest version of the [machines
+repo](https://github.com/enku/gbp-machines) does this. The other environment
+varialbes come from the [ebuild
+process](https://wiki.gentoo.org/wiki//etc/portage/bashrc).
+
+The contents of the `bashrc` send a GraphQL call to GPB. This is done for each
+phase (except "depend") of the build process.
 
 gbp-ps includes a Django package that adds the GraphQL interface to Gentoo
 Build Publisher and maintains the process table.
