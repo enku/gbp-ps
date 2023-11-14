@@ -86,10 +86,11 @@ systemctl restart gentoo-build-publisher-wsgi.service
 
 Now the server side should be good to go.
 
-For you individual builds you will need to make the above changes to your
-machine repo's `Makefile` and each machine's `/etc/portage/bashrc` Be sure to
-change the wget URL to use the actual name/address of your GBP instance (or
-`localhost` if your client and server are on the same machine.
+For you individual builds each machine's
+`<machine>/configs/etc-portage/bashrc` contain the script above. If your
+machine doesn't have the file already then create it. Be sure to change the
+wget URL to use the actual name/address of your GBP instance (or `localhost`
+if your client and server are on the same machine.
 
 Start a machine build that will actually build some packages. Then,
 
