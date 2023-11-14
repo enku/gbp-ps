@@ -31,10 +31,10 @@ GraphQL during each phase of the build. This is done via the
 
 ```diff
 diff --git a/Makefile b/Makefile
-index 72ed0c5..189e322 100644
+index 05f2492..189e322 100644
 --- a/Makefile
 +++ b/Makefile
-@@ -9,7 +9,12 @@ BUILD_PUBLISHER_URL ?= http://localhost/
+@@ -9,6 +9,10 @@ BUILD_PUBLISHER_URL ?= http://localhost/
  archive := build.tar.gz
  container := $(machine)-root
  chroot := buildah run \
@@ -43,31 +43,11 @@ index 72ed0c5..189e322 100644
 +  --env=BUILD_NUMBER=$(BUILD_NUMBER) \
 +  --env=BUILD_HOST=$(shell hostnamectl hostname) \
    --volume /proc:/proc \
-+  --volume "$(CURDIR)"/Makefile.container:/Makefile.gbp \
+   --volume "$(CURDIR)"/Makefile.container:/Makefile.gbp \
    --mount=type=tmpfs,tmpfs-mode=755,destination=/run $(container) \
-   --
- config := $(notdir $(wildcard $(machine)/configs/*))
-@@ -60,7 +65,7 @@ chroot: $(repos_targets) $(config_targets)  ## Build the chroot in the container
- 
- 
- world: chroot  ## Update @world and remove unneeded pkgs & binpkgs
--	$(chroot) make -f- world < Makefile.container
-+	$(chroot) make -C / -f Makefile.gbp world
- 	touch $@
- 
- 
-@@ -96,7 +101,7 @@ logs.tar.gz: chroot
- 
- 
- emerge-info.txt: chroot
--	$(chroot) make -f- emerge-info < Makefile.container > .$@
-+	$(chroot) make -C / -f Makefile.gbp emerge-info > .$@
- 	mv .$@ $@
- 
- 
 diff --git a/base/configs/etc-portage/bashrc b/base/configs/etc-portage/bashrc
 new file mode 100644
-index 0000000..37b0229
+index 0000000..2bd752b
 --- /dev/null
 +++ b/base/configs/etc-portage/bashrc
 @@ -0,0 +1,11 @@
