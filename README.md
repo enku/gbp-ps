@@ -31,28 +31,49 @@ GraphQL during each phase of the build. This is done via the
 
 ```diff
 diff --git a/Makefile b/Makefile
-index 74921dd..55280d4 100644
+index 72ed0c5..189e322 100644
 --- a/Makefile
 +++ b/Makefile
-@@ -14,6 +14,9 @@ container := $(machine)-root
+@@ -9,7 +9,12 @@ BUILD_PUBLISHER_URL ?= http://localhost/
+ archive := build.tar.gz
+ container := $(machine)-root
  chroot := buildah run \
-   --env=BINPKG_COMPRESS=xz \
-   --env=BINPKG_COMPRESS_FLAGS="-9 $(XZ_DEFAULTS)" \
 +  --env=BUILD_MACHINE=$(machine) \
 +  --env=BUILD_NUMBER=$(BUILD_NUMBER) \
++  --env=BUILD_NUMBER=$(BUILD_NUMBER) \
 +  --env=BUILD_HOST=$(shell hostnamectl hostname) \
-   --mount=type=tmpfs,tmpfs-mode=755,destination=/run \
    --volume /proc:/proc \
-   --volume /var/lib/jenkins/distfiles:/var/cache/distfiles \
++  --volume "$(CURDIR)"/Makefile.container:/Makefile.gbp \
+   --mount=type=tmpfs,tmpfs-mode=755,destination=/run $(container) \
+   --
+ config := $(notdir $(wildcard $(machine)/configs/*))
+@@ -60,7 +65,7 @@ chroot: $(repos_targets) $(config_targets)  ## Build the chroot in the container
+ 
+ 
+ world: chroot  ## Update @world and remove unneeded pkgs & binpkgs
+-	$(chroot) make -f- world < Makefile.container
++	$(chroot) make -C / -f Makefile.gbp world
+ 	touch $@
+ 
+ 
+@@ -96,7 +101,7 @@ logs.tar.gz: chroot
+ 
+ 
+ emerge-info.txt: chroot
+-	$(chroot) make -f- emerge-info < Makefile.container > .$@
++	$(chroot) make -C / -f Makefile.gbp emerge-info > .$@
+ 	mv .$@ $@
+ 
+ 
 diff --git a/base/configs/etc-portage/bashrc b/base/configs/etc-portage/bashrc
 new file mode 100644
-index 0000000..b4dff41
+index 0000000..37b0229
 --- /dev/null
 +++ b/base/configs/etc-portage/bashrc
 @@ -0,0 +1,11 @@
 +# This is ugly :(
-+if [[ "${BUILD_HOST}" && ${EBUILD_PHASE} != depend ]]; then
-+    WGET_BODY=\{\"query\":\ \"mutation\ \{addBuildProcess\(process:\{machine:\\\"${BUILD_MACHINE}\\\",buildHost:\\\"${BUILD_HOST}\\\",package:\\\"${P}\\\",id:\\\"${BUILD_NUMBER}\\\",phase:\\\"${EBUILD_PHASE}\\\",startTime:\\\""$(date -u +%Y-%m-%mT%H:%M:%S.%N+00:00)"\\\"\}\)\{message\}\}\",\ \"variables\":\ null\}
++if [[ -f /Makefile.gbp && "${EBUILD_PHASE}" != depend ]]; then
++    WGET_BODY=\{\"query\":\ \"mutation\ \{addBuildProcess\(process:\{machine:\\\"${BUILD_MACHINE}\\\",buildHost:\\\"${BUILD_HOST}\\\",package:\\\"${CATEGORY}/${PF}\\\",id:\\\"${BUILD_NUMBER}\\\",phase:\\\"${EBUILD_PHASE}\\\",startTime:\\\""$(date -u +%Y-%m-%mT%H:%M:%S.%N+00:00)"\\\"\}\)\{message\}\}\",\ \"variables\":\ null\}
 +    wget \
 +        --output-document=- \
 +        --no-check-certificate \
