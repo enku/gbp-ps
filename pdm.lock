@@ -397,10 +397,10 @@ files = [
 
 [[package]]
 name = "gentoo-build-publisher"
-version = "1.0.1.dev229+g61848e2"
+version = "1.0.1.dev232+g1c5f8a2"
 requires_python = ">=3.10"
 git = "https://github.com/enku/gentoo-build-publisher"
-revision = "61848e23dd377305ae2a996a015bc4e7bc71ed23"
+revision = "1c5f8a29246a5ab7c0c907d8880c44244b57e56f"
 summary = "Gentoo Build Publisher"
 dependencies = [
     "ariadne-django",
