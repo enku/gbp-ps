@@ -33,7 +33,7 @@ GraphQL during each phase of the build. This is done via the
 if [[ -f /Makefile.gbp && "${EBUILD_PHASE}" != depend ]]; then
     WGET_BODY=\{\"query\":\ \"mutation\ \{addBuildProcess\(process:\{machine:\\\"${BUILD_MACHINE}\\\",buildHost:\\\"${BUILD_HOST}\\\",package:\\\"${CATEGORY}/${PF}\\\",id:\\\"${BUILD_NUMBER}\\\",phase:\\\"${EBUILD_PHASE}\\\",startTime:\\\""$(date -u +%Y-%m-%mT%H:%M:%S.%N+00:00)"\\\"\}\)\{message\}\}\",\ \"variables\":\ null\}
     wget \
-        --output-document=- \
+        --output-document=/dev/null \
         --no-check-certificate \
         --header="Content-type: application/json" \
         --method=POST \
