@@ -3,10 +3,18 @@ import datetime as dt
 from dataclasses import asdict
 from typing import Any
 
+from django.test import TestCase as DjangoTestCase
+
 from gbp_ps.repository import Repository
 from gbp_ps.types import BuildProcess
 
 LOCAL_TIMEZONE = dt.timezone(dt.timedelta(days=-1, seconds=61200), "PDT")
+
+
+class TestCase(DjangoTestCase):
+    """Custom TestCase for gbp-ps tests"""
+
+    # Nothing here yet
 
 
 def make_build_process(**kwargs: Any) -> BuildProcess:

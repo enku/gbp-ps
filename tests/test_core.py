@@ -3,11 +3,11 @@
 import datetime as dt
 from dataclasses import replace
 
-from django.test import TestCase
-
 from gbp_ps import add_process, get_processes, update_process
 from gbp_ps.exceptions import RecordAlreadyExists, RecordNotFoundError
 from gbp_ps.types import BuildProcess
+
+from . import TestCase
 
 
 class GetProcessesTests(TestCase):

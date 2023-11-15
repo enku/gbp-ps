@@ -3,13 +3,12 @@
 
 from typing import Any
 
-from django.test import TestCase
 from django.test.client import Client
 
 import gbp_ps
 from gbp_ps.repository import Repository
 
-from . import build_process_dict, make_build_process
+from . import TestCase, build_process_dict, make_build_process
 
 
 def graphql(query: str, variables: dict[str, Any] | None = None) -> Any:

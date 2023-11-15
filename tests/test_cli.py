@@ -5,7 +5,6 @@ from argparse import ArgumentParser, Namespace
 from unittest import mock
 
 import rich.console
-from django.test import TestCase
 from django.test.client import Client
 from gbpcli import GBP, Console
 from gbpcli.theme import DEFAULT_THEME
@@ -16,7 +15,7 @@ from rich.theme import Theme
 
 from gbp_ps import cli
 
-from . import LOCAL_TIMEZONE, build_process_dict, make_build_process
+from . import LOCAL_TIMEZONE, TestCase, build_process_dict, make_build_process
 
 
 def string_console() -> tuple[Console, io.StringIO, io.StringIO]:
