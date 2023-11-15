@@ -6,7 +6,6 @@ from typing import Any
 from django.test.client import Client
 
 import gbp_ps
-from gbp_ps.repository import Repository
 
 from . import TestCase, build_process_dict, make_build_process
 
@@ -97,8 +96,8 @@ class AddBuildProcessesTests(TestCase):
         result = graphql(self.query, {"process": p_dict})
 
         self.assertNotIn("errors", result)
-        [process] = gbp_ps.get_processes()
-        self.assertEqual(process, p_obj)
+        processes = gbp_ps.get_processes()
+        self.assertEqual(processes, [p_obj])
 
     def test_update(self) -> None:
         p_dict = build_process_dict(make_build_process())
@@ -107,8 +106,8 @@ class AddBuildProcessesTests(TestCase):
         p_dict["phase"] = "postinst"
         result = graphql(self.query, {"process": p_dict})
         self.assertNotIn("errors", result)
-        [p_obj] = Repository().get_processes()
-        self.assertEqual(p_obj.phase, "postinst")
+        processes = gbp_ps.get_processes()
+        self.assertEqual(processes[0].phase, "postinst")
 
     def test_empty_phase_does_not_get_added(self) -> None:
         p_dict = build_process_dict(make_build_process(phase="", add_to_repo=False))

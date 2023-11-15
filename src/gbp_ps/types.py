@@ -1,4 +1,6 @@
 """gbp-ps data types"""
+from __future__ import annotations
+
 import datetime as dt
 from dataclasses import dataclass
 
@@ -13,3 +15,15 @@ class BuildProcess:
     package: str
     phase: str
     start_time: dt.datetime
+
+    def is_same_as(self, other: BuildProcess) -> bool:
+        """Return true if the other build process is the same process
+
+        Two process are considered the "same" if the machine, package and build_id are
+        the same.
+        """
+        return (
+            self.package == other.package
+            and self.machine == other.machine
+            and self.build_id == other.build_id
+        )

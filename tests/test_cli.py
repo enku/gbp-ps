@@ -1,5 +1,6 @@
 """CLI unit tests for gbp-ps"""
 # pylint: disable=missing-docstring
+import datetime as dt
 import io
 from argparse import ArgumentParser, Namespace
 from unittest import mock
@@ -81,12 +82,13 @@ class PSTests(TestCase):
 
     @mock.patch("gbpcli.render.LOCAL_TIMEZONE", new=LOCAL_TIMEZONE)
     def test(self) -> None:
-        for cpv, phase in [
-            ["sys-apps/portage-3.0.51", "postinst"],
-            ["sys-apps/shadow-4.14-r4", "package"],
-            ["net-misc/wget-1.21.4", "compile"],
+        t = dt.datetime
+        for cpv, phase, start_time in [
+            ["sys-apps/portage-3.0.51", "postinst", t(2023, 11, 15, 16, 20, 0)],
+            ["sys-apps/shadow-4.14-r4", "package", t(2023, 11, 15, 16, 20, 1)],
+            ["net-misc/wget-1.21.4", "compile", t(2023, 11, 15, 16, 20, 2)],
         ]:
-            make_build_process(package=cpv, phase=phase)
+            make_build_process(package=cpv, phase=phase, start_time=start_time)
         args = Namespace(url="http://gbp.invalid/", node=False, continuous=False)
         console, stdout = string_console()[:2]
         exit_status = cli.handler(args, self.gbp, console)
@@ -97,21 +99,22 @@ class PSTests(TestCase):
 ╭───────────┬───────┬──────────────────────────────┬──────────────────────┬────────────╮
 │ Machine   │ ID    │ Package                      │ Start                │ Phase      │
 ├───────────┼───────┼──────────────────────────────┼──────────────────────┼────────────┤
-│ babette   │ 1031  │ sys-apps/portage-3.0.51      │ 11/11/23 05:20:52    │ postinst   │
-│ babette   │ 1031  │ sys-apps/shadow-4.14-r4      │ 11/11/23 05:20:52    │ package    │
-│ babette   │ 1031  │ net-misc/wget-1.21.4         │ 11/11/23 05:20:52    │ compile    │
+│ babette   │ 1031  │ sys-apps/portage-3.0.51      │ 11/15/23 15:20:00    │ postinst   │
+│ babette   │ 1031  │ sys-apps/shadow-4.14-r4      │ 11/15/23 15:20:01    │ package    │
+│ babette   │ 1031  │ net-misc/wget-1.21.4         │ 11/15/23 15:20:02    │ compile    │
 ╰───────────┴───────┴──────────────────────────────┴──────────────────────┴────────────╯
 """
         self.assertEqual(stdout.getvalue(), expected)
 
     @mock.patch("gbpcli.render.LOCAL_TIMEZONE", new=LOCAL_TIMEZONE)
     def test_with_node(self) -> None:
-        for cpv, phase in [
-            ["sys-apps/portage-3.0.51", "postinst"],
-            ["sys-apps/shadow-4.14-r4", "package"],
-            ["net-misc/wget-1.21.4", "compile"],
+        t = dt.datetime
+        for cpv, phase, start_time in [
+            ["sys-apps/portage-3.0.51", "postinst", t(2023, 11, 15, 16, 20, 0)],
+            ["sys-apps/shadow-4.14-r4", "package", t(2023, 11, 15, 16, 20, 1)],
+            ["net-misc/wget-1.21.4", "compile", t(2023, 11, 15, 16, 20, 2)],
         ]:
-            make_build_process(package=cpv, phase=phase)
+            make_build_process(package=cpv, phase=phase, start_time=start_time)
         args = Namespace(url="http://gbp.invalid/", node=True, continuous=False)
         console, stdout = string_console()[:2]
         exit_status = cli.handler(args, self.gbp, console)
@@ -122,9 +125,9 @@ class PSTests(TestCase):
 ╭──────────┬───────┬─────────────────────────┬───────────────────┬───────────┬─────────╮
 │ Machine  │ ID    │ Package                 │ Start             │ Phase     │ Node    │
 ├──────────┼───────┼─────────────────────────┼───────────────────┼───────────┼─────────┤
-│ babette  │ 1031  │ sys-apps/portage-3.0.51 │ 11/11/23 05:20:52 │ postinst  │ jenkins │
-│ babette  │ 1031  │ sys-apps/shadow-4.14-r4 │ 11/11/23 05:20:52 │ package   │ jenkins │
-│ babette  │ 1031  │ net-misc/wget-1.21.4    │ 11/11/23 05:20:52 │ compile   │ jenkins │
+│ babette  │ 1031  │ sys-apps/portage-3.0.51 │ 11/15/23 15:20:00 │ postinst  │ jenkins │
+│ babette  │ 1031  │ sys-apps/shadow-4.14-r4 │ 11/15/23 15:20:01 │ package   │ jenkins │
+│ babette  │ 1031  │ net-misc/wget-1.21.4    │ 11/15/23 15:20:02 │ compile   │ jenkins │
 ╰──────────┴───────┴─────────────────────────┴───────────────────┴───────────┴─────────╯
 """
         self.assertEqual(stdout.getvalue(), expected)
