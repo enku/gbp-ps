@@ -14,7 +14,7 @@ from requests.adapters import BaseAdapter
 from requests.structures import CaseInsensitiveDict
 from rich.theme import Theme
 
-from gbp_ps import ps
+from gbp_ps import cli
 
 from . import LOCAL_TIMEZONE, build_process_dict, make_build_process
 
@@ -90,7 +90,7 @@ class PSTests(TestCase):
             make_build_process(package=cpv, phase=phase)
         args = Namespace(url="http://gbp.invalid/", node=False, continuous=False)
         console, stdout = string_console()[:2]
-        exit_status = ps.handler(args, self.gbp, console)
+        exit_status = cli.handler(args, self.gbp, console)
 
         self.assertEqual(exit_status, 0)
         expected = """\
@@ -115,7 +115,7 @@ class PSTests(TestCase):
             make_build_process(package=cpv, phase=phase)
         args = Namespace(url="http://gbp.invalid/", node=True, continuous=False)
         console, stdout = string_console()[:2]
-        exit_status = ps.handler(args, self.gbp, console)
+        exit_status = cli.handler(args, self.gbp, console)
 
         self.assertEqual(exit_status, 0)
         expected = """\
@@ -133,12 +133,12 @@ class PSTests(TestCase):
     def test_empty(self) -> None:
         args = Namespace(url="http://gbp.invalid/", node=False, continuous=False)
         console, stdout = string_console()[:2]
-        exit_status = ps.handler(args, self.gbp, console)
+        exit_status = cli.handler(args, self.gbp, console)
 
         self.assertEqual(exit_status, 0)
         self.assertEqual(stdout.getvalue(), "")
 
-    @mock.patch("gbp_ps.ps.time.sleep")
+    @mock.patch("gbp_ps.cli.time.sleep")
     def test_continuous_mode(self, mock_sleep: mock.Mock) -> None:
         processes = [
             make_build_process(package=cpv, phase=phase)
@@ -159,7 +159,7 @@ class PSTests(TestCase):
             ({"buildProcesses": mock_graphql_resp}, None),
             KeyboardInterrupt,
         )
-        exit_status = ps.handler(args, gbp, console)
+        exit_status = cli.handler(args, gbp, console)
 
         self.assertEqual(exit_status, 0)
         expected = """\
@@ -179,4 +179,4 @@ class ParseArgsTests(TestCase):
     def test(self) -> None:
         # Just ensure that parse_args is there and works
         parser = ArgumentParser()
-        ps.parse_args(parser)
+        cli.parse_args(parser)

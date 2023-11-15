@@ -18,7 +18,7 @@ license = {text = "GPL3+"}
 gbp_ps = "gbp_ps.graphql"
 
 [project.entry-points."gbpcli.subcommands"]
-ps = "gbp_ps.ps"
+ps = "gbp_ps.cli"
 
 [build-system]
 requires = ["pdm-backend"]
