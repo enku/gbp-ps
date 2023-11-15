@@ -46,6 +46,31 @@ class RepositoryTests(TestCase):
             backend.add_process(build_process)
 
     @parametrized(BACKENDS)
+    def test_add_process_same_package_in_different_builds_exist_only_once(
+        self, backend: RepositoryType
+    ) -> None:
+        dead_process = BuildProcess(
+            machine="babette",
+            build_id="1031",
+            build_host="jenkins",
+            package="sys-apps/systemd-254.5-r1",
+            phase="compile",
+            start_time=dt.datetime(2023, 11, 11, 12, 20, 52, tzinfo=dt.timezone.utc),
+        )
+        backend.add_process(dead_process)
+        new_process = BuildProcess(
+            machine="babette",
+            build_id="1032",
+            build_host="jenkins",
+            package="sys-apps/systemd-254.5-r1",
+            phase="compile",
+            start_time=dt.datetime(2023, 11, 11, 13, 20, 52, tzinfo=dt.timezone.utc),
+        )
+        backend.add_process(new_process)
+
+        self.assertEqual([*backend.get_processes()], [new_process])
+
+    @parametrized(BACKENDS)
     def test_update_process(self, backend: RepositoryType) -> None:
         build_process = BuildProcess(
             machine="babette",

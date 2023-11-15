@@ -127,6 +127,14 @@ class RedisRepository:
 
         If the process already exists in the repo, RecordAlreadyExists is raised
         """
+        # If this package exists in another build, remove it. This (usually) means the
+        # other build failed
+        build_id = process.build_id.encode(ENCODING)
+        pattern = f"{self._key}:{process.machine}:{process.package}:*".encode(ENCODING)
+        for key in self._redis.keys(pattern):
+            if key.split(b":")[3] != build_id:
+                self._redis.delete(key)
+
         key, value = self.process_to_redis(process)
         previous = self._redis.get(key)
 
@@ -194,6 +202,15 @@ class DjangoRepository:
         """
         # pylint: disable=import-outside-toplevel
         import django.db.utils
+        from django.db.models import Q
+
+        # If this package exists in another build, remove it. This (usually) means the
+        # other build failed
+        self.model.objects.filter(
+            ~Q(build_id=process.build_id),
+            machine=process.machine,
+            package=process.package,
+        ).delete()
 
         build_process_model = self.model.from_object(process)
 
