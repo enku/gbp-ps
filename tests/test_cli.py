@@ -81,32 +81,35 @@ class PSTests(TestCase):
         self.gbp = test_gbp("http://gbp.invalid/")
 
     @mock.patch("gbpcli.render.LOCAL_TIMEZONE", new=LOCAL_TIMEZONE)
+    @mock.patch("gbp_ps.cli.get_today", new=lambda: dt.date(2023, 11, 15))
     def test(self) -> None:
         t = dt.datetime
         for cpv, phase, start_time in [
-            ["sys-apps/portage-3.0.51", "postinst", t(2023, 11, 15, 16, 20, 0)],
+            ["sys-apps/portage-3.0.51", "postinst", t(2023, 11, 14, 16, 20, 0)],
             ["sys-apps/shadow-4.14-r4", "package", t(2023, 11, 15, 16, 20, 1)],
             ["net-misc/wget-1.21.4", "compile", t(2023, 11, 15, 16, 20, 2)],
         ]:
             make_build_process(package=cpv, phase=phase, start_time=start_time)
         args = Namespace(url="http://gbp.invalid/", node=False, continuous=False)
         console, stdout = string_console()[:2]
+
         exit_status = cli.handler(args, self.gbp, console)
 
         self.assertEqual(exit_status, 0)
         expected = """\
                                     Ebuild Processes                                    
-╭───────────┬───────┬──────────────────────────────┬──────────────────────┬────────────╮
-│ Machine   │ ID    │ Package                      │ Start                │ Phase      │
-├───────────┼───────┼──────────────────────────────┼──────────────────────┼────────────┤
-│ babette   │ 1031  │ sys-apps/portage-3.0.51      │ 11/15/23 15:20:00    │ postinst   │
-│ babette   │ 1031  │ sys-apps/shadow-4.14-r4      │ 11/15/23 15:20:01    │ package    │
-│ babette   │ 1031  │ net-misc/wget-1.21.4         │ 11/15/23 15:20:02    │ compile    │
-╰───────────┴───────┴──────────────────────────────┴──────────────────────┴────────────╯
+╭─────────────┬────────┬──────────────────────────────────┬─────────────┬──────────────╮
+│ Machine     │ ID     │ Package                          │ Start       │ Phase        │
+├─────────────┼────────┼──────────────────────────────────┼─────────────┼──────────────┤
+│ babette     │ 1031   │ sys-apps/portage-3.0.51          │ Nov14       │ postinst     │
+│ babette     │ 1031   │ sys-apps/shadow-4.14-r4          │ 15:20:01    │ package      │
+│ babette     │ 1031   │ net-misc/wget-1.21.4             │ 15:20:02    │ compile      │
+╰─────────────┴────────┴──────────────────────────────────┴─────────────┴──────────────╯
 """
         self.assertEqual(stdout.getvalue(), expected)
 
     @mock.patch("gbpcli.render.LOCAL_TIMEZONE", new=LOCAL_TIMEZONE)
+    @mock.patch("gbp_ps.cli.get_today", new=lambda: dt.date(2023, 11, 15))
     def test_with_node(self) -> None:
         t = dt.datetime
         for cpv, phase, start_time in [
@@ -122,13 +125,13 @@ class PSTests(TestCase):
         self.assertEqual(exit_status, 0)
         expected = """\
                                     Ebuild Processes                                    
-╭──────────┬───────┬─────────────────────────┬───────────────────┬───────────┬─────────╮
-│ Machine  │ ID    │ Package                 │ Start             │ Phase     │ Node    │
-├──────────┼───────┼─────────────────────────┼───────────────────┼───────────┼─────────┤
-│ babette  │ 1031  │ sys-apps/portage-3.0.51 │ 11/15/23 15:20:00 │ postinst  │ jenkins │
-│ babette  │ 1031  │ sys-apps/shadow-4.14-r4 │ 11/15/23 15:20:01 │ package   │ jenkins │
-│ babette  │ 1031  │ net-misc/wget-1.21.4    │ 11/15/23 15:20:02 │ compile   │ jenkins │
-╰──────────┴───────┴─────────────────────────┴───────────────────┴───────────┴─────────╯
+╭───────────┬───────┬─────────────────────────────┬────────────┬─────────────┬─────────╮
+│ Machine   │ ID    │ Package                     │ Start      │ Phase       │ Node    │
+├───────────┼───────┼─────────────────────────────┼────────────┼─────────────┼─────────┤
+│ babette   │ 1031  │ sys-apps/portage-3.0.51     │ 15:20:00   │ postinst    │ jenkins │
+│ babette   │ 1031  │ sys-apps/shadow-4.14-r4     │ 15:20:01   │ package     │ jenkins │
+│ babette   │ 1031  │ net-misc/wget-1.21.4        │ 15:20:02   │ compile     │ jenkins │
+╰───────────┴───────┴─────────────────────────────┴────────────┴─────────────┴─────────╯
 """
         self.assertEqual(stdout.getvalue(), expected)
 
@@ -141,6 +144,7 @@ class PSTests(TestCase):
         self.assertEqual(stdout.getvalue(), "")
 
     @mock.patch("gbp_ps.cli.time.sleep")
+    @mock.patch("gbp_ps.cli.get_today", new=lambda: dt.date(2023, 11, 11))
     def test_continuous_mode(self, mock_sleep: mock.Mock) -> None:
         processes = [
             make_build_process(package=cpv, phase=phase)
@@ -166,13 +170,13 @@ class PSTests(TestCase):
         self.assertEqual(exit_status, 0)
         expected = """\
                                     Ebuild Processes                                    
-╭───────────┬───────┬──────────────────────────────┬──────────────────────┬────────────╮
-│ Machine   │ ID    │ Package                      │ Start                │ Phase      │
-├───────────┼───────┼──────────────────────────────┼──────────────────────┼────────────┤
-│ babette   │ 1031  │ sys-apps/portage-3.0.51      │ 11/11/23 06:20:52    │ postinst   │
-│ babette   │ 1031  │ sys-apps/shadow-4.14-r4      │ 11/11/23 06:20:52    │ package    │
-│ babette   │ 1031  │ net-misc/wget-1.21.4         │ 11/11/23 06:20:52    │ compile    │
-╰───────────┴───────┴──────────────────────────────┴──────────────────────┴────────────╯"""
+╭─────────────┬────────┬──────────────────────────────────┬─────────────┬──────────────╮
+│ Machine     │ ID     │ Package                          │ Start       │ Phase        │
+├─────────────┼────────┼──────────────────────────────────┼─────────────┼──────────────┤
+│ babette     │ 1031   │ sys-apps/portage-3.0.51          │ 06:20:52    │ postinst     │
+│ babette     │ 1031   │ sys-apps/shadow-4.14-r4          │ 06:20:52    │ package      │
+│ babette     │ 1031   │ net-misc/wget-1.21.4             │ 06:20:52    │ compile      │
+╰─────────────┴────────┴──────────────────────────────────┴─────────────┴──────────────╯"""
         self.assertEqual(stdout.getvalue(), expected)
         mock_sleep.assert_called_with(4)
 

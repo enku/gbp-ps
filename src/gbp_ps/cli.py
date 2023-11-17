@@ -14,6 +14,21 @@ ModeHandler = Callable[[argparse.Namespace, GBP, Console], int]
 ProcessList: TypeAlias = list[dict[str, Any]]
 
 
+def get_today() -> dt.date:
+    return dt.datetime.now().astimezone(render.LOCAL_TIMEZONE).date()
+
+
+def format_timestamp(timestamp: dt.datetime) -> str:
+    """Format the timestamp as a string
+
+    Like render.from_timestamp(), but if the date is today's date then only display the
+    time. If the date is not today's date then only return the date.
+    """
+    if (date := timestamp.date()) == get_today():
+        return f"[timestamp]{timestamp.strftime('%X')}[/timestamp]"
+    return f"[timestamp]{date.strftime('%b%d')}[/timestamp]"
+
+
 def create_table(processes: ProcessList, args: argparse.Namespace) -> Table:
     """Return a rich Table given the list of processes"""
     table = Table(
@@ -38,7 +53,7 @@ def create_table(processes: ProcessList, args: argparse.Namespace) -> Table:
             render.format_machine(process["machine"], args),
             render.format_build_number(process["id"]),
             f"[package]{process['package']}[/package]",
-            render.format_timestamp(
+            format_timestamp(
                 dt.datetime.fromisoformat(process["startTime"]).astimezone(
                     render.LOCAL_TIMEZONE
                 )
