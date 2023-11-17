@@ -94,13 +94,13 @@ class PSTests(TestCase):
         self.assertEqual(exit_status, 0)
         expected = """\
                                     Ebuild Processes                                    
-╭────────────┬───────┬─────────────────────────────┬──────────────────────┬────────────╮
-│ Machine    │ ID    │ Package                     │ Start                │ Phase      │
-├────────────┼───────┼─────────────────────────────┼──────────────────────┼────────────┤
-│ babbette   │ 1031  │ sys-apps/portage-3.0.51     │ 11/11/23 05:20:52    │ postinst   │
-│ babbette   │ 1031  │ sys-apps/shadow-4.14-r4     │ 11/11/23 05:20:52    │ package    │
-│ babbette   │ 1031  │ net-misc/wget-1.21.4        │ 11/11/23 05:20:52    │ compile    │
-╰────────────┴───────┴─────────────────────────────┴──────────────────────┴────────────╯
+╭───────────┬───────┬──────────────────────────────┬──────────────────────┬────────────╮
+│ Machine   │ ID    │ Package                      │ Start                │ Phase      │
+├───────────┼───────┼──────────────────────────────┼──────────────────────┼────────────┤
+│ babette   │ 1031  │ sys-apps/portage-3.0.51      │ 11/11/23 05:20:52    │ postinst   │
+│ babette   │ 1031  │ sys-apps/shadow-4.14-r4      │ 11/11/23 05:20:52    │ package    │
+│ babette   │ 1031  │ net-misc/wget-1.21.4         │ 11/11/23 05:20:52    │ compile    │
+╰───────────┴───────┴──────────────────────────────┴──────────────────────┴────────────╯
 """
         self.assertEqual(stdout.getvalue(), expected)
 
@@ -119,13 +119,13 @@ class PSTests(TestCase):
         self.assertEqual(exit_status, 0)
         expected = """\
                                     Ebuild Processes                                    
-╭───────────┬──────┬─────────────────────────┬───────────────────┬───────────┬─────────╮
-│ Machine   │ ID   │ Package                 │ Start             │ Phase     │ Node    │
-├───────────┼──────┼─────────────────────────┼───────────────────┼───────────┼─────────┤
-│ babbette  │ 1031 │ sys-apps/portage-3.0.51 │ 11/11/23 05:20:52 │ postinst  │ jenkins │
-│ babbette  │ 1031 │ sys-apps/shadow-4.14-r4 │ 11/11/23 05:20:52 │ package   │ jenkins │
-│ babbette  │ 1031 │ net-misc/wget-1.21.4    │ 11/11/23 05:20:52 │ compile   │ jenkins │
-╰───────────┴──────┴─────────────────────────┴───────────────────┴───────────┴─────────╯
+╭──────────┬───────┬─────────────────────────┬───────────────────┬───────────┬─────────╮
+│ Machine  │ ID    │ Package                 │ Start             │ Phase     │ Node    │
+├──────────┼───────┼─────────────────────────┼───────────────────┼───────────┼─────────┤
+│ babette  │ 1031  │ sys-apps/portage-3.0.51 │ 11/11/23 05:20:52 │ postinst  │ jenkins │
+│ babette  │ 1031  │ sys-apps/shadow-4.14-r4 │ 11/11/23 05:20:52 │ package   │ jenkins │
+│ babette  │ 1031  │ net-misc/wget-1.21.4    │ 11/11/23 05:20:52 │ compile   │ jenkins │
+╰──────────┴───────┴─────────────────────────┴───────────────────┴───────────┴─────────╯
 """
         self.assertEqual(stdout.getvalue(), expected)
 
@@ -163,13 +163,13 @@ class PSTests(TestCase):
         self.assertEqual(exit_status, 0)
         expected = """\
                                     Ebuild Processes                                    
-╭────────────┬───────┬─────────────────────────────┬──────────────────────┬────────────╮
-│ Machine    │ ID    │ Package                     │ Start                │ Phase      │
-├────────────┼───────┼─────────────────────────────┼──────────────────────┼────────────┤
-│ babbette   │ 1031  │ sys-apps/portage-3.0.51     │ 11/11/23 06:20:52    │ postinst   │
-│ babbette   │ 1031  │ sys-apps/shadow-4.14-r4     │ 11/11/23 06:20:52    │ package    │
-│ babbette   │ 1031  │ net-misc/wget-1.21.4        │ 11/11/23 06:20:52    │ compile    │
-╰────────────┴───────┴─────────────────────────────┴──────────────────────┴────────────╯"""
+╭───────────┬───────┬──────────────────────────────┬──────────────────────┬────────────╮
+│ Machine   │ ID    │ Package                      │ Start                │ Phase      │
+├───────────┼───────┼──────────────────────────────┼──────────────────────┼────────────┤
+│ babette   │ 1031  │ sys-apps/portage-3.0.51      │ 11/11/23 06:20:52    │ postinst   │
+│ babette   │ 1031  │ sys-apps/shadow-4.14-r4      │ 11/11/23 06:20:52    │ package    │
+│ babette   │ 1031  │ net-misc/wget-1.21.4         │ 11/11/23 06:20:52    │ compile    │
+╰───────────┴───────┴──────────────────────────────┴──────────────────────┴────────────╯"""
         self.assertEqual(stdout.getvalue(), expected)
         mock_sleep.assert_called_with(4)
 

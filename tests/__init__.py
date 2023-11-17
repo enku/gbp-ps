@@ -23,7 +23,7 @@ def make_build_process(**kwargs: Any) -> BuildProcess:
     attrs: dict[str, Any] = {
         "build_host": "jenkins",
         "build_id": "1031",
-        "machine": "babbette",
+        "machine": "babette",
         "package": "sys-apps/systemd-254.5-r1",
         "phase": "compile",
         "start_time": dt.datetime(2023, 11, 11, 12, 20, 52, tzinfo=dt.timezone.utc),
