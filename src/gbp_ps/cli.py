@@ -15,6 +15,7 @@ ProcessList: TypeAlias = list[dict[str, Any]]
 
 
 def get_today() -> dt.date:
+    """Return today's date"""
     return dt.datetime.now().astimezone(render.LOCAL_TIMEZONE).date()
 
 
