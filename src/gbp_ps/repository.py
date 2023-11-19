@@ -10,9 +10,8 @@ from typing import Any, Protocol
 import redis
 
 from gbp_ps.exceptions import RecordAlreadyExists, RecordNotFoundError
-from gbp_ps.types import BuildProcess
+from gbp_ps.types import FINAL_PROCESS_PHASES, BuildProcess
 
-FINAL_PROCESS_PHASES = {"", "clean", "cleanrm", "postrm"}
 ENCODING = "UTF-8"
 DEFAULT_REDIS_KEY_EXPIRATION = 3600 * 24
 

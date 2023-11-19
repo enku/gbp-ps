@@ -4,6 +4,9 @@ from __future__ import annotations
 import datetime as dt
 from dataclasses import dataclass
 
+# BuildProcesses in any of these phases are considered "final"
+FINAL_PROCESS_PHASES = {"", "clean", "cleanrm", "postrm"}
+
 
 @dataclass(frozen=True)
 class BuildProcess:
