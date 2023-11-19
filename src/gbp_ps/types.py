@@ -40,7 +40,7 @@ class RepositoryType(Protocol):
         """Clear the process table"""
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, slots=True)
 class BuildProcess:
     """The basic build process type"""
 
