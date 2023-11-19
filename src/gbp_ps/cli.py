@@ -85,7 +85,9 @@ def continuous_handler(args: argparse.Namespace, gbp: GBP, console: Console) -> 
         return create_table(check(gbp.query.get_processes())["buildProcesses"], args)
 
     console.out.clear()
-    with Live(update(), console=console.out) as live:
+    with Live(
+        update(), console=console.out, refresh_per_second=1 / args.update_interval
+    ) as live:
         try:
             while True:
                 time.sleep(args.update_interval)
@@ -124,7 +126,7 @@ def parse_args(parser: argparse.ArgumentParser) -> None:
     parser.add_argument(
         "--update-interval",
         "-i",
-        type=int,
+        type=float,
         default=1,
         help="In continuous mode, the interval, in seconds, between updates",
     )
