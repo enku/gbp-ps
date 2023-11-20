@@ -14,7 +14,7 @@ from requests.adapters import BaseAdapter
 from requests.structures import CaseInsensitiveDict
 from rich.theme import Theme
 
-from gbp_ps import cli
+from gbp_ps.cli import ps
 
 from . import LOCAL_TIMEZONE, TestCase, make_build_process
 
@@ -81,7 +81,7 @@ class PSTests(TestCase):
         self.gbp = test_gbp("http://gbp.invalid/")
 
     @mock.patch("gbpcli.render.LOCAL_TIMEZONE", new=LOCAL_TIMEZONE)
-    @mock.patch("gbp_ps.cli.get_today", new=lambda: dt.date(2023, 11, 15))
+    @mock.patch("gbp_ps.cli.ps.get_today", new=lambda: dt.date(2023, 11, 15))
     def test(self) -> None:
         t = dt.datetime
         for cpv, phase, start_time in [
@@ -93,7 +93,7 @@ class PSTests(TestCase):
         args = Namespace(url="http://gbp.invalid/", node=False, continuous=False)
         console, stdout = string_console()[:2]
 
-        exit_status = cli.handler(args, self.gbp, console)
+        exit_status = ps.handler(args, self.gbp, console)
 
         self.assertEqual(exit_status, 0)
         expected = """\
@@ -109,7 +109,7 @@ class PSTests(TestCase):
         self.assertEqual(stdout.getvalue(), expected)
 
     @mock.patch("gbpcli.render.LOCAL_TIMEZONE", new=LOCAL_TIMEZONE)
-    @mock.patch("gbp_ps.cli.get_today", new=lambda: dt.date(2023, 11, 15))
+    @mock.patch("gbp_ps.cli.ps.get_today", new=lambda: dt.date(2023, 11, 15))
     def test_with_node(self) -> None:
         t = dt.datetime
         for cpv, phase, start_time in [
@@ -120,7 +120,7 @@ class PSTests(TestCase):
             make_build_process(package=cpv, phase=phase, start_time=start_time)
         args = Namespace(url="http://gbp.invalid/", node=True, continuous=False)
         console, stdout = string_console()[:2]
-        exit_status = cli.handler(args, self.gbp, console)
+        exit_status = ps.handler(args, self.gbp, console)
 
         self.assertEqual(exit_status, 0)
         expected = """\
@@ -138,13 +138,13 @@ class PSTests(TestCase):
     def test_empty(self) -> None:
         args = Namespace(url="http://gbp.invalid/", node=False, continuous=False)
         console, stdout = string_console()[:2]
-        exit_status = cli.handler(args, self.gbp, console)
+        exit_status = ps.handler(args, self.gbp, console)
 
         self.assertEqual(exit_status, 0)
         self.assertEqual(stdout.getvalue(), "")
 
-    @mock.patch("gbp_ps.cli.time.sleep")
-    @mock.patch("gbp_ps.cli.get_today", new=lambda: dt.date(2023, 11, 11))
+    @mock.patch("gbp_ps.cli.ps.time.sleep")
+    @mock.patch("gbp_ps.cli.ps.get_today", new=lambda: dt.date(2023, 11, 11))
     def test_continuous_mode(self, mock_sleep: mock.Mock) -> None:
         processes = [
             make_build_process(package=cpv, phase=phase)
@@ -165,7 +165,7 @@ class PSTests(TestCase):
             ({"buildProcesses": mock_graphql_resp}, None),
             KeyboardInterrupt,
         )
-        exit_status = cli.handler(args, gbp, console)
+        exit_status = ps.handler(args, gbp, console)
 
         self.assertEqual(exit_status, 0)
         expected = """\
@@ -181,8 +181,8 @@ class PSTests(TestCase):
         mock_sleep.assert_called_with(4)
 
 
-class ParseArgsTests(TestCase):
+class PSParseArgsTests(TestCase):
     def test(self) -> None:
         # Just ensure that parse_args is there and works
         parser = ArgumentParser()
-        cli.parse_args(parser)
+        ps.parse_args(parser)
