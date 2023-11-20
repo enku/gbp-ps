@@ -116,14 +116,15 @@ class RedisRepository:
 
         If the build process doesn't exist in the repo, RecordNotFoundError is raised.
         """
-        key, value = self.process_to_redis(process)
-
+        key = self.key(process)
         previous_value = self._redis.get(key)
 
         if previous_value is None:
             raise RecordNotFoundError(process)
 
-        self._redis.set(key, value)
+        new_value: dict[str, str] = json.loads(previous_value)
+        new_value["phase"] = process.phase
+        self._redis.set(key, json.dumps(new_value).encode(ENCODING))
 
     def get_processes(self, include_final: bool = False) -> Iterable[BuildProcess]:
         """Return the process records from the repository

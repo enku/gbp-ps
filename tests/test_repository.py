@@ -70,7 +70,7 @@ class RepositoryTests(TestCase):
 
     @parametrized(BACKENDS)
     def test_update_process(self, backend: type[RepositoryType]) -> None:
-        build_process = BuildProcess(
+        orig_process = BuildProcess(
             machine="babette",
             build_id="1031",
             build_host="jenkins",
@@ -78,13 +78,18 @@ class RepositoryTests(TestCase):
             phase="postrm",
             start_time=dt.datetime(2023, 11, 11, 12, 20, 52, tzinfo=dt.timezone.utc),
         )
-        backend().add_process(build_process)
+        backend().add_process(orig_process)
 
-        build_process = replace(build_process, phase="postinst")
+        updated_process = replace(
+            orig_process,
+            phase="postinst",
+            start_time=dt.datetime(2023, 11, 11, 12, 25, 18, tzinfo=dt.timezone.utc),
+        )
 
-        backend().update_process(build_process)
+        backend().update_process(updated_process)
 
-        self.assertEqual([*backend().get_processes()], [build_process])
+        expected = replace(orig_process, phase="postinst")
+        self.assertEqual([*backend().get_processes()], [expected])
 
     @parametrized(BACKENDS)
     def test_update_process_when_process_not_in_db(
