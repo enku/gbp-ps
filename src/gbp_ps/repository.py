@@ -135,8 +135,8 @@ class RedisRepository:
         processes = []
 
         for key in keys:
-            value = self._redis.get(key)
-            assert value
+            if not (value := self._redis.get(key)):
+                continue
 
             process = self.redis_to_process(key, value)
 
