@@ -6,16 +6,16 @@ structured and how it works.
 This project is structured as a plugin or extension. It's actually three
 plugins in one:
 
-    - A Django app. Thus needs to be added to `INSTALLED_APPS`. This however,
-      is only needed if the storage backend selected is the Django ORM (see
-      below). However this is the default.
-    - A Gentoo Build Publisher (server) GraphQL plugin. This project exposes a
-      `schema.graphql` file via the `"gentoo_build_publisher.graphql_schema"`
-      entry point. When installed, Gentoo Build Publisher will pick this up
-      and add it to it's GraphQL schema.  This is a new feature added to GBP
-      in [this commit](https://tinyurl.com/3nc7ase9).
-    - A [gbpcli](https://github.com/enku/gbpcli) plugin that adds a `ps`
-      subcommand to the command-line interface.
+- A Django app. Thus needs to be added to `INSTALLED_APPS`. This however, is
+  only needed if the storage backend selected is the Django ORM (see below).
+  However this is the default.
+- A Gentoo Build Publisher (server) GraphQL plugin. This project exposes a
+  `schema.graphql` file via the `"gentoo_build_publisher.graphql_schema"`
+  entry point. When installed, Gentoo Build Publisher will pick this up and
+  add it to it's GraphQL schema.  This is a new feature added to GBP in [this
+  commit](https://tinyurl.com/3nc7ase9).
+- A [gbpcli](https://github.com/enku/gbpcli) plugin that adds a `ps`
+  subcommand to the command-line interface.
 
 
 ## Process Table
@@ -24,12 +24,12 @@ The process table is the central point of gbp-ps.  The idea is that the build
 containers constantly update the process table in each phase of an ebuild
 (except for the depend phase).  Each process contains the following fields:
 
-    - `machine`: the machine the job is being run on
-    - `id`: the (Jenkins) build id
-    - `build_host`: the hostname of the machine running the (Jenkins) job
-    - `package`: the package (CPV) being built
-    - `phase`: the ebuild phase of the package being built
-    - `start_time`: the timestamp when the ebuild started emerging
+- `machine`: the machine the job is being run on
+- `id`: the (Jenkins) build id
+- `build_host`: the hostname of the machine running the (Jenkins) job
+- `package`: the package (CPV) being built
+- `phase`: the ebuild phase of the package being built
+- `start_time`: the timestamp when the ebuild started emerging
 
 The datatype `BuildProcess` wraps these values (defined in `types.py`).
 
