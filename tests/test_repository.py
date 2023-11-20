@@ -4,21 +4,17 @@ import datetime as dt
 from dataclasses import replace
 
 from gbp_ps.exceptions import RecordAlreadyExists, RecordNotFoundError
-from gbp_ps.repository import DjangoRepository, RedisRepository, RepositoryType
-from gbp_ps.types import BuildProcess
+from gbp_ps.repository import DjangoRepository, RedisRepository
+from gbp_ps.types import BuildProcess, RepositoryType
 
 from . import TestCase, parametrized
 
-BACKENDS: list[tuple[RepositoryType]] = [(DjangoRepository(),), (RedisRepository(),)]
+BACKENDS: list[tuple[type[RepositoryType]]] = [(DjangoRepository,), (RedisRepository,)]
 
 
 class RepositoryTests(TestCase):
-    def setUp(self) -> None:
-        for [backend] in BACKENDS:
-            backend.clear()
-
     @parametrized(BACKENDS)
-    def test_add_process(self, backend: RepositoryType) -> None:
+    def test_add_process(self, backend: type[RepositoryType]) -> None:
         build_process = BuildProcess(
             machine="babette",
             build_id="1031",
@@ -27,11 +23,13 @@ class RepositoryTests(TestCase):
             phase="compile",
             start_time=dt.datetime(2023, 11, 11, 12, 20, 52, tzinfo=dt.timezone.utc),
         )
-        backend.add_process(build_process)
-        self.assertEqual([*backend.get_processes()], [build_process])
+        backend().add_process(build_process)
+        self.assertEqual([*backend().get_processes()], [build_process])
 
     @parametrized(BACKENDS)
-    def test_add_process_when_already_exists(self, backend: RepositoryType) -> None:
+    def test_add_process_when_already_exists(
+        self, backend: type[RepositoryType]
+    ) -> None:
         build_process = BuildProcess(
             machine="babette",
             build_id="1031",
@@ -40,14 +38,14 @@ class RepositoryTests(TestCase):
             phase="postrm",
             start_time=dt.datetime(2023, 11, 11, 12, 20, 52, tzinfo=dt.timezone.utc),
         )
-        backend.add_process(build_process)
+        backend().add_process(build_process)
 
         with self.assertRaises(RecordAlreadyExists):
-            backend.add_process(build_process)
+            backend().add_process(build_process)
 
     @parametrized(BACKENDS)
     def test_add_process_same_package_in_different_builds_exist_only_once(
-        self, backend: RepositoryType
+        self, backend: type[RepositoryType]
     ) -> None:
         dead_process = BuildProcess(
             machine="babette",
@@ -57,7 +55,7 @@ class RepositoryTests(TestCase):
             phase="compile",
             start_time=dt.datetime(2023, 11, 11, 12, 20, 52, tzinfo=dt.timezone.utc),
         )
-        backend.add_process(dead_process)
+        backend().add_process(dead_process)
         new_process = BuildProcess(
             machine="babette",
             build_id="1032",
@@ -66,12 +64,12 @@ class RepositoryTests(TestCase):
             phase="compile",
             start_time=dt.datetime(2023, 11, 11, 13, 20, 52, tzinfo=dt.timezone.utc),
         )
-        backend.add_process(new_process)
+        backend().add_process(new_process)
 
-        self.assertEqual([*backend.get_processes()], [new_process])
+        self.assertEqual([*backend().get_processes()], [new_process])
 
     @parametrized(BACKENDS)
-    def test_update_process(self, backend: RepositoryType) -> None:
+    def test_update_process(self, backend: type[RepositoryType]) -> None:
         build_process = BuildProcess(
             machine="babette",
             build_id="1031",
@@ -80,17 +78,17 @@ class RepositoryTests(TestCase):
             phase="postrm",
             start_time=dt.datetime(2023, 11, 11, 12, 20, 52, tzinfo=dt.timezone.utc),
         )
-        backend.add_process(build_process)
+        backend().add_process(build_process)
 
         build_process = replace(build_process, phase="postinst")
 
-        backend.update_process(build_process)
+        backend().update_process(build_process)
 
-        self.assertEqual([*backend.get_processes()], [build_process])
+        self.assertEqual([*backend().get_processes()], [build_process])
 
     @parametrized(BACKENDS)
     def test_update_process_when_process_not_in_db(
-        self, backend: RepositoryType
+        self, backend: type[RepositoryType]
     ) -> None:
         build_process = BuildProcess(
             machine="babette",
@@ -102,14 +100,14 @@ class RepositoryTests(TestCase):
         )
 
         with self.assertRaises(RecordNotFoundError):
-            backend.update_process(build_process)
+            backend().update_process(build_process)
 
     @parametrized(BACKENDS)
-    def test_get_processes_with_empty_list(self, backend: RepositoryType) -> None:
-        self.assertEqual([*backend.get_processes()], [])
+    def test_get_processes_with_empty_list(self, backend: type[RepositoryType]) -> None:
+        self.assertEqual([*backend().get_processes()], [])
 
     @parametrized(BACKENDS)
-    def test_get_processes_with_process(self, backend: RepositoryType) -> None:
+    def test_get_processes_with_process(self, backend: type[RepositoryType]) -> None:
         build_process = BuildProcess(
             machine="babette",
             build_id="1031",
@@ -118,27 +116,13 @@ class RepositoryTests(TestCase):
             phase="compile",
             start_time=dt.datetime(2023, 11, 11, 12, 20, 52, tzinfo=dt.timezone.utc),
         )
-        backend.add_process(build_process)
+        backend().add_process(build_process)
 
-        self.assertEqual([*backend.get_processes()], [build_process])
-
-    @parametrized(BACKENDS)
-    def test_get_processes_with_final_process(self, backend: RepositoryType) -> None:
-        build_process = BuildProcess(
-            machine="babette",
-            build_id="1031",
-            build_host="jenkins",
-            package="sys-apps/systemd-254.5-r1",
-            phase="postrm",
-            start_time=dt.datetime(2023, 11, 11, 12, 20, 52, tzinfo=dt.timezone.utc),
-        )
-        backend.add_process(build_process)
-
-        self.assertEqual([*backend.get_processes()], [])
+        self.assertEqual([*backend().get_processes()], [build_process])
 
     @parametrized(BACKENDS)
-    def test_get_processes_with_include_final_process(
-        self, backend: RepositoryType
+    def test_get_processes_with_final_process(
+        self, backend: type[RepositoryType]
     ) -> None:
         build_process = BuildProcess(
             machine="babette",
@@ -148,6 +132,24 @@ class RepositoryTests(TestCase):
             phase="postrm",
             start_time=dt.datetime(2023, 11, 11, 12, 20, 52, tzinfo=dt.timezone.utc),
         )
-        backend.add_process(build_process)
+        backend().add_process(build_process)
 
-        self.assertEqual([*backend.get_processes(include_final=True)], [build_process])
+        self.assertEqual([*backend().get_processes()], [])
+
+    @parametrized(BACKENDS)
+    def test_get_processes_with_include_final_process(
+        self, backend: type[RepositoryType]
+    ) -> None:
+        build_process = BuildProcess(
+            machine="babette",
+            build_id="1031",
+            build_host="jenkins",
+            package="sys-apps/systemd-254.5-r1",
+            phase="postrm",
+            start_time=dt.datetime(2023, 11, 11, 12, 20, 52, tzinfo=dt.timezone.utc),
+        )
+        backend().add_process(build_process)
+
+        self.assertEqual(
+            [*backend().get_processes(include_final=True)], [build_process]
+        )

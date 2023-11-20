@@ -146,11 +146,6 @@ class RedisRepository:
         processes.sort(key=lambda process: process.start_time)
         return processes
 
-    def clear(self) -> None:
-        """Clear the process table"""
-        for key in self._redis.keys(f"{self._key}:*".encode(ENCODING)):
-            self._redis.delete(key)
-
 
 class DjangoRepository:
     """Django ORM-based BuildProcess repository"""
@@ -216,7 +211,3 @@ class DjangoRepository:
             query = query.exclude(phase__in=FINAL_PROCESS_PHASES)
 
         return (model.to_object() for model in query)
-
-    def clear(self) -> None:
-        """Clear the process table"""
-        self.model.objects.all().delete()

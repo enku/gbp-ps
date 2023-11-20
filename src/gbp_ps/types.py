@@ -36,9 +36,6 @@ class RepositoryType(Protocol):
         default value is False.
         """
 
-    def clear(self) -> None:
-        """Clear the process table"""
-
 
 @dataclass(frozen=True, slots=True)
 class BuildProcess:

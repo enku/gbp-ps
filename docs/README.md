@@ -97,9 +97,8 @@ These values are stored as JSON byte strings. For each record, the key and
 value can be combined to create a `BuildProcess` object.
 
 The `RepositoryType` interface currently does not have any mechanisms for
-removing data from the process table except for the `clear()` method which
-clears the entire table and is only used for tests. There's no particular
-reason for this other than there is nothing needing to do this yet.
+removing data from the process table. There's no particular reason for this
+other than there is nothing needing to do this yet.
 
 
 ## gbpcli subcommand
