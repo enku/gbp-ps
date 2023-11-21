@@ -37,7 +37,7 @@ class RepositoryType(Protocol):
         """
 
 
-@dataclass(frozen=True, slots=True)
+@dataclass(frozen=True, slots=True, kw_only=True)
 class BuildProcess:
     """The basic build process type"""
 
