@@ -108,3 +108,5 @@ The gbpcli subcommand, `ps` is defined in `cli.py` and is exposed via the
 GraphQL query and output the results. There is a "continuous" mode that
 constantly queries and updates the output. This subcommand utilizes the gbpcli
 API and the [rich](https://pypi.org/project/rich/) library and is themable.
+
+There is also an undocumented (except here) `add-process` subcommand.

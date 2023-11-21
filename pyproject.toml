@@ -20,6 +20,7 @@ gbp_ps = "gbp_ps.graphql"
 
 [project.entry-points."gbpcli.subcommands"]
 ps = "gbp_ps.cli.ps"
+add-process = "gbp_ps.cli.add_process"
 
 [build-system]
 requires = ["pdm-backend"]

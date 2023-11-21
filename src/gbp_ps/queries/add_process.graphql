@@ -1,0 +1,5 @@
+mutation ($process: BuildProcessInput!) {
+  addBuildProcess(process: $process) {
+    message
+  }
+}

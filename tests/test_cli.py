@@ -2,6 +2,7 @@
 # pylint: disable=missing-docstring
 import datetime as dt
 import io
+import platform
 from argparse import ArgumentParser, Namespace
 from unittest import mock
 
@@ -14,7 +15,8 @@ from requests.adapters import BaseAdapter
 from requests.structures import CaseInsensitiveDict
 from rich.theme import Theme
 
-from gbp_ps.cli import ps
+from gbp_ps import get_processes
+from gbp_ps.cli import add_process, ps
 
 from . import LOCAL_TIMEZONE, TestCase, make_build_process
 
@@ -186,3 +188,38 @@ class PSParseArgsTests(TestCase):
         # Just ensure that parse_args is there and works
         parser = ArgumentParser()
         ps.parse_args(parser)
+
+
+class AddProcessTests(TestCase):
+    """Tests for gbp add-process"""
+
+    maxDiff = None
+
+    def setUp(self) -> None:
+        super().setUp()
+
+        self.gbp = test_gbp("http://gbp.invalid/")
+
+    @mock.patch("gbp_ps.cli.add_process.now")
+    def test(self, mock_now: mock.Mock) -> None:
+        now = mock_now.return_value = dt.datetime(2023, 11, 20, 17, 57, tzinfo=dt.UTC)
+        process = make_build_process(
+            add_to_repo=False, build_host=platform.node(), start_time=now
+        )
+        console = string_console()[0]
+        args = Namespace(
+            machine=process.machine,
+            number=process.build_id,
+            package=process.package,
+            phase=process.phase,
+            url="http://gbp.invalid/",
+        )
+        exit_status = add_process.handler(args, self.gbp, console)
+
+        self.assertEqual(exit_status, 0)
+        self.assertEqual([*get_processes()], [process])
+
+    def test_parse_args(self) -> None:
+        # Just ensure that parse_args is there and works
+        parser = ArgumentParser()
+        add_process.parse_args(parser)
