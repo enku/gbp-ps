@@ -79,16 +79,6 @@ def make_build_process(**kwargs: Any) -> BuildProcess:
     return build_process
 
 
-def build_process_dict(build_process: BuildProcess) -> dict[str, Any]:
-    """Return BuildProcess as a GraphQL dict"""
-    bp_dict = asdict(build_process)
-    bp_dict["buildHost"] = bp_dict.pop("build_host")
-    bp_dict["id"] = bp_dict.pop("build_id")
-    bp_dict["startTime"] = bp_dict.pop("start_time").isoformat()
-
-    return bp_dict
-
-
 def parametrized(lists_of_args: Iterable[Iterable[Any]]) -> Callable:
     """Parameterized test"""
 

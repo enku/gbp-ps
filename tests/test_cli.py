@@ -16,7 +16,7 @@ from rich.theme import Theme
 
 from gbp_ps import cli
 
-from . import LOCAL_TIMEZONE, TestCase, build_process_dict, make_build_process
+from . import LOCAL_TIMEZONE, TestCase, make_build_process
 
 
 def string_console() -> tuple[Console, io.StringIO, io.StringIO]:
@@ -160,7 +160,7 @@ class PSTests(TestCase):
         console, stdout = string_console()[:2]
 
         gbp = mock.Mock()
-        mock_graphql_resp = [build_process_dict(process) for process in processes]
+        mock_graphql_resp = [process.to_dict() for process in processes]
         gbp.query.get_processes.side_effect = (
             ({"buildProcesses": mock_graphql_resp}, None),
             KeyboardInterrupt,

@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 import datetime as dt
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass
 from typing import Any, Iterable, Protocol
 
 # BuildProcesses in any of these phases are considered "final"
@@ -59,3 +59,12 @@ class BuildProcess:
             and self.machine == other.machine
             and self.build_id == other.build_id
         )
+
+    def to_dict(self) -> dict[str, Any]:
+        """Return BuildProcess as a GraphQL dict"""
+        bp_dict = asdict(self)
+        bp_dict["buildHost"] = bp_dict.pop("build_host")
+        bp_dict["id"] = bp_dict.pop("build_id")
+        bp_dict["startTime"] = bp_dict.pop("start_time").isoformat()
+
+        return bp_dict

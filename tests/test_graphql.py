@@ -7,7 +7,7 @@ from django.test.client import Client
 
 import gbp_ps
 
-from . import TestCase, build_process_dict, make_build_process
+from . import TestCase, make_build_process
 
 
 def graphql(query: str, variables: dict[str, Any] | None = None) -> Any:
@@ -51,9 +51,7 @@ class GetProcessesTests(TestCase):
         result = graphql(self.query)
 
         self.assertNotIn("errors", result)
-        self.assertEqual(
-            result["data"]["buildProcesses"], [build_process_dict(build_process)]
-        )
+        self.assertEqual(result["data"]["buildProcesses"], [build_process.to_dict()])
 
     def test_non_empty_with_final_processes(self) -> None:
         live_process = make_build_process(package="sys-apps/systemd-254.5-r1")
@@ -62,9 +60,7 @@ class GetProcessesTests(TestCase):
         result = graphql(self.query)
 
         self.assertNotIn("errors", result)
-        self.assertEqual(
-            result["data"]["buildProcesses"], [build_process_dict(live_process)]
-        )
+        self.assertEqual(result["data"]["buildProcesses"], [live_process.to_dict()])
 
     def test_non_empty_with_final_processes_included(self) -> None:
         make_build_process(package="sys-apps/systemd-254.5-r1")
@@ -91,16 +87,15 @@ class AddBuildProcessesTests(TestCase):
     """
 
     def test(self) -> None:
-        p_obj = make_build_process()
-        p_dict = build_process_dict(p_obj)
-        result = graphql(self.query, {"process": p_dict})
+        process = make_build_process()
+        result = graphql(self.query, {"process": process.to_dict()})
 
         self.assertNotIn("errors", result)
         processes = gbp_ps.get_processes()
-        self.assertEqual(processes, [p_obj])
+        self.assertEqual(processes, [process])
 
     def test_update(self) -> None:
-        p_dict = build_process_dict(make_build_process())
+        p_dict = make_build_process().to_dict()
         graphql(self.query, {"process": p_dict})
 
         p_dict["phase"] = "postinst"
@@ -110,14 +105,14 @@ class AddBuildProcessesTests(TestCase):
         self.assertEqual(processes[0].phase, "postinst")
 
     def test_empty_phase_does_not_get_added(self) -> None:
-        p_dict = build_process_dict(make_build_process(phase="", add_to_repo=False))
+        p_dict = make_build_process(phase="", add_to_repo=False).to_dict()
         result = graphql(self.query, {"process": p_dict})
 
         self.assertNotIn("errors", result)
         self.assertEqual(gbp_ps.get_processes(include_final=True), [])
 
     def test_empty_machine_does_not_get_added(self) -> None:
-        p_dict = build_process_dict(make_build_process(machine="", add_to_repo=False))
+        p_dict = make_build_process(machine="", add_to_repo=False).to_dict()
         result = graphql(self.query, {"process": p_dict})
 
         self.assertNotIn("errors", result)
