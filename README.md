@@ -45,7 +45,7 @@ fi
 The environment variables `BUILD_HOST`, `BUILD_NUMBER` and `BUILD_MACHINE` are
 exported into the build container. The latest version of the [machines
 repo](https://github.com/enku/gbp-machines) does this. The other environment
-varialbes come from the [ebuild
+variables come from the [ebuild
 process](https://wiki.gentoo.org/wiki//etc/portage/bashrc).
 
 The contents of the `bashrc` send a GraphQL call to GPB. This is done for each
