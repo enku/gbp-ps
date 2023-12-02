@@ -71,7 +71,7 @@ Install the gbp-ps package onto the GBP instance.
 ```sh
 cd /home/gbp
 sudo -u gbp -H git -C gentoo-build-publisher pull
-sudo -u gbp -H ./bin/pip install git+https://github.com/enku/gbp-ps
+sudo -u gbp -H ./bin/pip install gbp-ps
 ```
 
 Now add `"gbp_ps"` to your `INSTALLED_APPS`:
