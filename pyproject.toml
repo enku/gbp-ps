@@ -7,7 +7,7 @@ authors = [
 ]
 dependencies = [
     "ariadne>=0.21",
-    "gbpcli>=1.6.0",
+    "gbpcli>=1.7.0",
     "rich>=13.6.0",
     "redis[hiredis]>=5.0.1",
 ]
