@@ -13,7 +13,9 @@ only there were a better way.
 
 Now there is.
 
-![Screenshot](docs/screenshot.png)
+<p align="center">
+<img src="https://raw.githubusercontent.com/enku/gbp-ps/master/docs/screenshot.png" alt="gbpcli screenshot" width="100%">
+</p>
 
 **gbp-ps** is a `ps`-like subcommand for the [Gentoo Build Publisher
 CLI](https://github.com/enku/gbpcli). When installed, all you need to do is
