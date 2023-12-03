@@ -38,7 +38,7 @@ def string_console() -> tuple[Console, io.StringIO, io.StringIO]:
 
 def test_gbp(url: str) -> GBP:
     """Return a gbp instance capable of calling the /graphql view"""
-    gbp = GBP(url, distribution="gbpcli")
+    gbp = GBP(url)
     gbp.query._session.mount(  # pylint: disable=protected-access
         url, DjangoToRequestsAdapter()
     )

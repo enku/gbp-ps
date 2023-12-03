@@ -5,12 +5,12 @@ import time
 from typing import Any, Callable, TypeAlias
 
 from gbpcli import GBP, Console, render
-from gbpcli.graphql import check
+from gbpcli.graphql import Query, check
 from rich import box
 from rich.live import Live
 from rich.table import Table
 
-ModeHandler = Callable[[argparse.Namespace, GBP, Console], int]
+ModeHandler = Callable[[argparse.Namespace, Query, Console], int]
 ProcessList: TypeAlias = list[dict[str, Any]]
 
 
@@ -68,21 +68,25 @@ def create_table(processes: ProcessList, args: argparse.Namespace) -> Table:
     return table
 
 
-def single_handler(args: argparse.Namespace, gbp: GBP, console: Console) -> int:
+def single_handler(
+    args: argparse.Namespace, get_processes: Query, console: Console
+) -> int:
     """Handler for the single-mode run of `gbp ps`"""
     processes: ProcessList
 
-    if processes := check(gbp.query.get_processes())["buildProcesses"]:
+    if processes := check(get_processes())["buildProcesses"]:
         console.out.print(create_table(processes, args))
 
     return 0
 
 
-def continuous_handler(args: argparse.Namespace, gbp: GBP, console: Console) -> int:
+def continuous_handler(
+    args: argparse.Namespace, get_processes: Query, console: Console
+) -> int:
     """Handler for the continuous-mode run of `gbp ps`"""
 
     def update() -> Table:
-        return create_table(check(gbp.query.get_processes())["buildProcesses"], args)
+        return create_table(check(get_processes())["buildProcesses"], args)
 
     console.out.clear()
     with Live(
@@ -102,13 +106,16 @@ MODES = [single_handler, continuous_handler]
 
 def handler(args: argparse.Namespace, gbp: GBP, console: Console) -> int:
     """Show currently building packages"""
-    # NOTE: This was unintentional, but ^ GBP can only see the queries for the "gbpcli"
-    # distribution.  It needs a collector like gentoo-build-publisher has a collector
-    # for schemas
-    gbp.query._distribution = "gbp_ps"  # pylint: disable=protected-access
+    if hasattr(gbp.query, "_distribution"):
+        # Older GBP can only see the queries for the "gbpcli" distribution and need to
+        # be overridden to see queries from other distributions
+        gbp.query._distribution = "gbp_ps"  # pylint: disable=protected-access
+        get_processes = gbp.query.get_processes
+    else:
+        get_processes = gbp.query.gbp_ps.get_processes  # type: ignore[attr-defined]
 
     mode: ModeHandler = MODES[args.continuous]
-    return mode(args, gbp, console)
+    return mode(args, get_processes, console)
 
 
 def parse_args(parser: argparse.ArgumentParser) -> None:

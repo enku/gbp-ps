@@ -4,7 +4,7 @@ import datetime as dt
 import platform
 
 from gbpcli import GBP, Console
-from gbpcli.graphql import check
+from gbpcli.graphql import Query, check
 
 from gbp_ps.types import BuildProcess
 
@@ -13,12 +13,16 @@ now = dt.datetime.now
 
 def handler(args: argparse.Namespace, gbp: GBP, _console: Console) -> int:
     """Show add/update an entry in the process table"""
-    # NOTE: This was unintentional, but ^ GBP can only see the queries for the "gbpcli"
-    # distribution.  It needs a collector like gentoo-build-publisher has a collector
-    # for schemas
-    gbp.query._distribution = "gbp_ps"  # pylint: disable=protected-access
+    add_process: Query
+    if hasattr(gbp.query, "_distribution"):
+        # Older GBP can only see the queries for the "gbpcli" distribution and need to
+        # be overridden to see queries from other distributions
+        gbp.query._distribution = "gbp_ps"  # pylint: disable=protected-access
+        add_process = gbp.query.add_process
+    else:
+        add_process = gbp.query.gbp_ps.add_process  # type: ignore[attr-defined]
     check(
-        gbp.query.add_process(
+        add_process(
             process=BuildProcess(
                 build_host=platform.node(),
                 build_id=args.number,
