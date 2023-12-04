@@ -10,6 +10,8 @@ from rich import box
 from rich.live import Live
 from rich.table import Table
 
+from . import get_dist_query
+
 ModeHandler = Callable[[argparse.Namespace, Query, Console], int]
 ProcessList: TypeAlias = list[dict[str, Any]]
 
@@ -106,16 +108,9 @@ MODES = [single_handler, continuous_handler]
 
 def handler(args: argparse.Namespace, gbp: GBP, console: Console) -> int:
     """Show currently building packages"""
-    if hasattr(gbp.query, "_distribution"):
-        # Older GBP can only see the queries for the "gbpcli" distribution and need to
-        # be overridden to see queries from other distributions
-        gbp.query._distribution = "gbp_ps"  # pylint: disable=protected-access
-        get_processes = gbp.query.get_processes
-    else:
-        get_processes = gbp.query.gbp_ps.get_processes  # type: ignore[attr-defined]
-
     mode: ModeHandler = MODES[args.continuous]
-    return mode(args, get_processes, console)
+
+    return mode(args, get_dist_query("get_processes", gbp), console)
 
 
 def parse_args(parser: argparse.ArgumentParser) -> None:
