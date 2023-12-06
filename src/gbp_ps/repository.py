@@ -10,7 +10,7 @@ from typing import Any
 import redis
 
 from gbp_ps.exceptions import RecordAlreadyExists, RecordNotFoundError
-from gbp_ps.types import FINAL_PROCESS_PHASES, BuildProcess, RepositoryType
+from gbp_ps.types import BuildProcess, RepositoryType
 
 ENCODING = "UTF-8"
 DEFAULT_REDIS_KEY_EXPIRATION = 3600 * 24
@@ -141,7 +141,7 @@ class RedisRepository:
 
             process = self.redis_to_process(key, value)
 
-            if include_final or process.phase not in FINAL_PROCESS_PHASES:
+            if include_final or not process.is_finished():
                 processes.append(process)
 
         processes.sort(key=lambda process: process.start_time)
@@ -209,6 +209,6 @@ class DjangoRepository:
         """
         query = self.model.objects.order_by("start_time")
         if not include_final:
-            query = query.exclude(phase__in=FINAL_PROCESS_PHASES)
+            query = query.exclude(phase__in=BuildProcess.final_phases)
 
         return (model.to_object() for model in query)

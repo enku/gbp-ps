@@ -5,9 +5,6 @@ import datetime as dt
 from dataclasses import asdict, dataclass
 from typing import Any, Iterable, Protocol
 
-# BuildProcesses in any of these phases are considered "final"
-FINAL_PROCESS_PHASES = {"", "clean", "cleanrm", "postrm"}
-
 
 class RepositoryType(Protocol):
     """BuildProcess Repository"""
@@ -48,6 +45,9 @@ class BuildProcess:
     phase: str
     start_time: dt.datetime
 
+    # BuildProcesses in any of these phases are considered "final"
+    final_phases = {"", "clean", "cleanrm", "postrm"}
+
     def is_same_as(self, other: BuildProcess) -> bool:
         """Return true if the other build process is the same process
 
@@ -68,3 +68,7 @@ class BuildProcess:
         bp_dict["startTime"] = bp_dict.pop("start_time").isoformat()
 
         return bp_dict
+
+    def is_finished(self) -> bool:
+        """Return True iff the BuildProcess is in a "final" phase"""
+        return self.phase in self.final_phases
