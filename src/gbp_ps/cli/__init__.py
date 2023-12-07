@@ -17,6 +17,4 @@ def get_dist_query(name: str, gbp: GBP, distribution: str = "gbp_ps") -> Query:
         gbp.query._distribution = distribution  # pylint: disable=protected-access
         return cast(Query, getattr(gbp.query, name))
 
-    return cast(
-        Query, getattr(getattr(gbp.query, distribution), name)
-    )  # pragma: no cover
+    return cast(Query, getattr(getattr(gbp.query, distribution), name))
