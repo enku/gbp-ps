@@ -54,6 +54,9 @@ class RedisRepository:
         self._key = key
         self.time = key_expiration
 
+    def __repr__(self) -> str:
+        return type(self).__name__
+
     def key(self, process: BuildProcess) -> bytes:
         """Return the redis key for the given BuildProcess"""
         return f"{self._key}:{process.machine}:{process.package}:{process.build_id}".encode(
@@ -156,6 +159,9 @@ class DjangoRepository:
         from gbp_ps.models import BuildProcess as BuildProcessModel
 
         self.model: type[BuildProcessModel] = BuildProcessModel
+
+    def __repr__(self) -> str:
+        return type(self).__name__
 
     def add_process(self, process: BuildProcess) -> None:
         """Add the given BuildProcess to the repository
