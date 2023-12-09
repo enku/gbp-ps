@@ -2,7 +2,7 @@
 # pylint: disable=missing-docstring, duplicate-code
 import datetime as dt
 from dataclasses import replace
-from typing import Callable
+from typing import Any, Callable
 from unittest import mock
 
 import fakeredis
@@ -28,12 +28,8 @@ def set_repo(name: str) -> RepositoryType:
     return DjangoRepository(settings)
 
 
-def repoparams(*names: str) -> list[list[RepositoryType]]:
-    return [[set_repo(name)] for name in names]
-
-
-def repos(*names) -> Callable:
-    return parametrized(repoparams(*names))
+def repos(*names: str) -> Callable[[Callable[[Any, RepositoryType], None]], None]:
+    return parametrized([[set_repo(name)] for name in names])
 
 
 class RepositoryTests(TestCase):
