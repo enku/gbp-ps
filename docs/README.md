@@ -64,19 +64,26 @@ and is `true`. For the set of phases that are considered "final" see
 ## Storage backends
 
 There are a couple of storage backends for the process table. Each storage
-backend has in interface, `RepositoryType` defined in `types.py`. The default
+backend has an interface, `RepositoryType` defined in `types.py`. The default
 storage backend is the Django ORM, which manages the process table in a
 relational database as part of the Gentoo Build Publisher Django app.  However
 because I want to eventually not have to depend on Django, and because Redis
 is arguably a better fit, there is also a Redis backend. The advantages of the
-Redis backend are performance (though this has not been measured), the ability
-to "reset" the table on reboots, and the ability for processes to auto-expire
-after a given time. Both backends are defined in `repository.py`. 
+Redis backend are performance (though this has not been measured) and the
+ability for processes to auto-expire after a given time. Both backends are
+defined in `repository.py`.
 
-Currently the the Django ORM is the default and the only way to switch to the
-Redis backend is to define the environment variable `GBP_PS_REDIS_URL`
-pointing to a Redis instance. For the redis backend we use a simple key/value
-store for processes. The key looks like this:
+Currently the django ORM is the default. You can switch to the redis backend
+by first ensuring you install gbp-ps with the "redis" option:
+
+```
+$ pip install gbp-ps[redis]
+```
+
+Then set the `GBP_PS_STORAGE_BACKEND` environment variable to `"redis"` and
+the `GBP_PS_REDIS_URL` environment variable to the URL of a Redis instance.
+For the redis backend we use a simple key/value store for processes. The key
+looks like this:
 
 ```
 <prefix>:<machine>:<package>:<build_id>
