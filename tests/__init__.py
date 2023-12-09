@@ -3,14 +3,13 @@
 import datetime as dt
 import fnmatch
 import os
-from dataclasses import asdict
 from functools import wraps
 from typing import Any, Callable, Iterable, TypeVar
 from unittest import mock
 
 from django.test import TestCase as DjangoTestCase
 
-from gbp_ps.repository import DjangoRepository, RedisRepository, get_repo
+from gbp_ps.repository import get_repo
 from gbp_ps.types import BuildProcess
 
 LOCAL_TIMEZONE = dt.timezone(dt.timedelta(days=-1, seconds=61200), "PDT")
