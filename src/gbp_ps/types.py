@@ -5,11 +5,13 @@ import datetime as dt
 from dataclasses import asdict, dataclass
 from typing import Any, Iterable, Protocol
 
+from gbp_ps.settings import Settings
+
 
 class RepositoryType(Protocol):
     """BuildProcess Repository"""
 
-    def __init__(self, **_kwargs: Any) -> None:
+    def __init__(self, settings: Settings) -> None:
         """Initializer"""
 
     def add_process(self, process: BuildProcess) -> None:

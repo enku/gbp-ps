@@ -1,11 +1,8 @@
 """gbp-ps tests"""
 # pylint: disable=missing-docstring
 import datetime as dt
-import fnmatch
-import os
 from functools import wraps
-from typing import Any, Callable, Iterable, TypeVar
-from unittest import mock
+from typing import Any, Callable, Iterable
 
 from django.test import TestCase as DjangoTestCase
 
@@ -14,49 +11,9 @@ from gbp_ps.types import BuildProcess
 
 LOCAL_TIMEZONE = dt.timezone(dt.timedelta(days=-1, seconds=61200), "PDT")
 
-os.environ["GBP_PS_KEY"] = "gbp-ps-test"
-os.environ["GBP_PS_KEY_EXPIRATION"] = "3600"
-
 
 class TestCase(DjangoTestCase):
     """Custom TestCase for gbp-ps tests"""
-
-    def setUp(self) -> None:
-        super().setUp()
-        MockRedis.bs.clear()
-        patch = mock.patch("gbp_ps.repository.redis.Redis", new=MockRedis)
-        self.addCleanup(patch.stop)
-        patch.start()
-
-
-T = TypeVar("T", bound="MockRedis")
-
-
-class MockRedis:
-    # backing store
-    bs: dict[bytes, bytes] = {}
-
-    def __init__(self, **_kwargs: Any) -> None:
-        pass
-
-    @classmethod
-    def from_url(cls: type[T], url: str) -> T:
-        return cls(url=url)
-
-    def get(self, key: bytes) -> bytes | None:
-        return self.bs.get(key, None)
-
-    def set(self, key: bytes, value: bytes) -> None:
-        self.bs[key] = value
-
-    def setex(self, key: bytes, _ttl: int, value: bytes) -> None:
-        self.set(key, value)
-
-    def delete(self, key: bytes) -> None:
-        self.bs.pop(key, None)
-
-    def keys(self, pattern: bytes) -> Iterable[bytes]:
-        return (key for key in [*self.bs] if fnmatch.fnmatch(key, pattern))
 
 
 def make_build_process(**kwargs: Any) -> BuildProcess:

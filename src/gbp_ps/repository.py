@@ -3,17 +3,15 @@ from __future__ import annotations
 
 import datetime as dt
 import json
-import os
 from collections.abc import Iterable
-from typing import Any
 
 import redis
 
 from gbp_ps.exceptions import RecordAlreadyExists, RecordNotFoundError
+from gbp_ps.settings import Settings
 from gbp_ps.types import BuildProcess, RepositoryType
 
 ENCODING = "UTF-8"
-DEFAULT_REDIS_KEY_EXPIRATION = 3600 * 24
 
 
 def get_repo() -> RepositoryType:
@@ -22,37 +20,21 @@ def get_repo() -> RepositoryType:
     If the GBP_PS_REDIS_URL environment variable is defined and non-empty, return the
     RedisRepository. Otherwise the DjangoRepository is returned.
     """
-    if os.environ.get("GBP_PS_REDIS_URL"):
-        return RedisRepository()
+    settings = Settings.from_environ()
 
-    return DjangoRepository()  # pragma: no cover
+    if settings.STORAGE_BACKEND == "redis":
+        return RedisRepository(settings)
+
+    return DjangoRepository(settings)  # pragma: no cover
 
 
 class RedisRepository:
     """Redis backend for the process table"""
 
-    def __init__(
-        self,
-        *,
-        url: str | None = None,
-        key: str | None = None,
-        key_expiration: int | None = None,
-        **_kwargs: Any,
-    ) -> None:
-        if not url:
-            url = os.environ.get("GBP_PS_REDIS_URL", "redis://localhost:6379")
-
-        if not key:
-            key = os.environ.get("GBP_PS_REDIS_KEY", "gbp-ps")
-
-        if not key_expiration:
-            key_expiration = int(
-                os.environ.get("GBP_PS_KEY_EXPIRATION", DEFAULT_REDIS_KEY_EXPIRATION)
-            )
-
-        self._redis = redis.Redis.from_url(url)
-        self._key = key
-        self.time = key_expiration
+    def __init__(self, settings: Settings) -> None:
+        self._redis = redis.Redis.from_url(settings.REDIS_URL)
+        self._key = settings.REDIS_KEY
+        self.time = settings.REDIS_KEY_EXPIRATION
 
     def __repr__(self) -> str:
         return type(self).__name__
@@ -154,7 +136,7 @@ class RedisRepository:
 class DjangoRepository:
     """Django ORM-based BuildProcess repository"""
 
-    def __init__(self, **_kwargs: Any) -> None:
+    def __init__(self, _settings: Settings) -> None:
         # pylint: disable=import-outside-toplevel
         from gbp_ps.models import BuildProcess as BuildProcessModel
 

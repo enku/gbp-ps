@@ -6,10 +6,8 @@ authors = [
     {name = "Albert Hopkins", email = "marduk@letterboxes.org"},
 ]
 dependencies = [
-    "ariadne>=0.21",
     "gbpcli>=1.7.0",
     "rich>=13.6.0",
-    "redis[hiredis]>=5.0.1",
 ]
 requires-python = ">=3.11"
 readme = "README.md"
@@ -29,6 +27,17 @@ gbp_ps = "gbp_ps.graphql"
 ps = "gbp_ps.cli.ps"
 add-process = "gbp_ps.cli.add_process"
 
+
+[project.optional-dependencies]
+backend = [
+    "gentoo-build-publisher @ git+https://github.com/enku/gentoo-build-publisher",
+    "ariadne>=0.21",
+]
+redis = [
+    "gbp-ps[backend]",
+    "redis[hiredis]>=5.0.1",
+]
+all = ["gbp-ps[backend,redis]"]
 [build-system]
 requires = ["pdm-backend"]
 build-backend = "pdm.backend"
@@ -45,11 +54,11 @@ dev = [
     "coverage[toml]>=7.3.2",
     "django-stubs>=4.2.6",
     "pylint-django>=2.5.5",
-    "gentoo-build-publisher @ git+https://github.com/enku/gentoo-build-publisher",
     "requests>=2.31.0",
     "types-requests>=2.31.0.10",
     "rich>=13.6.0",
     "types-redis>=4.6.0.10",
+    "fakeredis>=2.20.0",
 ]
 
 [tool.mypy]
