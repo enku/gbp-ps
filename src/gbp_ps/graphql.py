@@ -5,7 +5,8 @@ from typing import Any
 from ariadne import ObjectType, gql
 from graphql import GraphQLResolveInfo
 
-import gbp_ps
+from gbp_ps.repository import Repo, add_or_update_process
+from gbp_ps.settings import Settings
 from gbp_ps.types import BuildProcess
 
 type_defs = gql(resources.read_text("gbp_ps", "schema.graphql"))
@@ -30,7 +31,9 @@ def resolve_query_build_processes(
             "phase": process.phase,
             "start_time": process.start_time,
         }
-        for process in gbp_ps.get_processes(include_final=includeFinal)
+        for process in Repo(Settings.from_environ()).get_processes(
+            include_final=includeFinal
+        )
     ]
 
 
@@ -46,7 +49,7 @@ def resolve_mutation_add_build_process(
     if not all(process[field] for field in ["machine", "id", "package", "phase"]):
         return
 
-    gbp_ps.add_or_update_process(make_build_process(process))
+    add_or_update_process(Repo(Settings.from_environ()), make_build_process(process))
 
 
 def make_build_process(process_dict: dict[str, Any]) -> BuildProcess:

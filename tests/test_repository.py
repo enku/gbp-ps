@@ -8,9 +8,9 @@ from unittest import mock
 import fakeredis
 
 from gbp_ps.exceptions import RecordAlreadyExists, RecordNotFoundError
-from gbp_ps.repository import DjangoRepository, RedisRepository
+from gbp_ps.repository import DjangoRepository, RedisRepository, RepositoryType
 from gbp_ps.settings import Settings
-from gbp_ps.types import BuildProcess, RepositoryType
+from gbp_ps.types import BuildProcess
 
 from . import TestCase, parametrized
 

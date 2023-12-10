@@ -5,8 +5,6 @@ from typing import Any
 
 from django.test.client import Client
 
-import gbp_ps
-
 from . import TestCase, make_build_process
 
 
@@ -91,7 +89,7 @@ class AddBuildProcessesTests(TestCase):
         result = graphql(self.query, {"process": process.to_dict()})
 
         self.assertNotIn("errors", result)
-        processes = gbp_ps.get_processes()
+        processes = [*self.repo.get_processes()]
         self.assertEqual(processes, [process])
 
     def test_update(self) -> None:
@@ -101,7 +99,7 @@ class AddBuildProcessesTests(TestCase):
         p_dict["phase"] = "postinst"
         result = graphql(self.query, {"process": p_dict})
         self.assertNotIn("errors", result)
-        processes = gbp_ps.get_processes()
+        processes = [*self.repo.get_processes()]
         self.assertEqual(processes[0].phase, "postinst")
 
     def test_empty_phase_does_not_get_added(self) -> None:
@@ -109,11 +107,11 @@ class AddBuildProcessesTests(TestCase):
         result = graphql(self.query, {"process": p_dict})
 
         self.assertNotIn("errors", result)
-        self.assertEqual(gbp_ps.get_processes(include_final=True), [])
+        self.assertEqual([*self.repo.get_processes(include_final=True)], [])
 
     def test_empty_machine_does_not_get_added(self) -> None:
         p_dict = make_build_process(machine="", add_to_repo=False).to_dict()
         result = graphql(self.query, {"process": p_dict})
 
         self.assertNotIn("errors", result)
-        self.assertEqual(gbp_ps.get_processes(include_final=True), [])
+        self.assertEqual([*self.repo.get_processes(include_final=True)], [])

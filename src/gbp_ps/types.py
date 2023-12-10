@@ -3,37 +3,7 @@ from __future__ import annotations
 
 import datetime as dt
 from dataclasses import asdict, dataclass
-from typing import Any, Iterable, Protocol
-
-from gbp_ps.settings import Settings
-
-
-class RepositoryType(Protocol):
-    """BuildProcess Repository"""
-
-    def __init__(self, settings: Settings) -> None:
-        """Initializer"""
-
-    def add_process(self, process: BuildProcess) -> None:
-        """Add the given BuildProcess to the repository
-
-        If the process already exists in the repo, RecordAlreadyExists is raised
-        """
-
-    def update_process(self, process: BuildProcess) -> None:
-        """Update the given build process
-
-        Only updates the phase field
-
-        If the build process doesn't exist in the repo, RecordNotFoundError is raised.
-        """
-
-    def get_processes(self, include_final: bool = False) -> Iterable[BuildProcess]:
-        """Return the process records from the repository
-
-        If include_final is True also include processes in their "final" phase. The
-        default value is False.
-        """
+from typing import Any
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)

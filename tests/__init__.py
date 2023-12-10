@@ -1,12 +1,16 @@
 """gbp-ps tests"""
 # pylint: disable=missing-docstring
 import datetime as dt
+import os
+import tempfile
 from functools import wraps
 from typing import Any, Callable, Iterable
+from unittest import mock
 
 from django.test import TestCase as DjangoTestCase
 
-from gbp_ps.repository import get_repo
+from gbp_ps.repository import Repo
+from gbp_ps.settings import Settings
 from gbp_ps.types import BuildProcess
 
 LOCAL_TIMEZONE = dt.timezone(dt.timedelta(days=-1, seconds=61200), "PDT")
@@ -15,9 +19,24 @@ LOCAL_TIMEZONE = dt.timezone(dt.timedelta(days=-1, seconds=61200), "PDT")
 class TestCase(DjangoTestCase):
     """Custom TestCase for gbp-ps tests"""
 
+    def setUp(self) -> None:
+        super().setUp()
+
+        tempdir = tempfile.TemporaryDirectory()  # pylint: disable=consider-using-with
+        self.addCleanup(tempdir.cleanup)
+        gbp_settings = {
+            "BUILD_PUBLISHER_JENKINS_BASE_URL": "http://jenkins.invalid",
+            "BUILD_PUBLISHER_STORAGE_PATH": tempdir.name,
+        }
+        patcher = mock.patch.dict(os.environ, gbp_settings)
+        self.addCleanup(patcher.stop)
+        patcher.start()
+        self.repo = Repo(Settings.from_environ())
+
 
 def make_build_process(**kwargs: Any) -> BuildProcess:
     """Create (and save) a BuildProcess"""
+    settings = Settings.from_environ()
     add_to_repo = kwargs.pop("add_to_repo", True)
     attrs: dict[str, Any] = {
         "build_host": "jenkins",
@@ -30,7 +49,7 @@ def make_build_process(**kwargs: Any) -> BuildProcess:
     attrs.update(**kwargs)
     build_process = BuildProcess(**attrs)
     if add_to_repo:
-        get_repo().add_process(build_process)
+        Repo(settings).add_process(build_process)
 
     return build_process
 

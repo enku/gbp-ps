@@ -4,24 +4,51 @@ from __future__ import annotations
 import datetime as dt
 import json
 from collections.abc import Iterable
+from typing import Protocol
 
 import redis
 
 from gbp_ps.exceptions import RecordAlreadyExists, RecordNotFoundError
 from gbp_ps.settings import Settings
-from gbp_ps.types import BuildProcess, RepositoryType
+from gbp_ps.types import BuildProcess
 
 ENCODING = "UTF-8"
 
 
-def get_repo() -> RepositoryType:
+class RepositoryType(Protocol):
+    """BuildProcess Repository"""
+
+    def __init__(self, settings: Settings) -> None:
+        """Initializer"""
+
+    def add_process(self, process: BuildProcess) -> None:
+        """Add the given BuildProcess to the repository
+
+        If the process already exists in the repo, RecordAlreadyExists is raised
+        """
+
+    def update_process(self, process: BuildProcess) -> None:
+        """Update the given build process
+
+        Only updates the phase field
+
+        If the build process doesn't exist in the repo, RecordNotFoundError is raised.
+        """
+
+    def get_processes(self, include_final: bool = False) -> Iterable[BuildProcess]:
+        """Return the process records from the repository
+
+        If include_final is True also include processes in their "final" phase. The
+        default value is False.
+        """
+
+
+def Repo(settings: Settings) -> RepositoryType:  # pylint: disable=invalid-name
     """Return a Repository
 
     If the GBP_PS_REDIS_URL environment variable is defined and non-empty, return the
     RedisRepository. Otherwise the DjangoRepository is returned.
     """
-    settings = Settings.from_environ()
-
     if settings.STORAGE_BACKEND == "redis":
         return RedisRepository(settings)
 
@@ -200,3 +227,15 @@ class DjangoRepository:
             query = query.exclude(phase__in=BuildProcess.final_phases)
 
         return (model.to_object() for model in query)
+
+
+def add_or_update_process(repo: RepositoryType, process: BuildProcess) -> None:
+    """Add or update the process
+
+    Adds the process to the process table. If the process already exists, does an
+    update.
+    """
+    try:
+        repo.update_process(process)
+    except RecordNotFoundError:
+        repo.add_process(process)

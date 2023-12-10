@@ -17,7 +17,6 @@ from requests.adapters import BaseAdapter
 from requests.structures import CaseInsensitiveDict
 from rich.theme import Theme
 
-from gbp_ps import get_processes
 from gbp_ps.cli import add_process, get_dist_query, ps
 
 from . import LOCAL_TIMEZONE, TestCase, make_build_process
@@ -219,7 +218,7 @@ class AddProcessTests(TestCase):
         exit_status = add_process.handler(args, self.gbp, console)
 
         self.assertEqual(exit_status, 0)
-        self.assertEqual([*get_processes()], [process])
+        self.assertEqual([*self.repo.get_processes()], [process])
 
     def test_parse_args(self) -> None:
         # Just ensure that parse_args is there and works
