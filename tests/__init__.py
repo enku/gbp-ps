@@ -9,7 +9,7 @@ from unittest import mock
 
 from django.test import TestCase as DjangoTestCase
 
-from gbp_ps.repository import Repo
+from gbp_ps.repository import Repo, add_or_update_process
 from gbp_ps.settings import Settings
 from gbp_ps.types import BuildProcess
 
@@ -38,6 +38,7 @@ def make_build_process(**kwargs: Any) -> BuildProcess:
     """Create (and save) a BuildProcess"""
     settings = Settings.from_environ()
     add_to_repo = kwargs.pop("add_to_repo", True)
+    update_repo = kwargs.pop("update_repo", False)
     attrs: dict[str, Any] = {
         "build_host": "jenkins",
         "build_id": "1031",
@@ -48,8 +49,13 @@ def make_build_process(**kwargs: Any) -> BuildProcess:
     }
     attrs.update(**kwargs)
     build_process = BuildProcess(**attrs)
+
     if add_to_repo:
-        Repo(settings).add_process(build_process)
+        repo = Repo(settings)
+        if update_repo:
+            add_or_update_process(repo, build_process)
+        else:
+            repo.add_process(build_process)
 
     return build_process
 

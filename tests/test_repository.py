@@ -7,12 +7,21 @@ from unittest import mock
 
 import fakeredis
 
-from gbp_ps.exceptions import RecordAlreadyExists, RecordNotFoundError
-from gbp_ps.repository import DjangoRepository, RedisRepository, RepositoryType
+from gbp_ps.exceptions import (
+    RecordAlreadyExists,
+    RecordNotFoundError,
+    UpdateNotAllowedError,
+)
+from gbp_ps.repository import (
+    DjangoRepository,
+    RedisRepository,
+    RepositoryType,
+    add_or_update_process,
+)
 from gbp_ps.settings import Settings
 from gbp_ps.types import BuildProcess
 
-from . import TestCase, parametrized
+from . import TestCase, make_build_process, parametrized
 
 
 def set_repo(name: str) -> RepositoryType:
@@ -98,16 +107,55 @@ class RepositoryTests(TestCase):
         )
         repo.add_process(orig_process)
 
-        updated_process = replace(
-            orig_process,
-            phase="postinst",
-            start_time=dt.datetime(2023, 11, 11, 12, 25, 18, tzinfo=dt.timezone.utc),
-        )
+        updated_process = replace(orig_process, phase="postinst")
 
         repo.update_process(updated_process)
 
         expected = replace(orig_process, phase="postinst")
         self.assertEqual([*repo.get_processes()], [expected])
+
+    @repos("django", "redis")
+    def test_update_process_finalize_when_not_owned(self, repo: RepositoryType) -> None:
+        # This demonstrates the concept of build host "ownership". A a process can only
+        # be updated with a "final" phase if the build host is the same. Otherwise it
+        # should raise an exception
+        process1 = make_build_process(add_to_repo=False)
+        repo.add_process(process1)
+        process2 = replace(process1, build_host="badhost", phase="clean")
+
+        with self.assertRaises(UpdateNotAllowedError):
+            repo.update_process(process2)
+
+    @repos("django", "redis")
+    def test_add_or_update_process_can_handle_buildhost_changes(
+        self, repo: RepositoryType
+    ) -> None:
+        orig_process = BuildProcess(
+            machine="babette",
+            build_id="1031",
+            build_host="jenkins",
+            package="pipeline",
+            phase="clean",
+            start_time=dt.datetime(2023, 11, 11, 12, 20, 52, tzinfo=dt.timezone.utc),
+        )
+        repo.add_process(orig_process)
+
+        updated_process = replace(orig_process, build_host="gbp", phase="pull")
+
+        add_or_update_process(repo, updated_process)
+
+        expected = replace(orig_process, build_host="gbp", phase="pull")
+        self.assertEqual([*repo.get_processes()], [expected])
+
+    @repos("django", "redis")
+    def test_add_or_update_ignores_notallowederror(self, repo: RepositoryType) -> None:
+        process1 = make_build_process(add_to_repo=False)
+        repo.add_process(process1)
+        process2 = replace(process1, build_host="badhost", phase="clean")
+
+        add_or_update_process(repo, process2)
+
+        self.assertEqual([*repo.get_processes()], [process1])
 
     @repos("django", "redis")
     def test_update_process_when_process_not_in_db(self, repo: RepositoryType) -> None:

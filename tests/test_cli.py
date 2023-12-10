@@ -5,6 +5,7 @@ import importlib.resources
 import io
 import platform
 from argparse import ArgumentParser, Namespace
+from functools import partial
 from unittest import mock
 
 import rich.console
@@ -137,6 +138,69 @@ class PSTests(TestCase):
 ╰───────────┴───────┴─────────────────────────────┴────────────┴─────────────┴─────────╯
 """
         self.assertEqual(stdout.getvalue(), expected)
+
+    def test_from_install_to_pull(self) -> None:
+        t = dt.datetime
+        machine = "babette"
+        build_id = "1031"
+        package = "sys-apps/portage-3.0.51"
+        build_host = "jenkins"
+        orig_start = t(2023, 11, 15, 16, 20, 0)
+        args = Namespace(url="http://gbp.invalid/", node=True, continuous=False)
+        update = partial(
+            make_build_process,
+            machine=machine,
+            build_id=build_id,
+            package=package,
+            build_host=build_host,
+            start_time=orig_start,
+            update_repo=True,
+        )
+        update(phase="world")
+
+        # First compile it
+        console, stdout, _ = string_console()
+        ps.handler(args, self.gbp, console)
+
+        self.assertEqual(
+            stdout.getvalue(),
+            """\
+                                    Ebuild Processes                                    
+╭───────────┬────────┬──────────────────────────────┬─────────┬─────────────┬──────────╮
+│ Machine   │ ID     │ Package                      │ Start   │ Phase       │ Node     │
+├───────────┼────────┼──────────────────────────────┼─────────┼─────────────┼──────────┤
+│ babette   │ 1031   │ sys-apps/portage-3.0.51      │ Nov15   │ world       │ jenkins  │
+╰───────────┴────────┴──────────────────────────────┴─────────┴─────────────┴──────────╯
+""",
+        )
+
+        # Now it's done compiling
+        update(phase="clean", start_time=orig_start + dt.timedelta(seconds=60))
+        console, stdout, _ = string_console()
+        ps.handler(args, self.gbp, console)
+
+        self.assertEqual(stdout.getvalue(), "")
+
+        # Now it's being pulled by GBP on another node
+        update(
+            build_host="gbp",
+            phase="pull",
+            start_time=orig_start + dt.timedelta(seconds=120),
+        )
+        console, stdout, _ = string_console()
+        ps.handler(args, self.gbp, console)
+
+        self.assertEqual(
+            stdout.getvalue(),
+            """\
+                                    Ebuild Processes                                    
+╭────────────┬────────┬────────────────────────────────┬─────────┬─────────────┬───────╮
+│ Machine    │ ID     │ Package                        │ Start   │ Phase       │ Node  │
+├────────────┼────────┼────────────────────────────────┼─────────┼─────────────┼───────┤
+│ babette    │ 1031   │ sys-apps/portage-3.0.51        │ Nov15   │ pull        │ gbp   │
+╰────────────┴────────┴────────────────────────────────┴─────────┴─────────────┴───────╯
+""",
+        )
 
     def test_empty(self) -> None:
         args = Namespace(url="http://gbp.invalid/", node=False, continuous=False)

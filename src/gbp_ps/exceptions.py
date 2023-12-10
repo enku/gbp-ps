@@ -11,3 +11,7 @@ class RecordNotFoundError(GBPPSException, LookupError):
 
 class RecordAlreadyExists(GBPPSException):
     """Raised when adding a record that already exists in the repository"""
+
+
+class UpdateNotAllowedError(GBPPSException):
+    """Raised when an update is not allowed"""

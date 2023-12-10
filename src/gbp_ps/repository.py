@@ -8,7 +8,11 @@ from typing import Protocol
 
 import redis
 
-from gbp_ps.exceptions import RecordAlreadyExists, RecordNotFoundError
+from gbp_ps.exceptions import (
+    RecordAlreadyExists,
+    RecordNotFoundError,
+    UpdateNotAllowedError,
+)
 from gbp_ps.settings import Settings
 from gbp_ps.types import BuildProcess
 
@@ -134,8 +138,11 @@ class RedisRepository:
         if previous_value is None:
             raise RecordNotFoundError(process)
 
+        ensure_updateable(self.redis_to_process(key, previous_value), process)
+
         new_value: dict[str, str] = json.loads(previous_value)
         new_value["phase"] = process.phase
+        new_value["build_host"] = process.build_host
         self._redis.set(key, json.dumps(new_value).encode(ENCODING))
 
     def get_processes(self, include_final: bool = False) -> Iterable[BuildProcess]:
@@ -207,13 +214,15 @@ class DjangoRepository:
             build_process_model = self.model.objects.get(
                 machine=process.machine,
                 build_id=process.build_id,
-                build_host=process.build_host,
                 package=process.package,
             )
         except self.model.DoesNotExist:
             raise RecordNotFoundError(process) from None
 
+        ensure_updateable(build_process_model.to_object(), process)
+
         build_process_model.phase = process.phase
+        build_process_model.build_host = process.build_host
         build_process_model.save()
 
     def get_processes(self, include_final: bool = False) -> Iterable[BuildProcess]:
@@ -229,13 +238,24 @@ class DjangoRepository:
         return (model.to_object() for model in query)
 
 
+def ensure_updateable(old: BuildProcess, new: BuildProcess) -> None:
+    """Raise an exception if old should not be updated to new"""
+    if old.build_host != new.build_host and new.phase in BuildProcess.final_phases:
+        raise UpdateNotAllowedError(old, new)
+
+
 def add_or_update_process(repo: RepositoryType, process: BuildProcess) -> None:
     """Add or update the process
 
     Adds the process to the process table. If the process already exists, does an
     update.
+
+    If the update is not allowed (e.g. the previous build host is attempting to finalize
+    the process) update is not ignored.
     """
     try:
         repo.update_process(process)
     except RecordNotFoundError:
         repo.add_process(process)
+    except UpdateNotAllowedError:
+        pass
