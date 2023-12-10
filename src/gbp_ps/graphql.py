@@ -6,7 +6,6 @@ from ariadne import ObjectType, gql
 from graphql import GraphQLResolveInfo
 
 import gbp_ps
-from gbp_ps.exceptions import RecordNotFoundError
 from gbp_ps.types import BuildProcess
 
 type_defs = gql(resources.read_text("gbp_ps", "schema.graphql"))
@@ -44,17 +43,10 @@ def resolve_mutation_add_build_process(
     If the process already exists in the table, it is updated with the new value
     """
     # Don't bother when required fields are empty.
-    if not all(
-        [process["machine"], process["id"], process["package"], process["phase"]]
-    ):
+    if not all(process[field] for field in ["machine", "id", "package", "phase"]):
         return
 
-    build_process = make_build_process(process)
-
-    try:
-        gbp_ps.update_process(build_process)
-    except RecordNotFoundError:
-        gbp_ps.add_process(build_process)
+    gbp_ps.add_or_update_process(make_build_process(process))
 
 
 def make_build_process(process_dict: dict[str, Any]) -> BuildProcess:

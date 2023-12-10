@@ -61,6 +61,14 @@ class SignalsTest(TestCase):
         expected = signals.create_build_process(BUILD, NODE, "clean", START_TIME)
         self.assertEqual(processes, [expected])
 
+    def test_handler_updates(self) -> None:
+        signals.prepull_handler(build=BUILD)
+        signals.postpull_handler(build=BUILD)
+
+        processes = get_processes(include_final=True)
+        expected = signals.create_build_process(BUILD, NODE, "clean", START_TIME)
+        self.assertEqual(processes, [expected])
+
     def test_dispatcher_calls_prepull_handler(self) -> None:
         dispatcher.emit("prepull", build=BUILD)
 
