@@ -64,7 +64,7 @@ def create_table(processes: ProcessList, args: argparse.Namespace) -> Table:
             f"[{phase}_phase]{phase:9}[/{phase}_phase]",
         ]
         if args.node:
-            row.append(f"[buildHost]{process['buildHost']}[/buildHost]")
+            row.append(f"[build_host]{process['buildHost']}[/build_host]")
         table.add_row(*row)
 
     return table
