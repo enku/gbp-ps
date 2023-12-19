@@ -2,7 +2,7 @@
 from importlib import resources
 from typing import Any
 
-from ariadne import ObjectType, gql
+from ariadne import ObjectType, convert_kwargs_to_snake_case, gql
 from graphql import GraphQLResolveInfo
 
 from gbp_ps.repository import Repo, add_or_update_process
@@ -14,12 +14,13 @@ resolvers = [query := ObjectType("Query"), mutation := ObjectType("Mutation")]
 
 
 @query.field("buildProcesses")
+@convert_kwargs_to_snake_case
 def resolve_query_build_processes(
-    _obj: Any, _info: GraphQLResolveInfo, *, includeFinal: bool = False
+    _obj: Any, _info: GraphQLResolveInfo, *, include_final: bool = False
 ) -> list[dict[str, Any]]:
     """Return the list of BuildProcesses
 
-    If includeFinal is True also include processes in their "final" phase. The default
+    If include_final is True also include processes in their "final" phase. The default
     value is False.
     """
     return [
@@ -32,7 +33,7 @@ def resolve_query_build_processes(
             "start_time": process.start_time,
         }
         for process in Repo(Settings.from_environ()).get_processes(
-            include_final=includeFinal
+            include_final=include_final
         )
     ]
 
