@@ -1,4 +1,5 @@
 """GraphQL interface for gbp-ps"""
+# pylint: disable=missing-docstring
 from importlib import resources
 from typing import Any
 
@@ -10,32 +11,29 @@ from gbp_ps.settings import Settings
 from gbp_ps.types import BuildProcess
 
 type_defs = gql(resources.read_text("gbp_ps", "schema.graphql"))
-resolvers = [query := ObjectType("Query"), mutation := ObjectType("Mutation")]
+resolvers = [
+    build_process := ObjectType("BuildProcess"),
+    query := ObjectType("Query"),
+    mutation := ObjectType("Mutation"),
+]
+
+
+@build_process.field("id")
+def resolve_build_process_id(process: BuildProcess, _info: GraphQLResolveInfo) -> str:
+    return process.build_id
 
 
 @query.field("buildProcesses")
 @convert_kwargs_to_snake_case
 def resolve_query_build_processes(
     _obj: Any, _info: GraphQLResolveInfo, *, include_final: bool = False
-) -> list[dict[str, Any]]:
+) -> list[BuildProcess]:
     """Return the list of BuildProcesses
 
     If include_final is True also include processes in their "final" phase. The default
     value is False.
     """
-    return [
-        {
-            "build_host": process.build_host,
-            "id": process.build_id,
-            "machine": process.machine,
-            "package": process.package,
-            "phase": process.phase,
-            "start_time": process.start_time,
-        }
-        for process in Repo(Settings.from_environ()).get_processes(
-            include_final=include_final
-        )
-    ]
+    return [*Repo(Settings.from_environ()).get_processes(include_final=include_final)]
 
 
 @mutation.field("addBuildProcess")
