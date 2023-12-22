@@ -37,6 +37,7 @@ def resolve_query_build_processes(
 
 
 @mutation.field("addBuildProcess")
+@convert_kwargs_to_snake_case
 def resolve_mutation_add_build_process(
     _obj: Any, _info: GraphQLResolveInfo, process: dict[str, Any]
 ) -> None:
@@ -48,16 +49,5 @@ def resolve_mutation_add_build_process(
     if not all(process[field] for field in ["machine", "id", "package", "phase"]):
         return
 
-    add_or_update_process(Repo(Settings.from_environ()), make_build_process(process))
-
-
-def make_build_process(process_dict: dict[str, Any]) -> BuildProcess:
-    """Convert the BuildProcessType to a BuildProcess"""
-    return BuildProcess(
-        machine=process_dict["machine"],
-        build_id=process_dict["id"],
-        build_host=process_dict["buildHost"],
-        package=process_dict["package"],
-        phase=process_dict["phase"],
-        start_time=process_dict["startTime"],
-    )
+    process["build_id"] = process.pop("id")
+    add_or_update_process(Repo(Settings.from_environ()), BuildProcess(**process))
