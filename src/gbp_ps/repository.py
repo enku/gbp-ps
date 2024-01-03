@@ -111,12 +111,7 @@ class RedisRepository:
         """
         # If this package exists in another build, remove it. This (usually) means the
         # other build failed
-        build_id = process.build_id.encode(ENCODING)
-        pattern = f"{self._key}:{process.machine}:{process.package}:*".encode(ENCODING)
-        for key in self._redis.keys(pattern):
-            if key.split(b":")[3] != build_id:
-                self._redis.delete(key)
-
+        self.delete_existing_processes(process)
         key, value = self.process_to_redis(process)
         previous = self._redis.get(key)
 
@@ -124,6 +119,23 @@ class RedisRepository:
             raise RecordAlreadyExists(process)
 
         self._redis.setex(key, self.time, value)
+
+    def delete_existing_processes(self, process: BuildProcess) -> int:
+        """Delete existing processes like process
+
+        By "existing" we mean processes in Redis that have the same machine and package
+        but different build_id.
+
+        Return the number of processes deleted.
+        """
+        build_id = process.build_id.encode(ENCODING)
+        deleted_count = 0
+        pattern = f"{self._key}:{process.machine}:{process.package}:*".encode(ENCODING)
+        for key in self._redis.keys(pattern):
+            if key.split(b":")[3] != build_id:
+                self._redis.delete(key)
+                deleted_count += 1
+        return deleted_count
 
     def update_process(self, process: BuildProcess) -> None:
         """Update the given build process
