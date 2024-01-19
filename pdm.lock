@@ -4,8 +4,8 @@
 [metadata]
 groups = ["default", "dev", "backend"]
 strategy = ["cross_platform"]
-lock_version = "4.4"
-content_hash = "sha256:682cb26797dd4d52cbe075a28ce405f62a481f0dc6d5abec43c8085874aaa88c"
+lock_version = "4.4.1"
+content_hash = "sha256:7ae6e9d836b1c971c969fbed0283aa8217d9a8174533f7239b5a947a4788386f"
 
 [[package]]
 name = "amqp"
@@ -42,6 +42,16 @@ dependencies = [
 files = [
     {file = "anyio-4.1.0-py3-none-any.whl", hash = "sha256:56a415fbc462291813a94528a779597226619c8e78af7de0507333f700011e5f"},
     {file = "anyio-4.1.0.tar.gz", hash = "sha256:5a0bec7085176715be77df87fc66d6c9d70626bd752fcc85f57cdbee5b3760da"},
+]
+
+[[package]]
+name = "argcomplete"
+version = "3.2.1"
+requires_python = ">=3.8"
+summary = "Bash tab completion for argparse"
+files = [
+    {file = "argcomplete-3.2.1-py3-none-any.whl", hash = "sha256:30891d87f3c1abe091f2142613c9d33cac84a5e15404489f033b20399b691fec"},
+    {file = "argcomplete-3.2.1.tar.gz", hash = "sha256:437f67fb9b058da5a090df505ef9be0297c4883993f3f56cb186ff087778cfb4"},
 ]
 
 [[package]]
@@ -509,17 +519,18 @@ files = [
 
 [[package]]
 name = "gbpcli"
-version = "1.7.0"
+version = "2.0.0"
 requires_python = ">=3.10"
 summary = "Gentoo Build Publisher Command-Line Interface"
 dependencies = [
+    "argcomplete>=3.2.1",
     "requests",
     "rich>=12.5.1",
     "yarl",
 ]
 files = [
-    {file = "gbpcli-1.7.0-py3-none-any.whl", hash = "sha256:a9051c1ae5d5cdf6bbe9c03b97a2bf77bffa700ee5e4aee93d0c7bc53d5963f0"},
-    {file = "gbpcli-1.7.0.tar.gz", hash = "sha256:c665617cfb550b335f387091f64efd0cc58f46183494defaa00770d479cd3e3b"},
+    {file = "gbpcli-2.0.0-py3-none-any.whl", hash = "sha256:908f281b86b916bae1091e9ca30f517078c3fa1641e5be4dbf1ae1bdad7ac663"},
+    {file = "gbpcli-2.0.0.tar.gz", hash = "sha256:fe5335772d020d11f9a992ee7071e35a82ae4f6bb8a1419ccf539944d61d0c69"},
 ]
 
 [[package]]

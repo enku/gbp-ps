@@ -1,7 +1,6 @@
 """CLI unit tests for gbp-ps"""
 # pylint: disable=missing-docstring
 import datetime as dt
-import importlib.resources
 import io
 import platform
 from argparse import ArgumentParser, Namespace
@@ -11,14 +10,13 @@ from unittest import mock
 import rich.console
 from django.test.client import Client
 from gbpcli import GBP, Console
-from gbpcli.graphql import Query
 from gbpcli.theme import DEFAULT_THEME
 from requests import Response
 from requests.adapters import BaseAdapter
 from requests.structures import CaseInsensitiveDict
 from rich.theme import Theme
 
-from gbp_ps.cli import add_process, get_dist_query, ps
+from gbp_ps.cli import add_process, ps
 
 from . import LOCAL_TIMEZONE, TestCase, make_build_process
 
@@ -228,7 +226,7 @@ class PSTests(TestCase):
 
         gbp = mock.Mock()
         mock_graphql_resp = [process.to_dict() for process in processes]
-        gbp.query.get_processes.side_effect = (
+        gbp.query.gbp_ps.get_processes.side_effect = (
             ({"buildProcesses": mock_graphql_resp}, None),
             KeyboardInterrupt,
         )
@@ -288,30 +286,3 @@ class AddProcessTests(TestCase):
         # Just ensure that parse_args is there and works
         parser = ArgumentParser()
         add_process.parse_args(parser)
-
-
-GET_PROCESSES_QUERY_STR = (
-    importlib.resources.files("gbp_ps") / "queries/get_processes.graphql"
-).read_text(encoding="UTF-8")
-
-
-class GetDistQueryTests(TestCase):
-    """Tests for the get_dist_query helper"""
-
-    def test_old_world(self) -> None:
-        # Pre gbpcli-2.0
-        gbp = test_gbp("http://test.invalid/")
-        query = get_dist_query("get_processes", gbp, distribution="gbp_ps")
-
-        self.assertEqual(str(query), GET_PROCESSES_QUERY_STR)
-
-    def test_new_world(self) -> None:
-        # post gbpcli-2.0. Not yet released so we mock the expected behavior
-        gbp = mock.MagicMock()
-        del gbp.query._distribution
-        gbp.query.gbp_ps.get_processes = Query(
-            GET_PROCESSES_QUERY_STR, "http://test.invalid", mock.Mock()
-        )
-        query = get_dist_query("get_processes", gbp, distribution="gbp_ps")
-
-        self.assertEqual(str(query), GET_PROCESSES_QUERY_STR)

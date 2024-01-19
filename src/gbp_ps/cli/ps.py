@@ -10,8 +10,6 @@ from rich import box
 from rich.live import Live
 from rich.table import Table
 
-from . import get_dist_query
-
 ModeHandler = Callable[[argparse.Namespace, Query, Console], int]
 ProcessList: TypeAlias = list[dict[str, Any]]
 
@@ -110,7 +108,7 @@ def handler(args: argparse.Namespace, gbp: GBP, console: Console) -> int:
     """Show currently building packages"""
     mode: ModeHandler = MODES[args.continuous]
 
-    return mode(args, get_dist_query("get_processes", gbp), console)
+    return mode(args, gbp.query.gbp_ps.get_processes, console)
 
 
 def parse_args(parser: argparse.ArgumentParser) -> None:

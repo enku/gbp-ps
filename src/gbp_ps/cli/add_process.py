@@ -8,15 +8,13 @@ from gbpcli.graphql import check
 
 from gbp_ps.types import BuildProcess
 
-from . import get_dist_query
-
 now = dt.datetime.now
 
 
 def handler(args: argparse.Namespace, gbp: GBP, _console: Console) -> int:
     """Show add/update an entry in the process table"""
     check(
-        get_dist_query("add_process", gbp)(
+        gbp.query.gbp_ps.add_process(
             process=BuildProcess(
                 build_host=platform.node(),
                 build_id=args.number,

@@ -6,7 +6,7 @@ authors = [
     {name = "Albert Hopkins", email = "marduk@letterboxes.org"},
 ]
 dependencies = [
-    "gbpcli>=1.7.0",
+    "gbpcli>=2.0.0",
     "rich>=13.6.0",
 ]
 requires-python = ">=3.11"
