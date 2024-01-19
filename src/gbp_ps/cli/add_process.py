@@ -14,7 +14,7 @@ now = dt.datetime.now
 def handler(args: argparse.Namespace, gbp: GBP, _console: Console) -> int:
     """Show add/update an entry in the process table"""
     check(
-        gbp.query.gbp_ps.add_process(
+        gbp.query.gbp_ps.add_process(  # type: ignore[attr-defined]
             process=BuildProcess(
                 build_host=platform.node(),
                 build_id=args.number,

@@ -108,7 +108,7 @@ def handler(args: argparse.Namespace, gbp: GBP, console: Console) -> int:
     """Show currently building packages"""
     mode: ModeHandler = MODES[args.continuous]
 
-    return mode(args, gbp.query.gbp_ps.get_processes, console)
+    return mode(args, gbp.query.gbp_ps.get_processes, console)  # type: ignore[attr-defined]
 
 
 def parse_args(parser: argparse.ArgumentParser) -> None:
