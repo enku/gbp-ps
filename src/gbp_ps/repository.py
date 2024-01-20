@@ -151,10 +151,10 @@ class RedisRepository:
             raise RecordNotFoundError(process)
 
         ensure_updateable(self.redis_to_process(key, previous_value), process)
-
-        new_value: dict[str, str] = json.loads(previous_value)
-        new_value["phase"] = process.phase
-        new_value["build_host"] = process.build_host
+        new_value = {
+            **json.loads(previous_value),
+            **{"phase": process.phase, "build_host": process.build_host},
+        }
         self._redis.set(key, json.dumps(new_value).encode(ENCODING))
 
     def get_processes(self, include_final: bool = False) -> Iterable[BuildProcess]:
@@ -163,17 +163,14 @@ class RedisRepository:
         If include_final is True also include processes in their "final" phase. The
         default value is False.
         """
-        keys = self._redis.keys(f"{self._key}:*".encode(ENCODING))
         processes = []
 
-        for key in keys:
-            if not (value := self._redis.get(key)):
-                continue
+        for key in self._redis.keys(f"{self._key}:*".encode(ENCODING)):
+            if value := self._redis.get(key):
+                process = self.redis_to_process(key, value)
 
-            process = self.redis_to_process(key, value)
-
-            if include_final or not process.is_finished():
-                processes.append(process)
+                if include_final or not process.is_finished():
+                    processes.append(process)
 
         processes.sort(key=lambda process: process.start_time)
         return processes
