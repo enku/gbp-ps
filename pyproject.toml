@@ -20,6 +20,10 @@ classifiers = [
 ]
 license = {text = "GPL3+"}
 
+[project.urls]
+homepage = "https://github.com/enku/gbp-ps"
+repository = "https://github.com/enku/gbp-ps"
+
 [project.entry-points."gentoo_build_publisher.graphql_schema"]
 gbp_ps = "gbp_ps.graphql"
 
