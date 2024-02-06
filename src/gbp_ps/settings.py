@@ -1,4 +1,5 @@
 """gbp-ps settings"""
+
 from dataclasses import dataclass
 from typing import ClassVar
 

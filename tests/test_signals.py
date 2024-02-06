@@ -1,4 +1,5 @@
 """Tests for gbp-ps signal handlers"""
+
 # pylint: disable=missing-docstring
 import datetime as dt
 from unittest import mock

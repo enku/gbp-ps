@@ -1,4 +1,5 @@
 """Tests for the GraphQL interface for gbp-ps"""
+
 # pylint: disable=missing-docstring
 
 from typing import Any

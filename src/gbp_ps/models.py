@@ -1,4 +1,5 @@
 """Django models for gbp_ps"""
+
 from __future__ import annotations
 
 from typing import TypeVar

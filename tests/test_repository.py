@@ -1,4 +1,5 @@
 """Tests for gbp-ps repositories"""
+
 # pylint: disable=missing-docstring, duplicate-code
 import datetime as dt
 from dataclasses import replace

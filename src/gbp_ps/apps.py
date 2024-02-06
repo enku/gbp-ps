@@ -1,4 +1,5 @@
 """AppConfigs for gbp-ps"""
+
 from django.apps import AppConfig
 
 

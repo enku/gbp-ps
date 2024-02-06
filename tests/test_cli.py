@@ -1,4 +1,5 @@
 """CLI unit tests for gbp-ps"""
+
 # pylint: disable=missing-docstring
 import datetime as dt
 import io

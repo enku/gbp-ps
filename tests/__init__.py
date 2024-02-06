@@ -1,4 +1,5 @@
 """gbp-ps tests"""
+
 # pylint: disable=missing-docstring
 import datetime as dt
 import os

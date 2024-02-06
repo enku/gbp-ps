@@ -1,4 +1,5 @@
 """Database Repository for build processes"""
+
 from __future__ import annotations
 
 import datetime as dt

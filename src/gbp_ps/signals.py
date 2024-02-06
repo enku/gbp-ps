@@ -1,4 +1,5 @@
 """GBP signal handlers for gbp-ps"""
+
 import datetime as dt
 import platform
 from functools import cache, partial

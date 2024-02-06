@@ -1,4 +1,5 @@
 """GraphQL interface for gbp-ps"""
+
 # pylint: disable=missing-docstring
 from importlib import resources
 from typing import Any
