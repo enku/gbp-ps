@@ -287,3 +287,24 @@ class AddProcessTests(TestCase):
         # Just ensure that parse_args is there and works
         parser = ArgumentParser()
         add_process.parse_args(parser)
+
+
+class FormatTimestampTests(TestCase):
+
+    def test_when_today(self) -> None:
+        timestamp = dt.datetime(2024, 2, 7, 20, 10)
+        today = timestamp.date()
+
+        with mock.patch("gbp_ps.cli.ps.get_today", return_value=today):
+            date_str = ps.format_timestamp(timestamp)
+
+        self.assertEqual(date_str, "[timestamp]20:10:00[/timestamp]")
+
+    def test_when_not_today(self) -> None:
+        timestamp = dt.datetime(2024, 2, 7, 20, 10)
+        today = (timestamp + dt.timedelta(hours=24)).date()
+
+        with mock.patch("gbp_ps.cli.ps.get_today", return_value=today):
+            date_str = ps.format_timestamp(timestamp)
+
+        self.assertEqual(date_str, "[timestamp]Feb07[/timestamp]")
