@@ -15,20 +15,65 @@ ModeHandler = Callable[[argparse.Namespace, Query, Console], int]
 ProcessList: TypeAlias = list[dict[str, Any]]
 
 
-def get_today() -> dt.date:
-    """Return today's date"""
-    return dt.datetime.now().astimezone(render.LOCAL_TIMEZONE).date()
+def handler(args: argparse.Namespace, gbp: GBP, console: Console) -> int:
+    """Show currently building packages"""
+    mode: ModeHandler = MODES[args.continuous]
+
+    return mode(args, gbp.query.gbp_ps.get_processes, console)  # type: ignore[attr-defined]
 
 
-def format_timestamp(timestamp: dt.datetime) -> str:
-    """Format the timestamp as a string
+def parse_args(parser: argparse.ArgumentParser) -> None:
+    """Set subcommand arguments"""
+    parser.add_argument(
+        "--node", action="store_true", default=False, help="display the build node"
+    )
+    parser.add_argument(
+        "--continuous",
+        "-c",
+        action="store_true",
+        default=False,
+        help="Run and continuously poll and update",
+    )
+    parser.add_argument(
+        "--update-interval",
+        "-i",
+        type=float,
+        default=1,
+        help="In continuous mode, the interval, in seconds, between updates",
+    )
 
-    Like render.from_timestamp(), but if the date is today's date then only display the
-    time. If the date is not today's date then only return the date.
-    """
-    if (date := timestamp.date()) == get_today():
-        return f"[timestamp]{timestamp.strftime('%X')}[/timestamp]"
-    return f"[timestamp]{date.strftime('%b%d')}[/timestamp]"
+
+def single_handler(
+    args: argparse.Namespace, get_processes: Query, console: Console
+) -> int:
+    """Handler for the single-mode run of `gbp ps`"""
+    processes: ProcessList
+
+    if processes := check(get_processes())["buildProcesses"]:
+        console.out.print(create_table(processes, args))
+
+    return 0
+
+
+def continuous_handler(
+    args: argparse.Namespace, get_processes: Query, console: Console
+) -> int:
+    """Handler for the continuous-mode run of `gbp ps`"""
+
+    def update() -> Table:
+        return create_table(check(get_processes())["buildProcesses"], args)
+
+    console.out.clear()
+    with Live(
+        update(), console=console.out, refresh_per_second=1 / args.update_interval
+    ) as live:
+        try:
+            while True:
+                time.sleep(args.update_interval)
+                live.update(update())
+        except KeyboardInterrupt:
+            pass
+    return 0
 
 
 def create_table(processes: ProcessList, args: argparse.Namespace) -> Table:
@@ -69,65 +114,20 @@ def create_table(processes: ProcessList, args: argparse.Namespace) -> Table:
     return table
 
 
-def single_handler(
-    args: argparse.Namespace, get_processes: Query, console: Console
-) -> int:
-    """Handler for the single-mode run of `gbp ps`"""
-    processes: ProcessList
-
-    if processes := check(get_processes())["buildProcesses"]:
-        console.out.print(create_table(processes, args))
-
-    return 0
+def get_today() -> dt.date:
+    """Return today's date"""
+    return dt.datetime.now().astimezone(render.LOCAL_TIMEZONE).date()
 
 
-def continuous_handler(
-    args: argparse.Namespace, get_processes: Query, console: Console
-) -> int:
-    """Handler for the continuous-mode run of `gbp ps`"""
+def format_timestamp(timestamp: dt.datetime) -> str:
+    """Format the timestamp as a string
 
-    def update() -> Table:
-        return create_table(check(get_processes())["buildProcesses"], args)
-
-    console.out.clear()
-    with Live(
-        update(), console=console.out, refresh_per_second=1 / args.update_interval
-    ) as live:
-        try:
-            while True:
-                time.sleep(args.update_interval)
-                live.update(update())
-        except KeyboardInterrupt:
-            pass
-    return 0
+    Like render.from_timestamp(), but if the date is today's date then only display the
+    time. If the date is not today's date then only return the date.
+    """
+    if (date := timestamp.date()) == get_today():
+        return f"[timestamp]{timestamp.strftime('%X')}[/timestamp]"
+    return f"[timestamp]{date.strftime('%b%d')}[/timestamp]"
 
 
 MODES = [single_handler, continuous_handler]
-
-
-def handler(args: argparse.Namespace, gbp: GBP, console: Console) -> int:
-    """Show currently building packages"""
-    mode: ModeHandler = MODES[args.continuous]
-
-    return mode(args, gbp.query.gbp_ps.get_processes, console)  # type: ignore[attr-defined]
-
-
-def parse_args(parser: argparse.ArgumentParser) -> None:
-    """Set subcommand arguments"""
-    parser.add_argument(
-        "--node", action="store_true", default=False, help="display the build node"
-    )
-    parser.add_argument(
-        "--continuous",
-        "-c",
-        action="store_true",
-        default=False,
-        help="Run and continuously poll and update",
-    )
-    parser.add_argument(
-        "--update-interval",
-        "-i",
-        type=float,
-        default=1,
-        help="In continuous mode, the interval, in seconds, between updates",
-    )
