@@ -512,10 +512,10 @@ files = [
 
 [[package]]
 name = "gentoo-build-publisher"
-version = "2.0.2.dev39"
+version = "2.0.2.dev41"
 requires_python = ">=3.11"
 git = "https://github.com/enku/gentoo-build-publisher"
-revision = "3d83e6715c15c37f2919d12c2aa9db01cb621f93"
+revision = "ec32995a179314c6d6c93ace8e43316203cd0a5c"
 summary = "Gentoo Build Publisher"
 dependencies = [
     "ariadne-django",
@@ -1010,7 +1010,7 @@ files = [
 
 [[package]]
 name = "types-redis"
-version = "4.6.0.20240106"
+version = "4.6.0.20240218"
 requires_python = ">=3.8"
 summary = "Typing stubs for redis"
 dependencies = [
@@ -1018,21 +1018,21 @@ dependencies = [
     "types-pyOpenSSL",
 ]
 files = [
-    {file = "types-redis-4.6.0.20240106.tar.gz", hash = "sha256:2b2fa3a78f84559616242d23f86de5f4130dfd6c3b83fb2d8ce3329e503f756e"},
-    {file = "types_redis-4.6.0.20240106-py3-none-any.whl", hash = "sha256:912de6507b631934bd225cdac310b04a58def94391003ba83939e5a10e99568d"},
+    {file = "types-redis-4.6.0.20240218.tar.gz", hash = "sha256:5103d7e690e5c74c974a161317b2d59ac2303cf8bef24175b04c2a4c3486cb39"},
+    {file = "types_redis-4.6.0.20240218-py3-none-any.whl", hash = "sha256:dc9c45a068240e33a04302aec5655cf41e80f91eecffccbb2df215b2f6fc375d"},
 ]
 
 [[package]]
 name = "types-requests"
-version = "2.31.0.20240125"
+version = "2.31.0.20240218"
 requires_python = ">=3.8"
 summary = "Typing stubs for requests"
 dependencies = [
     "urllib3>=2",
 ]
 files = [
-    {file = "types-requests-2.31.0.20240125.tar.gz", hash = "sha256:03a28ce1d7cd54199148e043b2079cdded22d6795d19a2c2a6791a4b2b5e2eb5"},
-    {file = "types_requests-2.31.0.20240125-py3-none-any.whl", hash = "sha256:9592a9a4cb92d6d75d9b491a41477272b710e021011a2a3061157e2fb1f1a5d1"},
+    {file = "types-requests-2.31.0.20240218.tar.gz", hash = "sha256:f1721dba8385958f504a5386240b92de4734e047a08a40751c1654d1ac3349c5"},
+    {file = "types_requests-2.31.0.20240218-py3-none-any.whl", hash = "sha256:a82807ec6ddce8f00fe0e949da6d6bc1fbf1715420218a9640d695f70a9e5a9b"},
 ]
 
 [[package]]
@@ -1057,12 +1057,12 @@ files = [
 
 [[package]]
 name = "urllib3"
-version = "2.2.0"
+version = "2.2.1"
 requires_python = ">=3.8"
 summary = "HTTP library with thread-safe connection pooling, file post, and more."
 files = [
-    {file = "urllib3-2.2.0-py3-none-any.whl", hash = "sha256:ce3711610ddce217e6d113a2732fafad960a03fd0318c91faa79481e35c11224"},
-    {file = "urllib3-2.2.0.tar.gz", hash = "sha256:051d961ad0c62a94e50ecf1af379c3aba230c66c710493493560c0c223c49f20"},
+    {file = "urllib3-2.2.1-py3-none-any.whl", hash = "sha256:450b20ec296a467077128bff42b73080516e71b56ff59a60a02bef2232c4fa9d"},
+    {file = "urllib3-2.2.1.tar.gz", hash = "sha256:d0570876c61ab9e520d776c38acbbb5b05a776d3f9ff98a5c8fd5162a444cf19"},
 ]
 
 [[package]]

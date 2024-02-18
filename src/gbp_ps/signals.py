@@ -5,8 +5,8 @@ import platform
 from functools import cache, partial
 from typing import Any
 
-from gentoo_build_publisher.common import Build
 from gentoo_build_publisher.signals import dispatcher
+from gentoo_build_publisher.types import Build
 
 from gbp_ps.repository import Repo, RepositoryType, add_or_update_process
 from gbp_ps.settings import Settings

@@ -4,8 +4,8 @@
 import datetime as dt
 from unittest import mock
 
-from gentoo_build_publisher.common import Build
 from gentoo_build_publisher.signals import dispatcher
+from gentoo_build_publisher.types import Build
 
 from gbp_ps import signals
 from gbp_ps.types import BuildProcess
