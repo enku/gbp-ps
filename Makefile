@@ -72,3 +72,8 @@ fmt:
 	python -m isort --line-width=88 src tests
 	python -m black src tests
 .PHONY: fmt
+
+
+update:
+	pdm update --update-eager
+.PHONY: update
