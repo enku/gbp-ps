@@ -5,8 +5,9 @@ import datetime as dt
 import time
 from typing import Any, Callable, TypeAlias
 
-from gbpcli import GBP, Console, render
+from gbpcli import GBP, render
 from gbpcli.graphql import Query, check
+from gbpcli.types import Console
 from rich import box
 from rich.live import Live
 from rich.table import Table

@@ -4,8 +4,9 @@ import argparse
 import datetime as dt
 import platform
 
-from gbpcli import GBP, Console
+from gbpcli import GBP
 from gbpcli.graphql import check
+from gbpcli.types import Console
 
 from gbp_ps.types import BuildProcess
 
