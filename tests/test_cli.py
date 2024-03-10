@@ -209,6 +209,7 @@ class PSTests(TestCase):
         self.assertEqual(exit_status, 0)
         self.assertEqual(stdout.getvalue(), "")
 
+    @mock.patch("gbpcli.render.LOCAL_TIMEZONE", new=LOCAL_TIMEZONE)
     @mock.patch("gbp_ps.cli.ps.time.sleep")
     @mock.patch("gbp_ps.cli.ps.get_today", new=lambda: dt.date(2023, 11, 11))
     def test_continuous_mode(self, mock_sleep: mock.Mock) -> None:
@@ -239,9 +240,9 @@ class PSTests(TestCase):
 ╭─────────────┬────────┬──────────────────────────────────┬─────────────┬──────────────╮
 │ Machine     │ ID     │ Package                          │ Start       │ Phase        │
 ├─────────────┼────────┼──────────────────────────────────┼─────────────┼──────────────┤
-│ babette     │ 1031   │ sys-apps/portage-3.0.51          │ 06:20:52    │ postinst     │
-│ babette     │ 1031   │ sys-apps/shadow-4.14-r4          │ 06:20:52    │ package      │
-│ babette     │ 1031   │ net-misc/wget-1.21.4             │ 06:20:52    │ compile      │
+│ babette     │ 1031   │ sys-apps/portage-3.0.51          │ 05:20:52    │ postinst     │
+│ babette     │ 1031   │ sys-apps/shadow-4.14-r4          │ 05:20:52    │ package      │
+│ babette     │ 1031   │ net-misc/wget-1.21.4             │ 05:20:52    │ compile      │
 ╰─────────────┴────────┴──────────────────────────────────┴─────────────┴──────────────╯"""
         self.assertEqual(stdout.getvalue(), expected)
         mock_sleep.assert_called_with(4)
