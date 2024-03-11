@@ -32,6 +32,7 @@ def set_repo(name: str) -> RepositoryType:
     if settings.STORAGE_BACKEND == "redis":
         redis_path = "gbp_ps.repository.redis.Redis.from_url"
         mock_redis = fakeredis.FakeRedis()  # type: ignore[no-untyped-call]
+        mock_redis.flushall()
         with mock.patch(redis_path, return_value=mock_redis):
             return RedisRepository(settings)
 
