@@ -24,15 +24,19 @@ from gbp_ps.types import BuildProcess
 
 from . import TestCase, make_build_process, parametrized
 
+HOST = 0
 
 def set_repo(name: str) -> RepositoryType:
+    global HOST  # pylint: disable=global-statement
+    HOST += 1
+
     settings = Settings(
         REDIS_KEY="gbp-ps-test", REDIS_KEY_EXPIRATION=3600, STORAGE_BACKEND=name
     )
     if settings.STORAGE_BACKEND == "redis":
         redis_path = "gbp_ps.repository.redis.Redis.from_url"
-        mock_redis = fakeredis.FakeRedis()  # type: ignore[no-untyped-call]
-        mock_redis.flushall()
+        host = f"host{HOST}"
+        mock_redis = fakeredis.FakeRedis(host=host)
         with mock.patch(redis_path, return_value=mock_redis):
             return RedisRepository(settings)
 
