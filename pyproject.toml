@@ -61,7 +61,7 @@ dev = [
     "types-requests>=2.31.0.10",
     "rich>=13.6.0",
     "types-redis>=4.6.0.10",
-    "fakeredis>=2.20.0",
+    "fakeredis>=2.20.0,!=2.21.2",
     "gentoo-build-publisher @ git+https://github.com/enku/gentoo-build-publisher",
 ]
 
