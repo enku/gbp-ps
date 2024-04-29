@@ -26,6 +26,7 @@ from . import TestCase, make_build_process, parametrized
 
 HOST = 0
 
+
 def set_repo(name: str) -> RepositoryType:
     global HOST  # pylint: disable=global-statement
     HOST += 1
