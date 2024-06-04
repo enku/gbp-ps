@@ -1,4 +1,4 @@
-"""gbp-ps exeptitions"""
+"""gbp-ps exceptions"""
 
 
 class GBPPSException(Exception):
