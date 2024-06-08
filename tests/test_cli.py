@@ -10,8 +10,9 @@ from unittest import mock
 
 import rich.console
 from django.test.client import Client
-from gbpcli import GBP, Console
+from gbpcli import GBP
 from gbpcli.theme import DEFAULT_THEME
+from gbpcli.types import Console
 from requests import Response
 from requests.adapters import BaseAdapter
 from requests.structures import CaseInsensitiveDict
