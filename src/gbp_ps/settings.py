@@ -5,7 +5,7 @@ from typing import ClassVar
 
 from gentoo_build_publisher.settings import BaseSettings
 
-DEFAULT_REDIS_KEY_EXPIRATION = 3600 * 24
+DEFAULT_REDIS_KEY_EXPIRATION = 3600
 
 
 @dataclass(frozen=True, slots=True)
