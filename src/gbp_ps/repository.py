@@ -156,7 +156,7 @@ class RedisRepository:
             **json.loads(previous_value),
             **{"phase": process.phase, "build_host": process.build_host},
         }
-        self._redis.set(key, json.dumps(new_value).encode(ENCODING))
+        self._redis.setex(key, self.time, json.dumps(new_value).encode(ENCODING))
 
     def get_processes(self, include_final: bool = False) -> Iterable[BuildProcess]:
         """Return the process records from the repository
