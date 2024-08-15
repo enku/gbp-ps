@@ -5,6 +5,7 @@ from __future__ import annotations
 import datetime as dt
 import json
 from collections.abc import Iterable
+from pathlib import Path
 from typing import Protocol
 
 import redis
@@ -22,6 +23,8 @@ ENCODING = "UTF-8"
 
 class RepositoryType(Protocol):
     """BuildProcess Repository"""
+
+    settings: Settings
 
     def __init__(self, settings: Settings) -> None:
         """Initializer"""
@@ -67,6 +70,7 @@ class RedisRepository:
         self._redis = redis.Redis.from_url(settings.REDIS_URL)
         self._key = settings.REDIS_KEY
         self.time = settings.REDIS_KEY_EXPIRATION
+        self.settings = settings
 
     def __repr__(self) -> str:
         return type(self).__name__
@@ -180,10 +184,11 @@ class RedisRepository:
 class DjangoRepository:
     """Django ORM-based BuildProcess repository"""
 
-    def __init__(self, _settings: Settings) -> None:
+    def __init__(self, settings: Settings) -> None:
         # pylint: disable=import-outside-toplevel
         from gbp_ps.models import BuildProcess as BuildProcessModel
 
+        self.settings = settings
         self.model: type[BuildProcessModel] = BuildProcessModel
 
     def __repr__(self) -> str:
@@ -263,9 +268,41 @@ def add_or_update_process(repo: RepositoryType, process: BuildProcess) -> None:
     If the update is not allowed (e.g. the previous build host is attempting to finalize
     the process) update is not ignored.
     """
+    maybe_log_process_phase(repo.settings, process)
+
     try:
         repo.update_process(process)
     except RecordNotFoundError:
         repo.add_process(process)
     except UpdateNotAllowedError:
         pass
+
+
+def maybe_log_process_phase(settings: Settings, process: BuildProcess) -> bool:
+    """Log the process if settings enable this
+
+    Return True if the process was logged otherwise False
+    """
+    if not settings.LOGGING_ENABLED:
+        return False
+
+    log_path = get_process_log_path(settings, process)
+    log_path.parent.mkdir(parents=True, exist_ok=True)
+
+    with log_path.open("a", encoding="utf8") as fp:
+        # pylint: disable=bad-builtin
+        print(f"{process.phase} {process.start_time.isoformat()}", file=fp)
+
+    return True
+
+
+def get_process_log_path(settings: Settings, process: BuildProcess) -> Path:
+    """Calculate the log path for the given process"""
+    if "/" in process.package:
+        cat, pv = process.package.split("/", 1)
+        filename = f"{pv}-gbp-ps.log"
+    else:
+        cat = ""
+        filename = process.package
+
+    return settings.LOGGING_ROOT.joinpath(process.machine, cat, filename)

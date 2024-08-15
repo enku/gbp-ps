@@ -1,6 +1,7 @@
 """gbp-ps settings"""
 
 from dataclasses import dataclass
+from pathlib import Path
 from typing import ClassVar
 
 from gentoo_build_publisher.settings import BaseSettings
@@ -19,3 +20,7 @@ class Settings(BaseSettings):
     REDIS_KEY_EXPIRATION: int = DEFAULT_REDIS_KEY_EXPIRATION
     REDIS_URL: str = "redis://redis.invalid:6379/0"
     STORAGE_BACKEND: str = "django"
+
+    # Optional logging
+    LOGGING_ENABLED: bool = False
+    LOGGING_ROOT: Path = Path()
