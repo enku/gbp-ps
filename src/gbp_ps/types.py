@@ -21,6 +21,22 @@ class BuildProcess:
     # BuildProcesses in any of these phases are considered "final"
     final_phases = {"", "clean", "cleanrm", "postrm"}
 
+    # Build phases, in order (best as I can determine)
+    build_phases = (
+        "pretend",
+        "setup",
+        "unpack",
+        "prepare",
+        "configure",
+        "compile",
+        "test",
+        "install",
+        "package",
+        "instprep",
+        "preinst",
+        "postinst",
+    )
+
     def is_same_as(self, other: BuildProcess) -> bool:
         """Return true if the other build process is the same process
 

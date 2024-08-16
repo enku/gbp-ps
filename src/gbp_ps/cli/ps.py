@@ -10,10 +10,16 @@ from gbpcli.graphql import Query, check
 from gbpcli.types import Console
 from rich import box
 from rich.live import Live
+from rich.progress import BarColumn, Progress, TextColumn
 from rich.table import Table
+
+from gbp_ps.types import BuildProcess
 
 ModeHandler = Callable[[argparse.Namespace, Query, Console], int]
 ProcessList: TypeAlias = list[dict[str, Any]]
+
+BUILD_PHASE_COUNT = len(BuildProcess.build_phases)
+PHASE_PADDING = max(len(i) for i in BuildProcess.build_phases)
 
 
 def handler(args: argparse.Namespace, gbp: GBP, console: Console) -> int:
@@ -41,6 +47,13 @@ def parse_args(parser: argparse.ArgumentParser) -> None:
         type=float,
         default=1,
         help="In continuous mode, the interval, in seconds, between updates",
+    )
+    parser.add_argument(
+        "--progress",
+        "-p",
+        action="store_true",
+        default=False,
+        help="Display progress bars for package phase",
     )
 
 
@@ -96,7 +109,6 @@ def create_table(processes: ProcessList, args: argparse.Namespace) -> Table:
         table.add_column("Node", header_style="header")
 
     for process in processes:
-        phase = process["phase"]
         row = [
             render.format_machine(process["machine"], args),
             render.format_build_number(process["id"]),
@@ -106,13 +118,38 @@ def create_table(processes: ProcessList, args: argparse.Namespace) -> Table:
                     render.LOCAL_TIMEZONE
                 )
             ),
-            f"[{phase}_phase]{phase:9}[/{phase}_phase]",
+            phase_column(process["phase"], args),
         ]
         if args.node:
             row.append(f"[build_host]{process['buildHost']}[/build_host]")
         table.add_row(*row)
 
     return table
+
+
+def phase_column(phase: str, args: argparse.Namespace) -> str | Progress:
+    """Return the ebuild phase rendered for the process table column
+
+    This will be the text of the ebuild phase and a progress bar depending on the
+    args.progress flag and whether the phase is an ebuild build phase.
+    """
+    if not args.progress or phase not in BuildProcess.build_phases:
+        return f"[{phase}_phase]{phase:{PHASE_PADDING}}[/{phase}_phase]"
+
+    return phase_progress(phase)
+
+
+def phase_progress(phase: str) -> Progress:
+    """Render the phase as a Progress bar"""
+    position = BuildProcess.build_phases.index(phase) + 1
+    progress = Progress(
+        TextColumn(f"[{phase}_phase]{phase:{PHASE_PADDING}}[/{phase}_phase]"),
+        BarColumn(),
+    )
+    task = progress.add_task(phase, total=BUILD_PHASE_COUNT)
+    progress.update(task, advance=position)
+
+    return progress
 
 
 def get_today() -> dt.date:

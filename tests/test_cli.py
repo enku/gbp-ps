@@ -94,7 +94,9 @@ class PSTests(TestCase):
             ["net-misc/wget-1.21.4", "compile", t(2023, 11, 15, 16, 20, 2)],
         ]:
             make_build_process(package=cpv, phase=phase, start_time=start_time)
-        args = Namespace(url="http://gbp.invalid/", node=False, continuous=False)
+        args = Namespace(
+            url="http://gbp.invalid/", node=False, continuous=False, progress=False
+        )
         console, stdout = string_console()[:2]
 
         exit_status = ps.handler(args, self.gbp, console)
@@ -113,6 +115,36 @@ class PSTests(TestCase):
         self.assertEqual(stdout.getvalue(), expected)
 
     @mock.patch("gbpcli.render.LOCAL_TIMEZONE", new=LOCAL_TIMEZONE)
+    @mock.patch("gbp_ps.cli.ps.get_today", new=lambda: dt.date(2024, 8, 16))
+    def test_with_progress(self) -> None:
+        t = dt.datetime
+        for cpv, phase, start_time in [
+            ["pipeline", "world", t(2024, 8, 16, 16, 20, 1)],
+            ["sys-apps/shadow-4.14-r4", "package", t(2024, 8, 16, 16, 20, 1)],
+            ["net-misc/wget-1.21.4", "compile", t(2024, 8, 16, 16, 20, 2)],
+        ]:
+            make_build_process(package=cpv, phase=phase, start_time=start_time)
+        args = Namespace(
+            url="http://gbp.invalid/", node=False, continuous=False, progress=True
+        )
+        console, stdout = string_console()[:2]
+
+        exit_status = ps.handler(args, self.gbp, console)
+
+        self.assertEqual(exit_status, 0)
+        expected = """\
+                                    Ebuild Processes                                    
+╭─────────┬──────┬─────────────────────────┬──────────┬────────────────────────────────╮
+│ Machine │ ID   │ Package                 │ Start    │ Phase                          │
+├─────────┼──────┼─────────────────────────┼──────────┼────────────────────────────────┤
+│ babette │ 1031 │ pipeline                │ 14:20:01 │ world                          │
+│ babette │ 1031 │ sys-apps/shadow-4.14-r4 │ 14:20:01 │ package   ━━━━━━━━━━━━━━━      │
+│ babette │ 1031 │ net-misc/wget-1.21.4    │ 14:20:02 │ compile   ━━━━━━━━━━           │
+╰─────────┴──────┴─────────────────────────┴──────────┴────────────────────────────────╯
+"""
+        self.assertEqual(stdout.getvalue(), expected)
+
+    @mock.patch("gbpcli.render.LOCAL_TIMEZONE", new=LOCAL_TIMEZONE)
     @mock.patch("gbp_ps.cli.ps.get_today", new=lambda: dt.date(2023, 11, 15))
     def test_with_node(self) -> None:
         t = dt.datetime
@@ -122,7 +154,9 @@ class PSTests(TestCase):
             ["net-misc/wget-1.21.4", "compile", t(2023, 11, 15, 16, 20, 2)],
         ]:
             make_build_process(package=cpv, phase=phase, start_time=start_time)
-        args = Namespace(url="http://gbp.invalid/", node=True, continuous=False)
+        args = Namespace(
+            url="http://gbp.invalid/", node=True, continuous=False, progress=False
+        )
         console, stdout = string_console()[:2]
         exit_status = ps.handler(args, self.gbp, console)
 
@@ -146,7 +180,9 @@ class PSTests(TestCase):
         package = "sys-apps/portage-3.0.51"
         build_host = "jenkins"
         orig_start = t(2023, 11, 15, 16, 20, 0)
-        args = Namespace(url="http://gbp.invalid/", node=True, continuous=False)
+        args = Namespace(
+            url="http://gbp.invalid/", node=True, continuous=False, progress=False
+        )
         update = partial(
             make_build_process,
             machine=machine,
@@ -203,7 +239,9 @@ class PSTests(TestCase):
         )
 
     def test_empty(self) -> None:
-        args = Namespace(url="http://gbp.invalid/", node=False, continuous=False)
+        args = Namespace(
+            url="http://gbp.invalid/", node=False, continuous=False, progress=False
+        )
         console, stdout = string_console()[:2]
         exit_status = ps.handler(args, self.gbp, console)
 
@@ -223,7 +261,11 @@ class PSTests(TestCase):
             ]
         ]
         args = Namespace(
-            url="http://gbp.invalid/", node=False, continuous=True, update_interval=4
+            url="http://gbp.invalid/",
+            node=False,
+            continuous=True,
+            update_interval=4,
+            progress=False,
         )
         console, stdout = string_console()[:2]
 
@@ -279,6 +321,7 @@ class AddProcessTests(TestCase):
             package=process.package,
             phase=process.phase,
             url="http://gbp.invalid/",
+            progress=False,
         )
         exit_status = add_process.handler(args, self.gbp, console)
 
