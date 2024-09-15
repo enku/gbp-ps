@@ -34,7 +34,9 @@ def resolve_query_build_processes(
     If include_final is True also include processes in their "final" phase. The default
     value is False.
     """
-    return [*Repo(Settings.from_environ()).get_processes(include_final=include_final)]
+    return list(
+        Repo(Settings.from_environ()).get_processes(include_final=include_final)
+    )
 
 
 @mutation.field("addBuildProcess")
