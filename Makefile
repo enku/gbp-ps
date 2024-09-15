@@ -13,7 +13,7 @@ export PYTHONDONTWRITEBYTECODE
 
 
 .coverage: $(src) $(tests)
-	coverage run ./tests/runtests.py
+	pdm run coverage run -m tests
 
 test: .coverage
 .PHONY: test
