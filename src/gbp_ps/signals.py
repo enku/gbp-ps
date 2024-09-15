@@ -32,7 +32,7 @@ def build_process(
 
 @cache
 def repo() -> RepositoryType:
-    """Return the Repository from from the enviroment variable settings"""
+    """Return the Repository from from the environment variable settings"""
     return Repo(Settings.from_environ())
 
 

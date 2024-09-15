@@ -5,7 +5,7 @@
 groups = ["default", "dev"]
 strategy = []
 lock_version = "4.5.0"
-content_hash = "sha256:f5412b8a0febe2b5439a012c0ded3a14f1600fffb201cfc5cfa4fac46deda1c5"
+content_hash = "sha256:be50bd61a9dad9f63a764ec7861c871a253619614d2109b65f9331ffa010956a"
 
 [[metadata.targets]]
 requires_python = ">=3.11"
@@ -1160,6 +1160,24 @@ summary = "Backported and Experimental Type Hints for Python 3.8+"
 files = [
     {file = "typing_extensions-4.12.2-py3-none-any.whl", hash = "sha256:04e5ca0351e0f3f85c6853954072df659d0d13fac324d0072316b67d7794700d"},
     {file = "typing_extensions-4.12.2.tar.gz", hash = "sha256:1a7ead55c7e559dd4dee8856e3a88b41225abfe1ce8df57b7c13915fe121ffb8"},
+]
+
+[[package]]
+name = "typos"
+version = "1.24.5"
+requires_python = ">=3.7"
+summary = "Source Code Spelling Correction"
+files = [
+    {file = "typos-1.24.5-py3-none-macosx_10_12_x86_64.whl", hash = "sha256:95a75c76ecd4aa32b8a18b5aed9f20e4223276851ffa9d77d552533ed3e23198"},
+    {file = "typos-1.24.5-py3-none-macosx_11_0_arm64.whl", hash = "sha256:9a4634eda1082fbe9e7b3fc947870b36b50a964f6b89861ccf19bb9ebf26ddd9"},
+    {file = "typos-1.24.5-py3-none-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:00e1f569ddc8ed80255114cbbbdcb9db278ae738f4ee435ba60803b2c8e7d519"},
+    {file = "typos-1.24.5-py3-none-manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:8940a50ad420dc7924e0db520c88cedce2c6cc88f206c621755e5a966c0ad645"},
+    {file = "typos-1.24.5-py3-none-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:1433c987eb2dec6ce627e381870aa36f44cb98696ca4f9ff194abb87bc2075d3"},
+    {file = "typos-1.24.5-py3-none-musllinux_1_2_aarch64.whl", hash = "sha256:b3e2f44f7f39272ae0cce3f3b89157218db82f5214354d76d3a60f1af0bd0602"},
+    {file = "typos-1.24.5-py3-none-musllinux_1_2_x86_64.whl", hash = "sha256:b226d2f2960e6a5430a0af30b896e2e067ffa9fe98ea4196c0f514ad97219c47"},
+    {file = "typos-1.24.5-py3-none-win32.whl", hash = "sha256:e6a7b77c13e49a5791d3be537eede2e8f4496e662aa7501260344edd5ba7df86"},
+    {file = "typos-1.24.5-py3-none-win_amd64.whl", hash = "sha256:47c237a0bbcd8ab432a562020c386abe45f8ea71218b74d800d799d65b39d08b"},
+    {file = "typos-1.24.5.tar.gz", hash = "sha256:b31af4d73fd35c6cda7530c5f9d7ca23ecfa11e97d4709783496353cef7e7a73"},
 ]
 
 [[package]]

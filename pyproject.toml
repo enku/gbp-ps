@@ -63,6 +63,7 @@ dev = [
     "types-redis>=4.6.0.10",
     "fakeredis>=2.20.0",
     "gentoo-build-publisher @ git+https://github.com/enku/gentoo-build-publisher",
+    "typos>=1.24.5",
 ]
 
 [tool.mypy]
