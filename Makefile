@@ -6,6 +6,7 @@ sdist := dist/$(name)-$(version).tar.gz
 wheel := dist/$(subst -,_,$(name))-$(version)-py3-none-any.whl
 src := $(shell find src -type f -print)
 tests := $(shell find tests -type f -print)
+python_src := $(filter %.py, $(src) $(tests))
 
 PYTHONDONTWRITEBYTECODE=1
 
@@ -40,7 +41,7 @@ $(wheel): $(src)
 	pdm build --no-sdist
 
 clean: clean-build clean-venv
-	rm -rf .coverage htmlcov .mypy_cache node_modules
+	rm -rf .coverage .fmt htmlcov .mypy_cache node_modules
 .PHONY: clean
 
 
@@ -68,10 +69,14 @@ lint: pylint mypy
 .PHONY: lint
 
 
-fmt:
-	python -m isort --line-width=88 src tests
-	python -m black src tests
+fmt: .fmt
 .PHONY: fmt
+
+
+.fmt: $(python_src)
+	pdm run python -m isort --line-width=88 $?
+	pdm run python -m black $?
+	touch $@
 
 
 update:
