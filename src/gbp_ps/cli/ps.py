@@ -77,10 +77,10 @@ def continuous_handler(
     def update() -> Table:
         return create_table(check(get_processes())["buildProcesses"], args)
 
-    console.out.clear()
-    with Live(
-        update(), console=console.out, refresh_per_second=1 / args.update_interval
-    ) as live:
+    rate = 1 / args.update_interval
+    out = console.out
+    ctx = Live(update(), console=out, screen=out.is_terminal, refresh_per_second=rate)
+    with ctx as live:
         try:
             while True:
                 time.sleep(args.update_interval)
