@@ -14,7 +14,7 @@ only there were a better way.
 Now there is.
 
 <p align="center">
-<img src="https://raw.githubusercontent.com/enku/gbp-ps/master/docs/screenshot.png" alt="gbpcli screenshot" width="100%">
+<img src="https://raw.githubusercontent.com/enku/gbp-ps/master/docs/screenshot.gif" alt="gbpcli screenshot" width="100%">
 </p>
 
 **gbp-ps** is a `ps`-like subcommand for the [Gentoo Build Publisher

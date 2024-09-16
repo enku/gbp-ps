@@ -132,14 +132,29 @@ def phase_column(phase: str, args: argparse.Namespace) -> str | Progress:
     This will be the text of the ebuild phase and a progress bar depending on the
     args.progress flag and whether the phase is an ebuild build phase.
     """
-    if not args.progress or phase not in BuildProcess.build_phases:
+    if not args.progress:
         return f"[{phase}_phase]{phase:{PHASE_PADDING}}[/{phase}_phase]"
 
-    return phase_progress(phase)
+    if phase not in BuildProcess.build_phases:
+        return nonbuild_progress(phase)
+
+    return build_progress(phase)
 
 
-def phase_progress(phase: str) -> Progress:
-    """Render the phase as a Progress bar"""
+def nonbuild_progress(phase: str) -> Progress:
+    """Render non-build the phase as a Progress bar"""
+    progress = Progress(
+        TextColumn(f"[{phase}_phase]{phase:{PHASE_PADDING}}[/{phase}_phase]"),
+        BarColumn(),
+    )
+    task = progress.add_task(phase, total=None)
+    progress.update(task)
+
+    return progress
+
+
+def build_progress(phase: str) -> Progress:
+    """Render build the phase as a Progress bar"""
     position = BuildProcess.build_phases.index(phase) + 1
     progress = Progress(
         TextColumn(f"[{phase}_phase]{phase:{PHASE_PADDING}}[/{phase}_phase]"),
