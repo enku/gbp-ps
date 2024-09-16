@@ -13,6 +13,7 @@ from rich.live import Live
 from rich.progress import BarColumn, Progress, TextColumn
 from rich.table import Table
 
+from gbp_ps.exceptions import swallow_exception
 from gbp_ps.types import BuildProcess
 
 ModeHandler = Callable[[argparse.Namespace, Query, Console], int]
@@ -69,6 +70,7 @@ def single_handler(
     return 0
 
 
+@swallow_exception(KeyboardInterrupt, returns=0)
 def continuous_handler(
     args: argparse.Namespace, get_processes: Query, console: Console
 ) -> int:
@@ -81,12 +83,9 @@ def continuous_handler(
     out = console.out
     ctx = Live(update(), console=out, screen=out.is_terminal, refresh_per_second=rate)
     with ctx as live:
-        try:
-            while True:
-                time.sleep(args.update_interval)
-                live.update(update())
-        except KeyboardInterrupt:
-            pass
+        while True:
+            time.sleep(args.update_interval)
+            live.update(update())
     return 0
 
 
