@@ -85,7 +85,7 @@ class PSTests(TestCase):
         self.gbp = test_gbp("http://gbp.invalid/")
 
     @mock.patch("gbpcli.render.LOCAL_TIMEZONE", new=LOCAL_TIMEZONE)
-    @mock.patch("gbp_ps.cli.ps.get_today", new=lambda: dt.date(2023, 11, 15))
+    @mock.patch("gbp_ps.cli.ps.utils.get_today", new=lambda: dt.date(2023, 11, 15))
     def test(self) -> None:
         t = dt.datetime
         for cpv, phase, start_time in [
@@ -115,7 +115,7 @@ class PSTests(TestCase):
         self.assertEqual(stdout.getvalue(), expected)
 
     @mock.patch("gbpcli.render.LOCAL_TIMEZONE", new=LOCAL_TIMEZONE)
-    @mock.patch("gbp_ps.cli.ps.get_today", new=lambda: dt.date(2024, 8, 16))
+    @mock.patch("gbp_ps.cli.ps.utils.get_today", new=lambda: dt.date(2024, 8, 16))
     def test_with_progress(self) -> None:
         t = dt.datetime
         for cpv, phase, start_time in [
@@ -145,7 +145,7 @@ class PSTests(TestCase):
         self.assertEqual(stdout.getvalue(), expected)
 
     @mock.patch("gbpcli.render.LOCAL_TIMEZONE", new=LOCAL_TIMEZONE)
-    @mock.patch("gbp_ps.cli.ps.get_today", new=lambda: dt.date(2023, 11, 15))
+    @mock.patch("gbp_ps.cli.ps.utils.get_today", new=lambda: dt.date(2023, 11, 15))
     def test_with_node(self) -> None:
         t = dt.datetime
         for cpv, phase, start_time in [
@@ -250,7 +250,7 @@ class PSTests(TestCase):
 
     @mock.patch("gbpcli.render.LOCAL_TIMEZONE", new=LOCAL_TIMEZONE)
     @mock.patch("gbp_ps.cli.ps.time.sleep")
-    @mock.patch("gbp_ps.cli.ps.get_today", new=lambda: dt.date(2023, 11, 11))
+    @mock.patch("gbp_ps.cli.ps.utils.get_today", new=lambda: dt.date(2023, 11, 11))
     def test_continuous_mode(self, mock_sleep: mock.Mock) -> None:
         processes = [
             make_build_process(package=cpv, phase=phase)
@@ -332,24 +332,3 @@ class AddProcessTests(TestCase):
         # Just ensure that parse_args is there and works
         parser = ArgumentParser()
         add_process.parse_args(parser)
-
-
-class FormatTimestampTests(TestCase):
-
-    def test_when_today(self) -> None:
-        timestamp = dt.datetime(2024, 2, 7, 20, 10)
-        today = timestamp.date()
-
-        with mock.patch("gbp_ps.cli.ps.get_today", return_value=today):
-            date_str = ps.format_timestamp(timestamp)
-
-        self.assertEqual(date_str, "[timestamp]20:10:00[/timestamp]")
-
-    def test_when_not_today(self) -> None:
-        timestamp = dt.datetime(2024, 2, 7, 20, 10)
-        today = (timestamp + dt.timedelta(hours=24)).date()
-
-        with mock.patch("gbp_ps.cli.ps.get_today", return_value=today):
-            date_str = ps.format_timestamp(timestamp)
-
-        self.assertEqual(date_str, "[timestamp]Feb07[/timestamp]")

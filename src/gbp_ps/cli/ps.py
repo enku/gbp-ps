@@ -9,10 +9,12 @@ from gbpcli import GBP, render
 from gbpcli.graphql import Query, check
 from gbpcli.types import Console
 from rich import box
+from rich.console import RenderableType
 from rich.live import Live
 from rich.progress import BarColumn, Progress, TextColumn
 from rich.table import Table
 
+from gbp_ps import utils
 from gbp_ps.exceptions import swallow_exception
 from gbp_ps.types import BuildProcess
 
@@ -108,22 +110,25 @@ def create_table(processes: ProcessList, args: argparse.Namespace) -> Table:
         table.add_column("Node", header_style="header")
 
     for process in processes:
-        row = [
-            render.format_machine(process["machine"], args),
-            render.format_build_number(process["id"]),
-            f"[package]{process['package']}[/package]",
-            format_timestamp(
-                dt.datetime.fromisoformat(process["startTime"]).astimezone(
-                    render.LOCAL_TIMEZONE
-                )
-            ),
-            phase_column(process["phase"], args),
-        ]
-        if args.node:
-            row.append(f"[build_host]{process['buildHost']}[/build_host]")
-        table.add_row(*row)
+        table.add_row(*row(process, args))
 
     return table
+
+
+def row(process: dict[str, Any], args: argparse.Namespace) -> list[RenderableType]:
+    """Return a process row (list) given the process and args"""
+    return [
+        render.format_machine(process["machine"], args),
+        render.format_build_number(process["id"]),
+        f"[package]{process['package']}[/package]",
+        utils.format_timestamp(
+            dt.datetime.fromisoformat(process["startTime"]).astimezone(
+                render.LOCAL_TIMEZONE
+            )
+        ),
+        phase_column(process["phase"], args),
+        *([f"[build_host]{process['buildHost']}[/build_host]"] if args.node else []),
+    ]
 
 
 def phase_column(phase: str, args: argparse.Namespace) -> str | Progress:
@@ -132,54 +137,30 @@ def phase_column(phase: str, args: argparse.Namespace) -> str | Progress:
     This will be the text of the ebuild phase and a progress bar depending on the
     args.progress flag and whether the phase is an ebuild build phase.
     """
+    text = f"[{phase}_phase]{phase:{PHASE_PADDING}}[/{phase}_phase]"
+
     if not args.progress:
-        return f"[{phase}_phase]{phase:{PHASE_PADDING}}[/{phase}_phase]"
+        return text
 
-    if phase not in BuildProcess.build_phases:
-        return nonbuild_progress(phase)
-
-    return build_progress(phase)
+    position = utils.find(phase, BuildProcess.build_phases) + 1
+    return progress(text, (position, BUILD_PHASE_COUNT) if position > 0 else None)
 
 
-def nonbuild_progress(phase: str) -> Progress:
-    """Render non-build the phase as a Progress bar"""
-    progress = Progress(
-        TextColumn(f"[{phase}_phase]{phase:{PHASE_PADDING}}[/{phase}_phase]"),
-        BarColumn(),
-    )
-    task = progress.add_task(phase, total=None)
-    progress.update(task)
+def progress(text: str, steps: tuple[int, int] | None) -> Progress:
+    """Return Progress object with given text and steps (completed, total)
 
-    return progress
-
-
-def build_progress(phase: str) -> Progress:
-    """Render build the phase as a Progress bar"""
-    position = BuildProcess.build_phases.index(phase) + 1
-    progress = Progress(
-        TextColumn(f"[{phase}_phase]{phase:{PHASE_PADDING}}[/{phase}_phase]"),
-        BarColumn(),
-    )
-    task = progress.add_task(phase, total=BUILD_PHASE_COUNT)
-    progress.update(task, advance=position)
-
-    return progress
-
-
-def get_today() -> dt.date:
-    """Return today's date"""
-    return dt.datetime.now().astimezone(render.LOCAL_TIMEZONE).date()
-
-
-def format_timestamp(timestamp: dt.datetime) -> str:
-    """Format the timestamp as a string
-
-    Like render.from_timestamp(), but if the date is today's date then only display the
-    time. If the date is not today's date then only return the date.
+    If steps is None, a pulsing Progress bar is used.
     """
-    if (date := timestamp.date()) == get_today():
-        return f"[timestamp]{timestamp.strftime('%X')}[/timestamp]"
-    return f"[timestamp]{date.strftime('%b%d')}[/timestamp]"
+    prog = Progress(TextColumn(text), BarColumn())
+
+    if steps is None:
+        task = prog.add_task(text, total=None)
+        return prog
+
+    completed, total = steps
+    task = prog.add_task(text, total=total)
+    prog.update(task, advance=completed)
+    return prog
 
 
 MODES = [single_handler, continuous_handler]
