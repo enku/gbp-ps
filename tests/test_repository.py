@@ -34,14 +34,18 @@ def set_repo(name: str) -> RepositoryType:
     settings = Settings(
         REDIS_KEY="gbp-ps-test", REDIS_KEY_EXPIRATION=3600, STORAGE_BACKEND=name
     )
-    if settings.STORAGE_BACKEND == "redis":
+    backend = settings.STORAGE_BACKEND
+    if backend == "redis":
         redis_path = "gbp_ps.repository.redis.Redis.from_url"
         host = f"host{HOST}"
         mock_redis = fakeredis.FakeRedis(host=host)
         with mock.patch(redis_path, return_value=mock_redis):
             return RedisRepository(settings)
 
-    return DjangoRepository(settings)
+    if backend == "django":
+        return DjangoRepository(settings)
+
+    raise ValueError(f"Unknown STORAGE_BACKEND: {backend!r}")
 
 
 def repos(*names: str) -> Callable[[Callable[[Any, RepositoryType], None]], None]:
