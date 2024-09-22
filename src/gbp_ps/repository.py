@@ -351,14 +351,9 @@ class SqliteRepository:
     @staticmethod
     def process_to_row(process: BuildProcess) -> tuple[str, str, str, str, str, int]:
         """Return the tuple of rows given the BuildProcess"""
-        return (
-            process.machine,
-            process.build_id,
-            process.build_host,
-            process.package,
-            process.phase,
-            int(process.start_time.timestamp()),
-        )
+        p = process
+        start_time = int(p.start_time.timestamp())
+        return (p.machine, p.build_id, p.build_host, p.package, p.phase, start_time)
 
     def init_db(self) -> None:
         """Initialize the database"""
