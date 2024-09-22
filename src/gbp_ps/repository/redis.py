@@ -21,9 +21,6 @@ class RedisRepository:
         self._key = settings.REDIS_KEY
         self.time = settings.REDIS_KEY_EXPIRATION
 
-    def __repr__(self) -> str:
-        return type(self).__name__
-
     def key(self, process: BuildProcess) -> bytes:
         """Return the redis key for the given BuildProcess"""
         return f"{self._key}:{process.machine}:{process.package}:{process.build_id}".encode(

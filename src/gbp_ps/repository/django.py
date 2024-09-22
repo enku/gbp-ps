@@ -16,9 +16,6 @@ class DjangoRepository:
 
         self.model: type[BuildProcessModel] = BuildProcessModel
 
-    def __repr__(self) -> str:
-        return type(self).__name__
-
     def add_process(self, process: BuildProcess) -> None:
         """Add the given BuildProcess to the repository
 

@@ -166,6 +166,3 @@ ON ebuild_process (machine, build_id, build_host, package)
                 yield cursor
             finally:
                 cursor.close()
-
-    def __repr__(self) -> str:
-        return type(self).__name__
