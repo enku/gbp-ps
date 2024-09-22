@@ -28,14 +28,10 @@ from . import TestCase, make_build_process, parametrized
 HOST = 0
 
 
-def set_repo(name: str) -> RepositoryType:
+def get_repo(backend: str, settings: Settings) -> RepositoryType:
     global HOST  # pylint: disable=global-statement
     HOST += 1
 
-    settings = Settings(
-        REDIS_KEY="gbp-ps-test", REDIS_KEY_EXPIRATION=3600, STORAGE_BACKEND=name
-    )
-    backend = settings.STORAGE_BACKEND
     if backend == "redis":
         redis_path = "gbp_ps.repository.redis.Redis.from_url"
         host = f"host{HOST}"
@@ -49,14 +45,19 @@ def set_repo(name: str) -> RepositoryType:
     raise ValueError(f"Unknown STORAGE_BACKEND: {backend!r}")
 
 
-def repos(*names: str) -> Callable[[Callable[[Any, RepositoryType], None]], None]:
-    return parametrized([[set_repo(name)] for name in names])
+def repos(*names: str) -> Callable[[Callable[[Any, str], None]], None]:
+    return parametrized([[name] for name in names])
 
 
-@requires("tempdir")
+@requires("settings")
 class RepositoryTests(TestCase):
+    options = {
+        "environ": {"GBP_PS_REDIS_KEY": "gbp-ps-test", "GBP_PS_KEY_EXPIRATION": "3600"}
+    }
+
     @repos("django", "redis")
-    def test_add_process(self, repo: RepositoryType) -> None:
+    def test_add_process(self, backend: str) -> None:
+        repo = get_repo(backend, self.fixtures.settings)
         build_process = BuildProcess(
             machine="babette",
             build_id="1031",
@@ -69,7 +70,8 @@ class RepositoryTests(TestCase):
         self.assertEqual([*repo.get_processes()], [build_process])
 
     @repos("django", "redis")
-    def test_add_process_when_already_exists(self, repo: RepositoryType) -> None:
+    def test_add_process_when_already_exists(self, backend: str) -> None:
+        repo = get_repo(backend, self.fixtures.settings)
         build_process = BuildProcess(
             machine="babette",
             build_id="1031",
@@ -85,8 +87,9 @@ class RepositoryTests(TestCase):
 
     @repos("django", "redis")
     def test_add_process_same_package_in_different_builds_exist_only_once(
-        self, repo: RepositoryType
+        self, backend: str
     ) -> None:
+        repo = get_repo(backend, self.fixtures.settings)
         dead_process = BuildProcess(
             machine="babette",
             build_id="1031",
@@ -109,7 +112,8 @@ class RepositoryTests(TestCase):
         self.assertEqual([*repo.get_processes()], [new_process])
 
     @repos("django", "redis")
-    def test_update_process(self, repo: RepositoryType) -> None:
+    def test_update_process(self, backend: str) -> None:
+        repo = get_repo(backend, self.fixtures.settings)
         orig_process = BuildProcess(
             machine="babette",
             build_id="1031",
@@ -128,10 +132,11 @@ class RepositoryTests(TestCase):
         self.assertEqual([*repo.get_processes()], [expected])
 
     @repos("django", "redis")
-    def test_update_process_finalize_when_not_owned(self, repo: RepositoryType) -> None:
+    def test_update_process_finalize_when_not_owned(self, backend: str) -> None:
         # This demonstrates the concept of build host "ownership". A a process can only
         # be updated with a "final" phase if the build host is the same. Otherwise it
         # should raise an exception
+        repo = get_repo(backend, self.fixtures.settings)
         process1 = make_build_process(add_to_repo=False)
         repo.add_process(process1)
         process2 = replace(process1, build_host="badhost", phase="clean")
@@ -141,8 +146,9 @@ class RepositoryTests(TestCase):
 
     @repos("django", "redis")
     def test_add_or_update_process_can_handle_buildhost_changes(
-        self, repo: RepositoryType
+        self, backend: str
     ) -> None:
+        repo = get_repo(backend, self.fixtures.settings)
         orig_process = BuildProcess(
             machine="babette",
             build_id="1031",
@@ -161,7 +167,8 @@ class RepositoryTests(TestCase):
         self.assertEqual([*repo.get_processes()], [expected])
 
     @repos("django", "redis")
-    def test_add_or_update_ignores_notallowederror(self, repo: RepositoryType) -> None:
+    def test_add_or_update_ignores_notallowederror(self, backend: str) -> None:
+        repo = get_repo(backend, self.fixtures.settings)
         process1 = make_build_process(add_to_repo=False)
         repo.add_process(process1)
         process2 = replace(process1, build_host="badhost", phase="clean")
@@ -171,7 +178,8 @@ class RepositoryTests(TestCase):
         self.assertEqual([*repo.get_processes()], [process1])
 
     @repos("django", "redis")
-    def test_update_process_when_process_not_in_db(self, repo: RepositoryType) -> None:
+    def test_update_process_when_process_not_in_db(self, backend: str) -> None:
+        repo = get_repo(backend, self.fixtures.settings)
         build_process = BuildProcess(
             machine="babette",
             build_id="1031",
@@ -185,11 +193,13 @@ class RepositoryTests(TestCase):
             repo.update_process(build_process)
 
     @repos("django", "redis")
-    def test_get_processes_with_empty_list(self, repo: RepositoryType) -> None:
+    def test_get_processes_with_empty_list(self, backend: str) -> None:
+        repo = get_repo(backend, self.fixtures.settings)
         self.assertEqual([*repo.get_processes()], [])
 
     @repos("django", "redis")
-    def test_get_processes_with_process(self, repo: RepositoryType) -> None:
+    def test_get_processes_with_process(self, backend: str) -> None:
+        repo = get_repo(backend, self.fixtures.settings)
         build_process = BuildProcess(
             machine="babette",
             build_id="1031",
@@ -203,7 +213,8 @@ class RepositoryTests(TestCase):
         self.assertEqual([*repo.get_processes()], [build_process])
 
     @repos("django", "redis")
-    def test_get_processes_with_final_process(self, repo: RepositoryType) -> None:
+    def test_get_processes_with_final_process(self, backend: str) -> None:
+        repo = get_repo(backend, self.fixtures.settings)
         build_process = BuildProcess(
             machine="babette",
             build_id="1031",
@@ -217,9 +228,8 @@ class RepositoryTests(TestCase):
         self.assertEqual([*repo.get_processes()], [])
 
     @repos("django", "redis")
-    def test_get_processes_with_include_final_process(
-        self, repo: RepositoryType
-    ) -> None:
+    def test_get_processes_with_include_final_process(self, backend: str) -> None:
+        repo = get_repo(backend, self.fixtures.settings)
         build_process = BuildProcess(
             machine="babette",
             build_id="1031",

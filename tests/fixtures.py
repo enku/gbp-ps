@@ -29,8 +29,13 @@ def environ(
 
 
 @depends("environ")
-def repo(_options: FixtureOptions, _fixtures: Fixtures) -> RepositoryType:
-    return Repo(Settings.from_environ())
+def settings(_options: FixtureOptions, _fixtures: Fixtures) -> Settings:
+    return Settings.from_environ()
+
+
+@depends("settings")
+def repo(_options: FixtureOptions, fixtures: Fixtures) -> RepositoryType:
+    return Repo(fixtures.settings)
 
 
 def gbp(options: FixtureOptions, _fixtures: Fixtures) -> GBP:
