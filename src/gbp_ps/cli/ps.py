@@ -3,7 +3,7 @@
 import argparse
 import datetime as dt
 import time
-from typing import Any, Callable, TypeAlias
+from typing import Any, Callable, NoReturn, TypeAlias
 
 from gbpcli import GBP, render
 from gbpcli.graphql import Query, check
@@ -75,7 +75,7 @@ def single_handler(
 @swallow_exception(KeyboardInterrupt, returns=0)
 def continuous_handler(
     args: argparse.Namespace, get_processes: Query, console: Console
-) -> int:
+) -> NoReturn:
     """Handler for the continuous-mode run of `gbp ps`"""
 
     def update() -> Table:
@@ -88,7 +88,6 @@ def continuous_handler(
         while True:
             time.sleep(args.update_interval)
             live.update(update())
-    return 0
 
 
 def create_table(processes: ProcessList, args: argparse.Namespace) -> Table:
