@@ -15,8 +15,9 @@ from rich.theme import Theme
 from unittest_fixtures import requires
 
 from gbp_ps.cli import add_process, ps
+from gbp_ps.types import BuildProcess
 
-from . import LOCAL_TIMEZONE, TestCase, make_build_process
+from . import LOCAL_TIMEZONE, TestCase, factories, make_build_process
 
 
 def string_console() -> tuple[Console, io.StringIO, io.StringIO]:
@@ -252,6 +253,36 @@ class PSParseArgsTests(TestCase):
         # Just ensure that parse_args is there and works
         parser = ArgumentParser()
         ps.parse_args(parser)
+
+
+@requires("tempdb", "repo_fixture")
+class PSGetLocalProcessesTests(TestCase):
+    def test_with_0_processes(self) -> None:
+        p = ps.get_local_processes(self.fixtures.tempdb)()
+
+        self.assertEqual(p, [])
+
+    def test_with_1_process(self) -> None:
+        process = factories.BuildProcessFactory()
+        self.fixtures.repo.add_process(process)
+
+        p = ps.get_local_processes(self.fixtures.tempdb)()
+
+        self.assertEqual(p, [process])
+
+    def test_with_multiple_processes(self) -> None:
+        for _ in range(5):
+            process = factories.BuildProcessFactory()
+            self.fixtures.repo.add_process(process)
+
+        self.assertEqual(len(ps.get_local_processes(self.fixtures.tempdb)()), 5)
+
+    def test_with_final_processes(self) -> None:
+        for phase in BuildProcess.final_phases:
+            process = factories.BuildProcessFactory(phase=phase)
+            self.fixtures.repo.add_process(process)
+
+        self.assertEqual(len(ps.get_local_processes(self.fixtures.tempdb)()), 0)
 
 
 @requires("repo", "gbp")

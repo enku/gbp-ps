@@ -65,6 +65,7 @@ dev = [
     "gentoo-build-publisher @ git+https://github.com/enku/gentoo-build-publisher",
     "typos>=1.24.5",
     "unittest-fixtures @ git+https://github.com/enku/unittest-fixtures.git",
+    "factory-boy>=3.3.1",
 ]
 
 [tool.mypy]

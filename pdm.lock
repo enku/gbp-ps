@@ -5,7 +5,7 @@
 groups = ["default", "dev"]
 strategy = []
 lock_version = "4.5.0"
-content_hash = "sha256:cc48ee53143a9a8b43ddcf405d3c797c3bb1459377f47909b7242d4b0b5e51df"
+content_hash = "sha256:14576d2b94e895b9735cfba474116cca8b1355383b5709a9bca4c503adaeeba5"
 
 [[metadata.targets]]
 requires_python = ">=3.11"
@@ -537,6 +537,32 @@ dependencies = [
 files = [
     {file = "django_stubs_ext-5.0.4-py3-none-any.whl", hash = "sha256:910cbaff3d1e8e806a5c27d5ddd4088535aae8371ea921b7fd680fdfa5f14e30"},
     {file = "django_stubs_ext-5.0.4.tar.gz", hash = "sha256:85da065224204774208be29c7d02b4482d5a69218a728465c2fbe41725fdc819"},
+]
+
+[[package]]
+name = "factory-boy"
+version = "3.3.1"
+requires_python = ">=3.8"
+summary = "A versatile test fixtures replacement based on thoughtbot's factory_bot for Ruby."
+dependencies = [
+    "Faker>=0.7.0",
+]
+files = [
+    {file = "factory_boy-3.3.1-py2.py3-none-any.whl", hash = "sha256:7b1113c49736e1e9995bc2a18f4dbf2c52cf0f841103517010b1d825712ce3ca"},
+    {file = "factory_boy-3.3.1.tar.gz", hash = "sha256:8317aa5289cdfc45f9cae570feb07a6177316c82e34d14df3c2e1f22f26abef0"},
+]
+
+[[package]]
+name = "faker"
+version = "29.0.0"
+requires_python = ">=3.8"
+summary = "Faker is a Python package that generates fake data for you."
+dependencies = [
+    "python-dateutil>=2.4",
+]
+files = [
+    {file = "Faker-29.0.0-py3-none-any.whl", hash = "sha256:32d0ee7d42925ff06e4a7d906ee7efbf34f5052a41a2a1eb8bb174a422a5498f"},
+    {file = "faker-29.0.0.tar.gz", hash = "sha256:34e89aec594cad9773431ca479ee95c7ce03dd9f22fda2524e2373b880a2fa77"},
 ]
 
 [[package]]

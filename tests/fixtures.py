@@ -11,7 +11,7 @@ from requests.adapters import BaseAdapter
 from requests.structures import CaseInsensitiveDict
 from unittest_fixtures import FixtureContext, FixtureOptions, Fixtures, depends
 
-from gbp_ps.repository import Repo, RepositoryType
+from gbp_ps.repository import Repo, RepositoryType, sqlite
 from gbp_ps.settings import Settings
 
 
@@ -48,6 +48,18 @@ def gbp(options: FixtureOptions, _fixtures: Fixtures) -> GBP:
     )
 
     return gbp_
+
+
+@depends("tempdir")
+def tempdb(_options: FixtureOptions, fixtures: Fixtures) -> str:
+    return f"{fixtures.tempdir}/processes.db"
+
+
+@depends(tempdb)
+def repo_fixture(
+    _options: FixtureOptions, fixtures: Fixtures
+) -> sqlite.SqliteRepository:
+    return sqlite.SqliteRepository(Settings(SQLITE_DATABASE=fixtures.tempdb))
 
 
 class DjangoToRequestsAdapter(BaseAdapter):  # pylint: disable=abstract-method

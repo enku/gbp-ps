@@ -16,6 +16,8 @@ from rich.table import Table
 
 from gbp_ps import utils
 from gbp_ps.exceptions import swallow_exception
+from gbp_ps.repository import sqlite
+from gbp_ps.settings import Settings
 from gbp_ps.types import BuildProcess
 
 ProcessList: TypeAlias = list[BuildProcess]
@@ -29,7 +31,9 @@ PHASE_PADDING = max(len(i) for i in BuildProcess.build_phases)
 def handler(args: argparse.Namespace, gbp: GBP, console: Console) -> int:
     """Show currently building packages"""
     mode: ModeHandler = MODES[args.continuous]
-    get_processes = get_gbp_processes(gbp)
+    local: str | None = getattr(args, "local", None)
+
+    get_processes = get_local_processes(local) if local else get_gbp_processes(gbp)
 
     return mode(args, get_processes, console)
 
@@ -38,6 +42,9 @@ def parse_args(parser: argparse.ArgumentParser) -> None:
     """Set subcommand arguments"""
     parser.add_argument(
         "--node", action="store_true", default=False, help="display the build node"
+    )
+    parser.add_argument(
+        "--local", "-l", default=None, help="(Where to) Use a local process database"
     )
     parser.add_argument(
         "--continuous",
@@ -79,6 +86,16 @@ def get_gbp_processes(gbp: GBP) -> ProcessGetter:
         results = check(gbp.query.gbp_ps.get_processes())  # type: ignore[attr-defined]
 
         return [graphql_to_process(result) for result in results["buildProcesses"]]
+
+    return get_processes
+
+
+def get_local_processes(database: str) -> ProcessGetter:
+    """Return processes given the path to the local database"""
+    repo = sqlite.SqliteRepository(Settings(SQLITE_DATABASE=database))
+
+    def get_processes() -> ProcessList:
+        return list(repo.get_processes())
 
     return get_processes
 
