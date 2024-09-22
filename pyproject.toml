@@ -31,6 +31,10 @@ gbp_ps = "gbp_ps.graphql"
 ps = "gbp_ps.cli.ps"
 add-process = "gbp_ps.cli.add_process"
 
+[project.entry-points."gbp_ps.repos"]
+django = "gbp_ps.repository.django:DjangoRepository"
+redis = "gbp_ps.repository.redis:RedisRepository"
+sqlite = "gbp_ps.repository.sqlite:SqliteRepository"
 
 [project.optional-dependencies]
 backend = [

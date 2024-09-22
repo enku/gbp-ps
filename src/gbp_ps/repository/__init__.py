@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import importlib.metadata
 from collections.abc import Iterable
 from typing import Generator, Protocol
 
@@ -9,15 +10,7 @@ from gbp_ps.exceptions import RecordNotFoundError, UpdateNotAllowedError
 from gbp_ps.settings import Settings
 from gbp_ps.types import BuildProcess
 
-from .django import DjangoRepository
-from .redis import RedisRepository
-from .sqlite import SqliteRepository
-
-BACKENDS: dict[str, type[RepositoryType]] = {
-    "redis": RedisRepository,
-    "django": DjangoRepository,
-    "sqlite": SqliteRepository,
-}
+BACKENDS = {ep.name: ep for ep in importlib.metadata.entry_points(group="gbp_ps.repos")}
 
 
 class RepositoryType(Protocol):
@@ -54,8 +47,10 @@ def Repo(settings: Settings) -> RepositoryType:  # pylint: disable=invalid-name
     If the GBP_PS_REDIS_URL environment variable is defined and non-empty, return the
     RedisRepository. Otherwise the DjangoRepository is returned.
     """
-    if cls := BACKENDS.get(settings.STORAGE_BACKEND):
+    if entry_point := BACKENDS.get(settings.STORAGE_BACKEND):
+        cls: type[RepositoryType] = entry_point.load()
         return cls(settings)
+
     raise ValueError(f"Invalid storage backend: {settings.STORAGE_BACKEND!r}")
 
 
