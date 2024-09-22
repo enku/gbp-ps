@@ -11,7 +11,7 @@ from unittest_fixtures import requires
 from gbp_ps import signals
 from gbp_ps.types import BuildProcess
 
-from . import TestCase
+from . import TestCase, factories
 
 NODE = "wopr"
 START_TIME = dt.datetime(2023, 12, 10, 13, 53, 46, tzinfo=dt.UTC)
@@ -25,7 +25,7 @@ class SignalsTest(TestCase):
     def test_create_build_process(self) -> None:
         process = signals.build_process(BUILD, NODE, "test", START_TIME)
 
-        expected = BuildProcess(
+        expected: BuildProcess = factories.BuildProcessFactory(
             build_id=BUILD.build_id,
             build_host=NODE,
             machine=BUILD.machine,

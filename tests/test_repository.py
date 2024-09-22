@@ -1,7 +1,6 @@
 """Tests for gbp-ps repositories"""
 
 # pylint: disable=missing-docstring, duplicate-code
-import datetime as dt
 from dataclasses import replace
 from typing import Any, Callable
 from unittest import mock
@@ -18,7 +17,7 @@ from gbp_ps.repository import Repo, RepositoryType, add_or_update_process
 from gbp_ps.settings import Settings
 from gbp_ps.types import BuildProcess
 
-from . import TestCase, make_build_process, parametrized
+from . import TestCase, factories, make_build_process, parametrized
 
 HOST = 0
 REDIS_FROM_URL = "gbp_ps.repository.redis.redis.Redis.from_url"
@@ -50,28 +49,14 @@ class RepositoryTests(TestCase):
     @repos("django", "redis", "sqlite")
     def test_add_process(self, backend: str) -> None:
         repo = get_repo(backend, self.fixtures.settings)
-        build_process = BuildProcess(
-            machine="babette",
-            build_id="1031",
-            build_host="jenkins",
-            package="sys-apps/systemd-254.5-r1",
-            phase="compile",
-            start_time=dt.datetime(2023, 11, 11, 12, 20, 52, tzinfo=dt.timezone.utc),
-        )
+        build_process: BuildProcess = factories.BuildProcessFactory()
         repo.add_process(build_process)
         self.assertEqual([*repo.get_processes()], [build_process])
 
     @repos("django", "redis", "sqlite")
     def test_add_process_when_already_exists(self, backend: str) -> None:
         repo = get_repo(backend, self.fixtures.settings)
-        build_process = BuildProcess(
-            machine="babette",
-            build_id="1031",
-            build_host="jenkins",
-            package="sys-apps/systemd-254.5-r1",
-            phase="postrm",
-            start_time=dt.datetime(2023, 11, 11, 12, 20, 52, tzinfo=dt.timezone.utc),
-        )
+        build_process: BuildProcess = factories.BuildProcessFactory()
         repo.add_process(build_process)
 
         with self.assertRaises(RecordAlreadyExists):
@@ -82,22 +67,12 @@ class RepositoryTests(TestCase):
         self, backend: str
     ) -> None:
         repo = get_repo(backend, self.fixtures.settings)
-        dead_process = BuildProcess(
-            machine="babette",
-            build_id="1031",
-            build_host="jenkins",
-            package="sys-apps/systemd-254.5-r1",
-            phase="compile",
-            start_time=dt.datetime(2023, 11, 11, 12, 20, 52, tzinfo=dt.timezone.utc),
-        )
+        dead_process: BuildProcess = factories.BuildProcessFactory()
         repo.add_process(dead_process)
-        new_process = BuildProcess(
-            machine="babette",
-            build_id="1032",
-            build_host="jenkins",
-            package="sys-apps/systemd-254.5-r1",
-            phase="compile",
-            start_time=dt.datetime(2023, 11, 11, 13, 20, 52, tzinfo=dt.timezone.utc),
+        new_process: BuildProcess = factories.BuildProcessFactory(
+            machine=dead_process.machine,
+            build_host=dead_process.build_host,
+            package=dead_process.package,
         )
         repo.add_process(new_process)
 
@@ -106,14 +81,7 @@ class RepositoryTests(TestCase):
     @repos("django", "redis", "sqlite")
     def test_update_process(self, backend: str) -> None:
         repo = get_repo(backend, self.fixtures.settings)
-        orig_process = BuildProcess(
-            machine="babette",
-            build_id="1031",
-            build_host="jenkins",
-            package="sys-apps/systemd-254.5-r1",
-            phase="postrm",
-            start_time=dt.datetime(2023, 11, 11, 12, 20, 52, tzinfo=dt.timezone.utc),
-        )
+        orig_process: BuildProcess = factories.BuildProcessFactory(phase="compile")
         repo.add_process(orig_process)
 
         updated_process = replace(orig_process, phase="postinst")
@@ -141,14 +109,7 @@ class RepositoryTests(TestCase):
         self, backend: str
     ) -> None:
         repo = get_repo(backend, self.fixtures.settings)
-        orig_process = BuildProcess(
-            machine="babette",
-            build_id="1031",
-            build_host="jenkins",
-            package="pipeline",
-            phase="clean",
-            start_time=dt.datetime(2023, 11, 11, 12, 20, 52, tzinfo=dt.timezone.utc),
-        )
+        orig_process: BuildProcess = factories.BuildProcessFactory(phase="clean")
         repo.add_process(orig_process)
 
         updated_process = replace(orig_process, build_host="gbp", phase="pull")
@@ -172,14 +133,7 @@ class RepositoryTests(TestCase):
     @repos("django", "redis", "sqlite")
     def test_update_process_when_process_not_in_db(self, backend: str) -> None:
         repo = get_repo(backend, self.fixtures.settings)
-        build_process = BuildProcess(
-            machine="babette",
-            build_id="1031",
-            build_host="jenkins",
-            package="sys-apps/systemd-254.5-r1",
-            phase="postrm",
-            start_time=dt.datetime(2023, 11, 11, 12, 20, 52, tzinfo=dt.timezone.utc),
-        )
+        build_process: BuildProcess = factories.BuildProcessFactory()
 
         with self.assertRaises(RecordNotFoundError):
             repo.update_process(build_process)
@@ -192,14 +146,7 @@ class RepositoryTests(TestCase):
     @repos("django", "redis", "sqlite")
     def test_get_processes_with_process(self, backend: str) -> None:
         repo = get_repo(backend, self.fixtures.settings)
-        build_process = BuildProcess(
-            machine="babette",
-            build_id="1031",
-            build_host="jenkins",
-            package="sys-apps/systemd-254.5-r1",
-            phase="compile",
-            start_time=dt.datetime(2023, 11, 11, 12, 20, 52, tzinfo=dt.timezone.utc),
-        )
+        build_process: BuildProcess = factories.BuildProcessFactory()
         repo.add_process(build_process)
 
         self.assertEqual([*repo.get_processes()], [build_process])
@@ -207,14 +154,7 @@ class RepositoryTests(TestCase):
     @repos("django", "redis", "sqlite")
     def test_get_processes_with_final_process(self, backend: str) -> None:
         repo = get_repo(backend, self.fixtures.settings)
-        build_process = BuildProcess(
-            machine="babette",
-            build_id="1031",
-            build_host="jenkins",
-            package="sys-apps/systemd-254.5-r1",
-            phase="postrm",
-            start_time=dt.datetime(2023, 11, 11, 12, 20, 52, tzinfo=dt.timezone.utc),
-        )
+        build_process: BuildProcess = factories.BuildProcessFactory(phase="postrm")
         repo.add_process(build_process)
 
         self.assertEqual([*repo.get_processes()], [])
@@ -222,14 +162,7 @@ class RepositoryTests(TestCase):
     @repos("django", "redis", "sqlite")
     def test_get_processes_with_include_final_process(self, backend: str) -> None:
         repo = get_repo(backend, self.fixtures.settings)
-        build_process = BuildProcess(
-            machine="babette",
-            build_id="1031",
-            build_host="jenkins",
-            package="sys-apps/systemd-254.5-r1",
-            phase="postrm",
-            start_time=dt.datetime(2023, 11, 11, 12, 20, 52, tzinfo=dt.timezone.utc),
-        )
+        build_process: BuildProcess = factories.BuildProcessFactory(phase="postrm")
         repo.add_process(build_process)
 
         self.assertEqual([*repo.get_processes(include_final=True)], [build_process])
