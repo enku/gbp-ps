@@ -21,7 +21,7 @@ from gbp_ps.types import BuildProcess
 from . import TestCase, make_build_process, parametrized
 
 HOST = 0
-REDIS_FROM_URL = "gbp_ps.repository.redis.Redis.from_url"
+REDIS_FROM_URL = "gbp_ps.repository.redis.redis.Redis.from_url"
 
 
 def get_repo(backend: str, settings: Settings) -> RepositoryType:

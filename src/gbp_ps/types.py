@@ -6,6 +6,8 @@ import datetime as dt
 from dataclasses import asdict, dataclass
 from typing import Any
 
+from .exceptions import UpdateNotAllowedError
+
 
 @dataclass(frozen=True, slots=True, kw_only=True)
 class BuildProcess:
@@ -48,6 +50,11 @@ class BuildProcess:
             and self.machine == other.machine
             and self.build_id == other.build_id
         )
+
+    def ensure_updateable(self, new: BuildProcess) -> None:
+        """Raise an exception if process should not be updated to new"""
+        if self.build_host != new.build_host and new.phase in BuildProcess.final_phases:
+            raise UpdateNotAllowedError(self, new)
 
     def to_dict(self) -> dict[str, Any]:
         """Return BuildProcess as a GraphQL dict"""
