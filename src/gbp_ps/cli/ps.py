@@ -6,7 +6,7 @@ import time
 from typing import Any, Callable, NoReturn, TypeAlias
 
 from gbpcli import GBP, render
-from gbpcli.graphql import Query, check
+from gbpcli.graphql import check
 from gbpcli.types import Console
 from rich import box
 from rich.console import RenderableType
@@ -18,8 +18,8 @@ from gbp_ps import utils
 from gbp_ps.exceptions import swallow_exception
 from gbp_ps.types import BuildProcess
 
-ModeHandler = Callable[[argparse.Namespace, Query, Console], int]
-ProcessList: TypeAlias = list[dict[str, Any]]
+ModeHandler = Callable[[argparse.Namespace, GBP, Console], int]
+ProcessList: TypeAlias = list[BuildProcess]
 
 BUILD_PHASE_COUNT = len(BuildProcess.build_phases)
 PHASE_PADDING = max(len(i) for i in BuildProcess.build_phases)
@@ -29,7 +29,7 @@ def handler(args: argparse.Namespace, gbp: GBP, console: Console) -> int:
     """Show currently building packages"""
     mode: ModeHandler = MODES[args.continuous]
 
-    return mode(args, gbp.query.gbp_ps.get_processes, console)  # type: ignore[attr-defined]
+    return mode(args, gbp, console)
 
 
 def parse_args(parser: argparse.ArgumentParser) -> None:
@@ -60,26 +60,29 @@ def parse_args(parser: argparse.ArgumentParser) -> None:
     )
 
 
-def single_handler(
-    args: argparse.Namespace, get_processes: Query, console: Console
-) -> int:
+def single_handler(args: argparse.Namespace, gbp: GBP, console: Console) -> int:
     """Handler for the single-mode run of `gbp ps`"""
-    processes: ProcessList
-
-    if processes := check(get_processes())["buildProcesses"]:
+    if processes := get_processes(args, gbp):
         console.out.print(create_table(processes, args))
 
     return 0
 
 
+def get_processes(args: argparse.Namespace, gbp: GBP) -> ProcessList:
+    """Retrieve and return the ProcessList"""
+    results = check(gbp.query.gbp_ps.get_processes())  # type: ignore[attr-defined]
+
+    return [graphql_to_process(result) for result in results["buildProcesses"]]
+
+
 @swallow_exception(KeyboardInterrupt, returns=0)
 def continuous_handler(
-    args: argparse.Namespace, get_processes: Query, console: Console
+    args: argparse.Namespace, gbp: GBP, console: Console
 ) -> NoReturn:
     """Handler for the continuous-mode run of `gbp ps`"""
 
     def update() -> Table:
-        return create_table(check(get_processes())["buildProcesses"], args)
+        return create_table(get_processes(args, gbp), args)
 
     rate = 1 / args.update_interval
     out = console.out
@@ -88,6 +91,20 @@ def continuous_handler(
         while True:
             time.sleep(args.update_interval)
             live.update(update())
+
+
+def graphql_to_process(result: dict[str, Any]) -> BuildProcess:
+    """Return GraphQL build process output as BuildProcess object"""
+    return BuildProcess(
+        machine=result["machine"],
+        build_id=result["id"],
+        build_host=result["buildHost"],
+        package=result["package"],
+        phase=result["phase"],
+        start_time=dt.datetime.fromisoformat(result["startTime"]).astimezone(
+            render.LOCAL_TIMEZONE
+        ),
+    )
 
 
 def create_table(processes: ProcessList, args: argparse.Namespace) -> Table:
@@ -114,19 +131,15 @@ def create_table(processes: ProcessList, args: argparse.Namespace) -> Table:
     return table
 
 
-def row(process: dict[str, Any], args: argparse.Namespace) -> list[RenderableType]:
+def row(process: BuildProcess, args: argparse.Namespace) -> list[RenderableType]:
     """Return a process row (list) given the process and args"""
     return [
-        render.format_machine(process["machine"], args),
-        render.format_build_number(process["id"]),
-        f"[package]{process['package']}[/package]",
-        utils.format_timestamp(
-            dt.datetime.fromisoformat(process["startTime"]).astimezone(
-                render.LOCAL_TIMEZONE
-            )
-        ),
-        phase_column(process["phase"], args),
-        *([f"[build_host]{process['buildHost']}[/build_host]"] if args.node else []),
+        render.format_machine(process.machine, args),
+        render.format_build_number(int(process.build_id)),
+        f"[package]{process.package}[/package]",
+        utils.format_timestamp(process.start_time),
+        phase_column(process.phase, args),
+        *([f"[build_host]{process.build_host}[/build_host]"] if args.node else []),
     ]
 
 
