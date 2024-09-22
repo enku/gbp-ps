@@ -78,9 +78,6 @@ class SqliteRepository:
                 (process.phase, process.machine, process.build_id, process.package),
             )
 
-        if result.rowcount != 1:
-            raise RecordNotFoundError(process) from None
-
     def get_processes(self, include_final: bool = False) -> Iterable[BuildProcess]:
         """Return the process records from the repository
 
