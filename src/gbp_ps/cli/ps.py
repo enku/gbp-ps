@@ -109,9 +109,7 @@ def graphql_to_process(result: dict[str, Any]) -> BuildProcess:
         build_host=result["buildHost"],
         package=result["package"],
         phase=result["phase"],
-        start_time=dt.datetime.fromisoformat(result["startTime"]).astimezone(
-            render.LOCAL_TIMEZONE
-        ),
+        start_time=dt.datetime.fromisoformat(result["startTime"]),
     )
 
 
@@ -145,7 +143,7 @@ def row(process: BuildProcess, args: argparse.Namespace) -> list[RenderableType]
         render.format_machine(process.machine, args),
         render.format_build_number(int(process.build_id)),
         f"[package]{process.package}[/package]",
-        utils.format_timestamp(process.start_time),
+        utils.format_timestamp(process.start_time.astimezone(render.LOCAL_TIMEZONE)),
         phase_column(process.phase, args),
         *([f"[build_host]{process.build_host}[/build_host]"] if args.node else []),
     ]
