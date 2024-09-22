@@ -91,7 +91,7 @@ def get_gbp_processes(gbp: GBP) -> ProcessGetter:
 
 
 def get_local_processes(database: str) -> ProcessGetter:
-    """Return processes given the path to the local database"""
+    """Return a list of processes given the database path"""
     repo = sqlite.SqliteRepository(Settings(SQLITE_DATABASE=database))
 
     def get_processes() -> ProcessList:

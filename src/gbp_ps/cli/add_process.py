@@ -3,36 +3,70 @@
 import argparse
 import datetime as dt
 import platform
+from typing import Any, Callable, TypeAlias
 
 from gbpcli import GBP
 from gbpcli.graphql import check
 from gbpcli.types import Console
 
+from gbp_ps.repository import add_or_update_process, sqlite
+from gbp_ps.settings import Settings
 from gbp_ps.types import BuildProcess
 
+ProcessAdder: TypeAlias = Callable[[BuildProcess], Any]
 now = dt.datetime.now
 
 
 def handler(args: argparse.Namespace, gbp: GBP, _console: Console) -> int:
     """Show add/update an entry in the process table"""
-    check(
-        gbp.query.gbp_ps.add_process(  # type: ignore[attr-defined]
-            process=BuildProcess(
-                build_host=platform.node(),
-                build_id=args.number,
-                machine=args.machine,
-                package=args.package,
-                phase=args.phase,
-                start_time=now(tz=dt.UTC),
-            ).to_dict()
-        )
-    )
+    local: str | None = getattr(args, "local", None)
+    add_process = add_local_process(local) if local else add_gbp_process(gbp)
+    add_process(build_process_from_args(args))
 
     return 0
 
 
+def add_gbp_process(gbp: GBP) -> ProcessAdder:
+    """Return a function that can use GBP to add/update a given BuildProcess"""
+    query = gbp.query.gbp_ps.add_process  # type: ignore[attr-defined]
+
+    def add_process(process: BuildProcess) -> None:
+        check(query(process=process.to_dict()))
+
+    return add_process
+
+
+def add_local_process(database: str) -> ProcessAdder:
+    """Return a function that can use SqliteRepository to add/update a given BuildProcess"""
+    repo = sqlite.SqliteRepository(Settings(SQLITE_DATABASE=database))
+
+    def add_process(process: BuildProcess) -> None:
+        add_or_update_process(repo, process)
+
+    return add_process
+
+
+def build_process_from_args(args: argparse.Namespace) -> BuildProcess:
+    """Build and return a BuildProcess given the command-line args
+
+    start_time will be the current time.
+    build_host will be the current host.
+    """
+    return BuildProcess(
+        build_host=platform.node(),
+        build_id=args.number,
+        machine=args.machine,
+        package=args.package,
+        phase=args.phase,
+        start_time=now(tz=dt.UTC),
+    )
+
+
 def parse_args(parser: argparse.ArgumentParser) -> None:
     """Set subcommand arguments"""
+    parser.add_argument(
+        "--local", "-l", default=None, help="(Where to) Use a local process database"
+    )
     parser.add_argument("machine", metavar="MACHINE", help="name of the machine")
     parser.add_argument("number", metavar="NUMBER", help="build number")
     parser.add_argument("package", metavar="PACKAGE", help="package CPV")

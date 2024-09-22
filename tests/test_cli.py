@@ -315,3 +315,34 @@ class AddProcessTests(TestCase):
         # Just ensure that parse_args is there and works
         parser = ArgumentParser()
         add_process.parse_args(parser)
+
+
+@requires("tempdb", "repo_fixture")
+class AddProcessAddLocalProcessesTests(TestCase):
+    def test(self) -> None:
+        process = factories.BuildProcessFactory()
+
+        add_process.add_local_process(self.fixtures.tempdb)(process)
+
+        result = self.fixtures.repo.get_processes()
+
+        self.assertEqual(list(result), [process])
+
+
+class BuildProcessFromArgsTests(TestCase):
+    def test(self) -> None:
+        expected = factories.BuildProcessFactory()
+        args = Namespace(
+            machine=expected.machine,
+            number=expected.build_id,
+            package=expected.package,
+            phase=expected.phase,
+        )
+
+        with mock.patch("gbp_ps.cli.add_process.now", return_value=expected.start_time):
+            with mock.patch(
+                "gbp_ps.cli.add_process.platform.node", return_value=expected.build_host
+            ):
+                process = add_process.build_process_from_args(args)
+
+        self.assertEqual(process, expected)
