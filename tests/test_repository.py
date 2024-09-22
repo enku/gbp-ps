@@ -14,35 +14,27 @@ from gbp_ps.exceptions import (
     RecordNotFoundError,
     UpdateNotAllowedError,
 )
-from gbp_ps.repository import (
-    DjangoRepository,
-    RedisRepository,
-    RepositoryType,
-    add_or_update_process,
-)
+from gbp_ps.repository import Repo, RepositoryType, add_or_update_process
 from gbp_ps.settings import Settings
 from gbp_ps.types import BuildProcess
 
 from . import TestCase, make_build_process, parametrized
 
 HOST = 0
+REDIS_FROM_URL = "gbp_ps.repository.redis.Redis.from_url"
 
 
 def get_repo(backend: str, settings: Settings) -> RepositoryType:
     global HOST  # pylint: disable=global-statement
-    HOST += 1
-
+    settings = replace(settings, STORAGE_BACKEND=backend)
     if backend == "redis":
-        redis_path = "gbp_ps.repository.redis.Redis.from_url"
-        host = f"host{HOST}"
-        mock_redis = fakeredis.FakeRedis(host=host)
-        with mock.patch(redis_path, return_value=mock_redis):
-            return RedisRepository(settings)
+        fake_redis = fakeredis.FakeRedis(host=f"host{(HOST := HOST + 1)}")
+        repo_patch = mock.patch(REDIS_FROM_URL, return_value=fake_redis)
+    else:
+        repo_patch = mock.MagicMock()
 
-    if backend == "django":
-        return DjangoRepository(settings)
-
-    raise ValueError(f"Unknown STORAGE_BACKEND: {backend!r}")
+    with repo_patch:
+        return Repo(settings)
 
 
 def repos(*names: str) -> Callable[[Callable[[Any, str], None]], None]:
@@ -55,7 +47,7 @@ class RepositoryTests(TestCase):
         "environ": {"GBP_PS_REDIS_KEY": "gbp-ps-test", "GBP_PS_KEY_EXPIRATION": "3600"}
     }
 
-    @repos("django", "redis")
+    @repos("django", "redis", "sqlite")
     def test_add_process(self, backend: str) -> None:
         repo = get_repo(backend, self.fixtures.settings)
         build_process = BuildProcess(
@@ -69,7 +61,7 @@ class RepositoryTests(TestCase):
         repo.add_process(build_process)
         self.assertEqual([*repo.get_processes()], [build_process])
 
-    @repos("django", "redis")
+    @repos("django", "redis", "sqlite")
     def test_add_process_when_already_exists(self, backend: str) -> None:
         repo = get_repo(backend, self.fixtures.settings)
         build_process = BuildProcess(
@@ -85,7 +77,7 @@ class RepositoryTests(TestCase):
         with self.assertRaises(RecordAlreadyExists):
             repo.add_process(build_process)
 
-    @repos("django", "redis")
+    @repos("django", "redis", "sqlite")
     def test_add_process_same_package_in_different_builds_exist_only_once(
         self, backend: str
     ) -> None:
@@ -111,7 +103,7 @@ class RepositoryTests(TestCase):
 
         self.assertEqual([*repo.get_processes()], [new_process])
 
-    @repos("django", "redis")
+    @repos("django", "redis", "sqlite")
     def test_update_process(self, backend: str) -> None:
         repo = get_repo(backend, self.fixtures.settings)
         orig_process = BuildProcess(
@@ -131,7 +123,7 @@ class RepositoryTests(TestCase):
         expected = replace(orig_process, phase="postinst")
         self.assertEqual([*repo.get_processes()], [expected])
 
-    @repos("django", "redis")
+    @repos("django", "redis", "sqlite")
     def test_update_process_finalize_when_not_owned(self, backend: str) -> None:
         # This demonstrates the concept of build host "ownership". A a process can only
         # be updated with a "final" phase if the build host is the same. Otherwise it
@@ -166,7 +158,7 @@ class RepositoryTests(TestCase):
         expected = replace(orig_process, build_host="gbp", phase="pull")
         self.assertEqual([*repo.get_processes()], [expected])
 
-    @repos("django", "redis")
+    @repos("django", "redis", "sqlite")
     def test_add_or_update_ignores_notallowederror(self, backend: str) -> None:
         repo = get_repo(backend, self.fixtures.settings)
         process1 = make_build_process(add_to_repo=False)
@@ -177,7 +169,7 @@ class RepositoryTests(TestCase):
 
         self.assertEqual([*repo.get_processes()], [process1])
 
-    @repos("django", "redis")
+    @repos("django", "redis", "sqlite")
     def test_update_process_when_process_not_in_db(self, backend: str) -> None:
         repo = get_repo(backend, self.fixtures.settings)
         build_process = BuildProcess(
@@ -192,12 +184,12 @@ class RepositoryTests(TestCase):
         with self.assertRaises(RecordNotFoundError):
             repo.update_process(build_process)
 
-    @repos("django", "redis")
+    @repos("django", "redis", "sqlite")
     def test_get_processes_with_empty_list(self, backend: str) -> None:
         repo = get_repo(backend, self.fixtures.settings)
         self.assertEqual([*repo.get_processes()], [])
 
-    @repos("django", "redis")
+    @repos("django", "redis", "sqlite")
     def test_get_processes_with_process(self, backend: str) -> None:
         repo = get_repo(backend, self.fixtures.settings)
         build_process = BuildProcess(
@@ -212,7 +204,7 @@ class RepositoryTests(TestCase):
 
         self.assertEqual([*repo.get_processes()], [build_process])
 
-    @repos("django", "redis")
+    @repos("django", "redis", "sqlite")
     def test_get_processes_with_final_process(self, backend: str) -> None:
         repo = get_repo(backend, self.fixtures.settings)
         build_process = BuildProcess(
@@ -227,7 +219,7 @@ class RepositoryTests(TestCase):
 
         self.assertEqual([*repo.get_processes()], [])
 
-    @repos("django", "redis")
+    @repos("django", "redis", "sqlite")
     def test_get_processes_with_include_final_process(self, backend: str) -> None:
         repo = get_repo(backend, self.fixtures.settings)
         build_process = BuildProcess(

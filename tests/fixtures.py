@@ -20,10 +20,12 @@ def tempdir(_options: FixtureOptions, _fixtures: Fixtures) -> FixtureContext[str
         yield tempdir_
 
 
+@depends("tempdir")
 def environ(
-    options: FixtureOptions, _fixtures: Fixtures
+    options: FixtureOptions, fixtures: Fixtures
 ) -> FixtureContext[dict[str, str]]:
-    new_environ = options.get("environ", {})
+    new_environ = options.get("environ", {}).copy()
+    new_environ["GBP_PS_SQLITE_DATABASE"] = f"{fixtures.tempdir}/db.sqlite"
     with mock.patch.dict("os.environ", new_environ, clear=True):
         yield new_environ
 

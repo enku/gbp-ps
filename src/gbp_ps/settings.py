@@ -18,4 +18,5 @@ class Settings(BaseSettings):
     REDIS_KEY: str = "gbp-ps"
     REDIS_KEY_EXPIRATION: int = DEFAULT_REDIS_KEY_EXPIRATION
     REDIS_URL: str = "redis://redis.invalid:6379/0"
+    SQLITE_DATABASE: str = ":memory:"
     STORAGE_BACKEND: str = "django"

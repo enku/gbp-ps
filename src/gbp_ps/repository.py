@@ -4,8 +4,10 @@ from __future__ import annotations
 
 import datetime as dt
 import json
+import sqlite3
 from collections.abc import Iterable
-from typing import Protocol
+from contextlib import contextmanager
+from typing import Generator, Protocol
 
 import redis
 
@@ -46,18 +48,6 @@ class RepositoryType(Protocol):
         If include_final is True also include processes in their "final" phase. The
         default value is False.
         """
-
-
-def Repo(settings: Settings) -> RepositoryType:  # pylint: disable=invalid-name
-    """Return a Repository
-
-    If the GBP_PS_REDIS_URL environment variable is defined and non-empty, return the
-    RedisRepository. Otherwise the DjangoRepository is returned.
-    """
-    if settings.STORAGE_BACKEND == "redis":
-        return RedisRepository(settings)
-
-    return DjangoRepository(settings)  # pragma: no cover
 
 
 class RedisRepository:
@@ -246,6 +236,190 @@ class DjangoRepository:
             query = query.exclude(phase__in=BuildProcess.final_phases)
 
         return (model.to_object() for model in query)
+
+
+class SqliteRepository:
+    """Sqlite Based Repository"""
+
+    final_phases_t = tuple(BuildProcess.final_phases)
+    filter_phases = f"WHERE phase NOT IN ({','.join(['?' for _ in final_phases_t])})"
+    row_names = "machine, build_id, build_host, package, phase, start_time"
+
+    def __init__(self, settings: Settings) -> None:
+        database: bytes | str = settings.SQLITE_DATABASE
+        self._database = database
+        self.init_db()
+
+    def add_process(self, process: BuildProcess) -> None:
+        """Add the given BuildProcess to the repository
+
+        If the process already exists in the repo, RecordAlreadyExists is raised
+        """
+        # If this package exists in another build, remove it. This (usually) means the
+        # other build failed
+        query = """
+            DELETE FROM ebuild_process
+            WHERE build_id != ? AND machine = ? AND package = ?
+        """
+        with self.cursor() as cursor:
+            cursor.execute(query, (process.build_id, process.machine, process.package))
+
+        query = f"""
+            INSERT INTO ebuild_process ({self.row_names})
+            VALUES (?,?,?,?,?,?)
+        """
+        with self.cursor() as cursor:
+            try:
+                cursor.execute(query, self.process_to_row(process))
+            except sqlite3.IntegrityError:
+                raise RecordAlreadyExists(process) from None
+
+    def update_process(self, process: BuildProcess) -> None:
+        """Update the given build process
+
+        Only updates the phase field
+
+        If the build process doesn't exist in the repo, RecordNotFoundError is raised.
+        """
+        query = """
+            SELECT machine,build_id,build_host,package,phase,start_time
+            FROM ebuild_process
+            WHERE machine = ? AND build_id = ? AND package = ?
+        """
+        with self.cursor() as cursor:
+            result = cursor.execute(
+                query, (process.machine, process.build_id, process.package)
+            )
+            row = result.fetchone()
+        if not row:
+            raise RecordNotFoundError(process) from None
+        previous = self.row_to_process(*row)
+        ensure_updateable(previous, process)
+        query = """
+            UPDATE ebuild_process
+            SET phase = ?
+            WHERE machine = ? AND build_id = ? AND package = ?
+        """
+        with self.cursor() as cursor:
+            result = cursor.execute(
+                query,
+                (process.phase, process.machine, process.build_id, process.package),
+            )
+
+        if result.rowcount != 1:
+            raise RecordNotFoundError(process) from None
+
+    def get_processes(self, include_final: bool = False) -> Iterable[BuildProcess]:
+        """Return the process records from the repository
+
+        If include_final is True also include processes in their "final" phase. The
+        default value is False.
+        """
+        exclude_final = not include_final
+        query = f"""
+            SELECT machine,build_id,build_host,package,phase,start_time
+            FROM ebuild_process
+            {self.filter_phases if exclude_final else ""}
+            ORDER BY start_time
+        """
+        params = self.final_phases_t if exclude_final else ()
+
+        with self.cursor() as cursor:
+            result = cursor.execute(query, params)
+            for row in result:
+                yield self.row_to_process(*row)
+
+    @staticmethod
+    def row_to_process(  # pylint: disable=too-many-arguments
+        machine: str,
+        build_id: str,
+        build_host: str,
+        package: str,
+        phase: str,
+        start_time: str,
+    ) -> BuildProcess:
+        """Return a BuildProcess given the sql row data"""
+        return BuildProcess(
+            machine=machine,
+            build_id=build_id,
+            build_host=build_host,
+            package=package,
+            phase=phase,
+            start_time=dt.datetime.fromisoformat(start_time),
+        )
+
+    @staticmethod
+    def process_to_row(process: BuildProcess) -> tuple[str, ...]:
+        """Return the tuple of rows given the BuildProcess"""
+        return (
+            process.machine,
+            process.build_id,
+            process.build_host,
+            process.package,
+            process.phase,
+            process.start_time.isoformat(),
+        )
+
+    def init_db(self) -> None:
+        """Initialize the database"""
+        create_table = """
+CREATE TABLE IF NOT EXISTS ebuild_process (
+    machine VARCHAR(255),
+    build_id VARCHAR(255),
+    build_host VARCHAR(255),
+    package VARCHAR(255),
+    phase VARCHAR(255),
+    start_time TEXT
+);
+"""
+        create_machine_idx = """
+CREATE INDEX IF NOT EXISTS idx_machine
+ON ebuild_process (machine)
+"""
+        create_phase_idx = """
+CREATE INDEX IF NOT EXISTS idx_phase
+ON ebuild_process (phase)
+"""
+        create_unique_idx = """
+CREATE UNIQUE INDEX IF NOT EXISTS idx_unique_process
+ON ebuild_process (machine, build_id, build_host, package)
+"""
+        with self.cursor() as cursor:
+            cursor.execute(create_table)
+            cursor.execute(create_machine_idx)
+            cursor.execute(create_phase_idx)
+            cursor.execute(create_unique_idx)
+
+    @contextmanager
+    def cursor(self) -> Generator[sqlite3.Cursor, None, None]:
+        """Connect to the db and return a cursor object"""
+        with sqlite3.connect(self._database) as connection:
+            cursor = connection.cursor()
+            try:
+                yield cursor
+            finally:
+                cursor.close()
+
+    def __repr__(self) -> str:
+        return type(self).__name__
+
+
+BACKENDS: dict[str, type[RepositoryType]] = {
+    "redis": RedisRepository,
+    "django": DjangoRepository,
+    "sqlite": SqliteRepository,
+}
+
+
+def Repo(settings: Settings) -> RepositoryType:  # pylint: disable=invalid-name
+    """Return a Repository
+
+    If the GBP_PS_REDIS_URL environment variable is defined and non-empty, return the
+    RedisRepository. Otherwise the DjangoRepository is returned.
+    """
+    if cls := BACKENDS.get(settings.STORAGE_BACKEND):
+        return cls(settings)
+    raise ValueError(f"Invalid storage backend: {settings.STORAGE_BACKEND!r}")
 
 
 def ensure_updateable(old: BuildProcess, new: BuildProcess) -> None:
