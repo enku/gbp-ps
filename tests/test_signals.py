@@ -6,6 +6,7 @@ from unittest import mock
 
 from gentoo_build_publisher.signals import dispatcher
 from gentoo_build_publisher.types import Build
+from unittest_fixtures import requires
 
 from gbp_ps import signals
 from gbp_ps.types import BuildProcess
@@ -17,6 +18,7 @@ START_TIME = dt.datetime(2023, 12, 10, 13, 53, 46, tzinfo=dt.UTC)
 BUILD = Build(machine="babette", build_id="10")
 
 
+@requires("repo")
 @mock.patch("gbp_ps.signals._NODE", new=NODE)
 @mock.patch("gbp_ps.signals._now", mock.Mock(return_value=START_TIME))
 class SignalsTest(TestCase):
@@ -36,14 +38,14 @@ class SignalsTest(TestCase):
     def test_prepull_handler(self) -> None:
         signals.prepull_handler(build=BUILD)
 
-        processes = [*self.repo.get_processes(include_final=True)]
+        processes = [*self.fixtures.repo.get_processes(include_final=True)]
         expected = signals.build_process(BUILD, NODE, "pull", START_TIME)
         self.assertEqual(processes, [expected])
 
     def test_postpull_handler(self) -> None:
         signals.postpull_handler(build=BUILD)
 
-        processes = [*self.repo.get_processes(include_final=True)]
+        processes = [*self.fixtures.repo.get_processes(include_final=True)]
         expected = signals.build_process(BUILD, NODE, "clean", START_TIME)
         self.assertEqual(processes, [expected])
 
@@ -51,20 +53,20 @@ class SignalsTest(TestCase):
         signals.prepull_handler(build=BUILD)
         signals.postpull_handler(build=BUILD)
 
-        processes = [*self.repo.get_processes(include_final=True)]
+        processes = [*self.fixtures.repo.get_processes(include_final=True)]
         expected = signals.build_process(BUILD, NODE, "clean", START_TIME)
         self.assertEqual(processes, [expected])
 
     def test_dispatcher_calls_prepull_handler(self) -> None:
         dispatcher.emit("prepull", build=BUILD)
 
-        processes = [*self.repo.get_processes(include_final=True)]
+        processes = [*self.fixtures.repo.get_processes(include_final=True)]
         expected = signals.build_process(BUILD, NODE, "pull", START_TIME)
         self.assertEqual(processes, [expected])
 
     def test_dispatcher_calls_postpull_handler(self) -> None:
         dispatcher.emit("postpull", build=BUILD)
 
-        processes = [*self.repo.get_processes(include_final=True)]
+        processes = [*self.fixtures.repo.get_processes(include_final=True)]
         expected = signals.build_process(BUILD, NODE, "clean", START_TIME)
         self.assertEqual(processes, [expected])

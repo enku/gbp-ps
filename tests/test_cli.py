@@ -9,14 +9,10 @@ from functools import partial
 from unittest import mock
 
 import rich.console
-from django.test.client import Client
-from gbpcli import GBP
 from gbpcli.theme import DEFAULT_THEME
 from gbpcli.types import Console
-from requests import Response
-from requests.adapters import BaseAdapter
-from requests.structures import CaseInsensitiveDict
 from rich.theme import Theme
+from unittest_fixtures import requires
 
 from gbp_ps.cli import add_process, ps
 
@@ -38,51 +34,11 @@ def string_console() -> tuple[Console, io.StringIO, io.StringIO]:
     )
 
 
-def test_gbp(url: str) -> GBP:
-    """Return a gbp instance capable of calling the /graphql view"""
-    gbp = GBP(url)
-    gbp.query._session.mount(  # pylint: disable=protected-access
-        url, DjangoToRequestsAdapter()
-    )
-
-    return gbp
-
-
-class DjangoToRequestsAdapter(BaseAdapter):  # pylint: disable=abstract-method
-    """Requests Adapter to call Django views"""
-
-    def send(  # pylint: disable=too-many-arguments
-        self, request, stream=False, timeout=None, verify=True, cert=None, proxies=None
-    ) -> Response:
-        django_response = Client().generic(
-            request.method,
-            request.path_url,
-            data=request.body,
-            content_type=request.headers["Content-Type"],
-            **request.headers,
-        )
-
-        requests_response = Response()
-        requests_response.raw = io.BytesIO(django_response.content)
-        requests_response.raw.seek(0)
-        requests_response.status_code = django_response.status_code
-        requests_response.headers = CaseInsensitiveDict(django_response.headers)
-        requests_response.encoding = django_response.get("Content-Type", None)
-        requests_response.url = str(request.url)
-        requests_response.request = request
-
-        return requests_response
-
-
+@requires("gbp")
 class PSTests(TestCase):
     """Tests for gbp ps"""
 
     maxDiff = None
-
-    def setUp(self) -> None:
-        super().setUp()
-
-        self.gbp = test_gbp("http://gbp.invalid/")
 
     @mock.patch("gbpcli.render.LOCAL_TIMEZONE", new=LOCAL_TIMEZONE)
     @mock.patch("gbp_ps.cli.ps.utils.get_today", new=lambda: dt.date(2023, 11, 15))
@@ -99,7 +55,7 @@ class PSTests(TestCase):
         )
         console, stdout = string_console()[:2]
 
-        exit_status = ps.handler(args, self.gbp, console)
+        exit_status = ps.handler(args, self.fixtures.gbp, console)
 
         self.assertEqual(exit_status, 0)
         expected = """\
@@ -129,7 +85,7 @@ class PSTests(TestCase):
         )
         console, stdout = string_console()[:2]
 
-        exit_status = ps.handler(args, self.gbp, console)
+        exit_status = ps.handler(args, self.fixtures.gbp, console)
 
         self.assertEqual(exit_status, 0)
         expected = """\
@@ -158,7 +114,7 @@ class PSTests(TestCase):
             url="http://gbp.invalid/", node=True, continuous=False, progress=False
         )
         console, stdout = string_console()[:2]
-        exit_status = ps.handler(args, self.gbp, console)
+        exit_status = ps.handler(args, self.fixtures.gbp, console)
 
         self.assertEqual(exit_status, 0)
         expected = """\
@@ -196,7 +152,7 @@ class PSTests(TestCase):
 
         # First compile it
         console, stdout, _ = string_console()
-        ps.handler(args, self.gbp, console)
+        ps.handler(args, self.fixtures.gbp, console)
 
         self.assertEqual(
             stdout.getvalue(),
@@ -213,7 +169,7 @@ class PSTests(TestCase):
         # Now it's done compiling
         update(phase="clean", start_time=orig_start + dt.timedelta(seconds=60))
         console, stdout, _ = string_console()
-        ps.handler(args, self.gbp, console)
+        ps.handler(args, self.fixtures.gbp, console)
 
         self.assertEqual(stdout.getvalue(), "")
 
@@ -224,7 +180,7 @@ class PSTests(TestCase):
             start_time=orig_start + dt.timedelta(seconds=120),
         )
         console, stdout, _ = string_console()
-        ps.handler(args, self.gbp, console)
+        ps.handler(args, self.fixtures.gbp, console)
 
         self.assertEqual(
             stdout.getvalue(),
@@ -243,7 +199,7 @@ class PSTests(TestCase):
             url="http://gbp.invalid/", node=False, continuous=False, progress=False
         )
         console, stdout = string_console()[:2]
-        exit_status = ps.handler(args, self.gbp, console)
+        exit_status = ps.handler(args, self.fixtures.gbp, console)
 
         self.assertEqual(exit_status, 0)
         self.assertEqual(stdout.getvalue(), "")
@@ -298,15 +254,11 @@ class PSParseArgsTests(TestCase):
         ps.parse_args(parser)
 
 
+@requires("repo", "gbp")
 class AddProcessTests(TestCase):
     """Tests for gbp add-process"""
 
     maxDiff = None
-
-    def setUp(self) -> None:
-        super().setUp()
-
-        self.gbp = test_gbp("http://gbp.invalid/")
 
     @mock.patch("gbp_ps.cli.add_process.now")
     def test(self, mock_now: mock.Mock) -> None:
@@ -323,10 +275,10 @@ class AddProcessTests(TestCase):
             url="http://gbp.invalid/",
             progress=False,
         )
-        exit_status = add_process.handler(args, self.gbp, console)
+        exit_status = add_process.handler(args, self.fixtures.gbp, console)
 
         self.assertEqual(exit_status, 0)
-        self.assertEqual([*self.repo.get_processes()], [process])
+        self.assertEqual([*self.fixtures.repo.get_processes()], [process])
 
     def test_parse_args(self) -> None:
         # Just ensure that parse_args is there and works

@@ -7,6 +7,7 @@ from typing import Any, Callable
 from unittest import mock
 
 import fakeredis
+from unittest_fixtures import requires
 
 from gbp_ps.exceptions import (
     RecordAlreadyExists,
@@ -52,6 +53,7 @@ def repos(*names: str) -> Callable[[Callable[[Any, RepositoryType], None]], None
     return parametrized([[set_repo(name)] for name in names])
 
 
+@requires("tempdir")
 class RepositoryTests(TestCase):
     @repos("django", "redis")
     def test_add_process(self, repo: RepositoryType) -> None:

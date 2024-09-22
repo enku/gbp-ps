@@ -64,6 +64,7 @@ dev = [
     "fakeredis>=2.20.0",
     "gentoo-build-publisher @ git+https://github.com/enku/gentoo-build-publisher",
     "typos>=1.24.5",
+    "unittest-fixtures @ git+https://github.com/enku/unittest-fixtures.git",
 ]
 
 [tool.mypy]

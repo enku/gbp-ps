@@ -2,13 +2,11 @@
 
 # pylint: disable=missing-docstring
 import datetime as dt
-import os
-import tempfile
 from functools import wraps
-from typing import Any, Callable, Iterable
-from unittest import mock
+from typing import Any, Callable, Iterable, TypeVar
 
 from django.test import TestCase as DjangoTestCase
+from unittest_fixtures import BaseTestCase
 
 from gbp_ps.repository import Repo, add_or_update_process
 from gbp_ps.settings import Settings
@@ -17,22 +15,8 @@ from gbp_ps.types import BuildProcess
 LOCAL_TIMEZONE = dt.timezone(dt.timedelta(days=-1, seconds=61200), "PDT")
 
 
-class TestCase(DjangoTestCase):
+class TestCase(DjangoTestCase, BaseTestCase):
     """Custom TestCase for gbp-ps tests"""
-
-    def setUp(self) -> None:
-        super().setUp()
-
-        tempdir = tempfile.TemporaryDirectory()  # pylint: disable=consider-using-with
-        self.addCleanup(tempdir.cleanup)
-        gbp_settings = {
-            "BUILD_PUBLISHER_JENKINS_BASE_URL": "http://jenkins.invalid",
-            "BUILD_PUBLISHER_STORAGE_PATH": tempdir.name,
-        }
-        patcher = mock.patch.dict(os.environ, gbp_settings)
-        self.addCleanup(patcher.stop)
-        patcher.start()
-        self.repo = Repo(Settings.from_environ())
 
 
 def make_build_process(**kwargs: Any) -> BuildProcess:
@@ -61,10 +45,13 @@ def make_build_process(**kwargs: Any) -> BuildProcess:
     return build_process
 
 
-def parametrized(lists_of_args: Iterable[Iterable[Any]]) -> Callable:
+T = TypeVar("T")
+
+
+def parametrized(lists_of_args: Iterable[Iterable[Any]]) -> Callable[..., Any]:
     """Parameterized test"""
 
-    def dec(func: Callable):
+    def dec(func: Callable[..., Any]) -> Callable[[TestCase, T], None]:
         @wraps(func)
         def wrapper(self: TestCase, *args: Any, **kwargs: Any) -> None:
             for list_of_args in lists_of_args:
