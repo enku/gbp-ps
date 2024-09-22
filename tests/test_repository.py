@@ -13,7 +13,7 @@ from gbp_ps.exceptions import (
     RecordNotFoundError,
     UpdateNotAllowedError,
 )
-from gbp_ps.repository import Repo, RepositoryType, add_or_update_process
+from gbp_ps.repository import Repo, RepositoryType, add_or_update_process, sqlite
 from gbp_ps.settings import Settings
 from gbp_ps.types import BuildProcess
 
@@ -166,3 +166,15 @@ class RepositoryTests(TestCase):
         repo.add_process(build_process)
 
         self.assertEqual([*repo.get_processes(include_final=True)], [build_process])
+
+    def test_repo_factory_success(self) -> None:
+        settings = replace(self.fixtures.settings, STORAGE_BACKEND="sqlite")
+        repo = Repo(settings)
+
+        self.assertTrue(isinstance(repo, sqlite.SqliteRepository))
+
+    def test_repo_factory_failure(self) -> None:
+        settings = replace(self.fixtures.settings, STORAGE_BACKEND="bogus")
+
+        with self.assertRaises(ValueError):
+            Repo(settings)
