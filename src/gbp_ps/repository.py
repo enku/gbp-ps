@@ -336,7 +336,7 @@ class SqliteRepository:
         build_host: str,
         package: str,
         phase: str,
-        start_time: str,
+        start_time: int,
     ) -> BuildProcess:
         """Return a BuildProcess given the sql row data"""
         return BuildProcess(
@@ -345,11 +345,11 @@ class SqliteRepository:
             build_host=build_host,
             package=package,
             phase=phase,
-            start_time=dt.datetime.fromisoformat(start_time),
+            start_time=dt.datetime.fromtimestamp(start_time, tz=dt.UTC),
         )
 
     @staticmethod
-    def process_to_row(process: BuildProcess) -> tuple[str, ...]:
+    def process_to_row(process: BuildProcess) -> tuple[str, str, str, str, str, int]:
         """Return the tuple of rows given the BuildProcess"""
         return (
             process.machine,
@@ -357,7 +357,7 @@ class SqliteRepository:
             process.build_host,
             process.package,
             process.phase,
-            process.start_time.isoformat(),
+            int(process.start_time.timestamp()),
         )
 
     def init_db(self) -> None:
@@ -369,7 +369,7 @@ CREATE TABLE IF NOT EXISTS ebuild_process (
     build_host VARCHAR(255),
     package VARCHAR(255),
     phase VARCHAR(255),
-    start_time TEXT
+    start_time INTEGER
 );
 """
         create_machine_idx = """
