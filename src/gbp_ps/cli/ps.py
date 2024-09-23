@@ -16,7 +16,7 @@ from rich.table import Table
 
 from gbp_ps import utils
 from gbp_ps.exceptions import swallow_exception
-from gbp_ps.repository import sqlite
+from gbp_ps.repository import Repo
 from gbp_ps.settings import Settings
 from gbp_ps.types import BuildProcess
 
@@ -92,7 +92,7 @@ def get_gbp_processes(gbp: GBP) -> ProcessGetter:
 
 def get_local_processes(database: str) -> ProcessGetter:
     """Return a list of processes given the database path"""
-    repo = sqlite.SqliteRepository(Settings(SQLITE_DATABASE=database))
+    repo = Repo(Settings(STORAGE_BACKEND="sqlite", SQLITE_DATABASE=database))
 
     def get_processes() -> ProcessList:
         return list(repo.get_processes())

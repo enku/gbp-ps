@@ -9,7 +9,7 @@ from gbpcli import GBP
 from gbpcli.graphql import check
 from gbpcli.types import Console
 
-from gbp_ps.repository import add_or_update_process, sqlite
+from gbp_ps.repository import Repo, add_or_update_process
 from gbp_ps.settings import Settings
 from gbp_ps.types import BuildProcess
 
@@ -38,7 +38,7 @@ def add_gbp_process(gbp: GBP) -> ProcessAdder:
 
 def add_local_process(database: str) -> ProcessAdder:
     """Return a function that can use SqliteRepository to add/update a given BuildProcess"""
-    repo = sqlite.SqliteRepository(Settings(SQLITE_DATABASE=database))
+    repo = Repo(Settings(STORAGE_BACKEND="sqlite", SQLITE_DATABASE=database))
 
     def add_process(process: BuildProcess) -> None:
         add_or_update_process(repo, process)
