@@ -1,38 +1,17 @@
-"""CLI unit tests for gbp-ps"""
+"""CLI unit tests for gbp-ps ps subcommand"""
 
 # pylint: disable=missing-docstring
 import datetime as dt
-import io
-import platform
 from argparse import ArgumentParser, Namespace
 from functools import partial
 from unittest import mock
 
-import rich.console
-from gbpcli.theme import DEFAULT_THEME
-from gbpcli.types import Console
-from rich.theme import Theme
 from unittest_fixtures import requires
 
-from gbp_ps.cli import add_process, ps
+from gbp_ps.cli import ps
 from gbp_ps.types import BuildProcess
 
-from . import LOCAL_TIMEZONE, TestCase, factories, make_build_process
-
-
-def string_console() -> tuple[Console, io.StringIO, io.StringIO]:
-    """StringIO Console"""
-    out = io.StringIO()
-    err = io.StringIO()
-
-    return (
-        Console(
-            out=rich.console.Console(file=out, width=88, theme=Theme(DEFAULT_THEME)),
-            err=rich.console.Console(file=err),
-        ),
-        out,
-        err,
-    )
+from . import LOCAL_TIMEZONE, TestCase, factories, make_build_process, string_console
 
 
 @requires("gbp")
@@ -283,66 +262,3 @@ class PSGetLocalProcessesTests(TestCase):
             self.fixtures.repo.add_process(process)
 
         self.assertEqual(len(ps.get_local_processes(self.fixtures.tempdb)()), 0)
-
-
-@requires("repo", "gbp")
-class AddProcessTests(TestCase):
-    """Tests for gbp add-process"""
-
-    maxDiff = None
-
-    @mock.patch("gbp_ps.cli.add_process.now")
-    def test(self, mock_now: mock.Mock) -> None:
-        now = mock_now.return_value = dt.datetime(2023, 11, 20, 17, 57, tzinfo=dt.UTC)
-        process = make_build_process(
-            add_to_repo=False, build_host=platform.node(), start_time=now
-        )
-        console = string_console()[0]
-        args = Namespace(
-            machine=process.machine,
-            number=process.build_id,
-            package=process.package,
-            phase=process.phase,
-            url="http://gbp.invalid/",
-            progress=False,
-        )
-        exit_status = add_process.handler(args, self.fixtures.gbp, console)
-
-        self.assertEqual(exit_status, 0)
-        self.assertEqual([*self.fixtures.repo.get_processes()], [process])
-
-    def test_parse_args(self) -> None:
-        # Just ensure that parse_args is there and works
-        parser = ArgumentParser()
-        add_process.parse_args(parser)
-
-
-@requires("tempdb", "repo_fixture")
-class AddProcessAddLocalProcessesTests(TestCase):
-    def test(self) -> None:
-        process = factories.BuildProcessFactory()
-
-        add_process.add_local_process(self.fixtures.tempdb)(process)
-
-        result = self.fixtures.repo.get_processes()
-
-        self.assertEqual(list(result), [process])
-
-
-class BuildProcessFromArgsTests(TestCase):
-    def test(self) -> None:
-        expected = factories.BuildProcessFactory()
-        args = Namespace(
-            machine=expected.machine,
-            number=expected.build_id,
-            package=expected.package,
-            phase=expected.phase,
-        )
-
-        with mock.patch("gbp_ps.cli.add_process.now", return_value=expected.start_time):
-            with mock.patch(
-                "gbp_ps.cli.add_process.platform.node", return_value=expected.build_host
-            ):
-                process = add_process.build_process_from_args(args)
-
-        self.assertEqual(process, expected)
