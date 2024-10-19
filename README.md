@@ -40,7 +40,7 @@ if [[ -f /Makefile.gbp && "${EBUILD_PHASE}" != depend ]]; then
         --header="Content-type: application/json" \
         --method=POST \
         --body-data="${WGET_BODY}" \
-        http://gbp/graphql &
+        http://gbp/graphql
 fi
 ```
 
