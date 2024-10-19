@@ -29,8 +29,8 @@ gbp_ps = "gbp_ps.graphql"
 
 [project.entry-points."gbpcli.subcommands"]
 add-process = "gbp_ps.cli.add_process"
-dump-bashrc = "gbp_ps.cli.dump_bashrc"
 ps = "gbp_ps.cli.ps"
+ps-dump-bashrc = "gbp_ps.cli.dump_bashrc"
 
 [project.entry-points."gbp_ps.repos"]
 django = "gbp_ps.repository.django:DjangoRepository"
