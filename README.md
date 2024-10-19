@@ -28,27 +28,16 @@ The gbp-ps package includes a plugin for Gentoo Build Publisher that includes
 a table for keeping package build "processes" and a GraphQL interface for
 updating the process table. Each machine's build then updates the table via
 GraphQL during each phase of the build. This is done via the
-`/etc/portage/bashrc` file.  For example each of my machines'
-`/etc/portage/bashrc` contain the following:
+`/etc/portage/bashrc` file.  For example each machines' build processes you'd
+want to query:
 
-```bash
-if [[ -f /Makefile.gbp && "${EBUILD_PHASE}" != depend ]]; then
-    WGET_BODY=\{\"query\":\ \"mutation\ \{addBuildProcess\(process:\{machine:\\\"${BUILD_MACHINE}\\\",buildHost:\\\"${BUILD_HOST}\\\",package:\\\"${CATEGORY}/${PF}\\\",id:\\\"${BUILD_NUMBER}\\\",phase:\\\"${EBUILD_PHASE}\\\",startTime:\\\""$(date -u +%Y-%m-%dT%H:%M:%S.%N+00:00)"\\\"\}\)\{message\}\}\",\ \"variables\":\ null\}
-    wget \
-        --output-document=/dev/null \
-        --no-check-certificate \
-        --header="Content-type: application/json" \
-        --method=POST \
-        --body-data="${WGET_BODY}" \
-        http://gbp/graphql
-fi
+```console
+gbp-machines $ gbp ps-dump-bashrc >> base/configs/etc-portage/bashrc
+# Check the above file to ensure, e.g., the URL is correct
+git add base/configs/etc-portage/bashrc
+git commit -m "base: add gbp-ps to bashrc"
+git push
 ```
-
-The environment variables `BUILD_HOST`, `BUILD_NUMBER` and `BUILD_MACHINE` are
-exported into the build container. The latest version of the [machines
-repo](https://github.com/enku/gbp-machines) does this. The other environment
-variables come from the [ebuild
-process](https://wiki.gentoo.org/wiki//etc/portage/bashrc).
 
 The contents of the `bashrc` send a GraphQL call to GPB. This is done for each
 phase (except "depend") of the build process.
@@ -109,3 +98,27 @@ continuously on the screen:
 ```sh
 gbp ps -c
 ```
+
+To show the processes accompanied by a process bar, pass the `--progress`
+flag.
+
+## Run without Gentoo Build Publisher
+
+**gbp-ps** is also capable of working "locally" without the need of a Gentoo
+Build Publisher instance. This allows you to use gbp-ps on a local machine.
+To do so, from the machine you want to run gbp-ps:
+
+```console
+gbp ps-dump-bashrc --local >> /etc/portage/bashrc
+```
+
+Now whenever you run an `emerge` command, you should be able, in another
+terminal, run `gbp ps` to display the build processes from that command. Note
+that the local functionality is currently experimental.
+
+
+## "pipeline" process
+
+If you've seen screenshots of **gbp-ps** that shows a "pipeline" process, that
+is being emitted from the Jenkins or GBP and not from the build container.
+The method for doing this will be documented at a later time.
