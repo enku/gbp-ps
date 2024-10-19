@@ -65,7 +65,7 @@ def repo_fixture(
 class DjangoToRequestsAdapter(BaseAdapter):  # pylint: disable=abstract-method
     """Requests Adapter to call Django views"""
 
-    def send(  # pylint: disable=too-many-arguments
+    def send(  # pylint: disable=too-many-arguments,too-many-positional-arguments
         self,
         request: PreparedRequest,
         stream: bool = False,

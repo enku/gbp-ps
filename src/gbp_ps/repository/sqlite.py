@@ -99,7 +99,7 @@ class SqliteRepository:
                 yield self.row_to_process(*row)
 
     @staticmethod
-    def row_to_process(  # pylint: disable=too-many-arguments
+    def row_to_process(  # pylint: disable=too-many-arguments,too-many-positional-arguments
         machine: str,
         build_id: str,
         build_host: str,

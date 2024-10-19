@@ -26,6 +26,7 @@ class BaseSettings:
     def from_dict(cls: type[Self], prefix: str, data_dict: dict[str, Any]) -> Self:
         """Return Settings instantiated from a dict"""
         params: dict[str, Any] = {}
+        value: Any
         for field in fields(cls):
             if (key := f"{prefix}{field.name}") not in data_dict:
                 continue
