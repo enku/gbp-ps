@@ -19,6 +19,9 @@ resolvers = [
 ]
 
 
+ADD_BUILD_FIELDS = {"machine", "id", "package", "phase"}
+
+
 @build_process.field("id")
 def resolve_build_process_id(process: BuildProcess, _info: GraphQLResolveInfo) -> str:
     return process.build_id
@@ -49,7 +52,7 @@ def resolve_mutation_add_build_process(
     If the process already exists in the table, it is updated with the new value
     """
     # Don't bother when required fields are empty.
-    if not all(process[field] for field in ["machine", "id", "package", "phase"]):
+    if not all(process[field] for field in ADD_BUILD_FIELDS):
         return
 
     process["build_id"] = process.pop("id")
