@@ -29,7 +29,7 @@ class Migration(migrations.Migration):
                 ("start_time", models.DateTimeField()),
             ],
             options={
-                "unique_together": {("machine", "build_id", "build_host", "package")},
+                "unique_together": {("machine", "build_id", "build_host", "package")}
             },
-        ),
+        )
     ]

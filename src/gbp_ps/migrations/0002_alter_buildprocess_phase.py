@@ -4,14 +4,12 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-    dependencies = [
-        ("gbp_ps", "0001_initial"),
-    ]
+    dependencies = [("gbp_ps", "0001_initial")]
 
     operations = [
         migrations.AlterField(
             model_name="buildprocess",
             name="phase",
             field=models.CharField(db_index=True, max_length=255),
-        ),
+        )
     ]
