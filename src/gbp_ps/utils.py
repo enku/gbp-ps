@@ -4,12 +4,10 @@ import datetime as dt
 import os
 from dataclasses import dataclass, fields
 from pathlib import Path
-from typing import Any, ClassVar, Self, Sequence
+from typing import Any, ClassVar, Self, Sequence, cast
 
 from gbpcli.render import LOCAL_TIMEZONE
-
-FALSE_VALUES = {"0", "f", "false", "n", "no", "off"}
-TRUE_VALUES = {"1", "on", "t", "true", "y", "yes"}
+from strtobool import strtobool  # type: ignore
 
 
 # XXX: copied from gentoo-build-publisher  # pylint: disable=fixme
@@ -77,13 +75,7 @@ def get_bool(value: str | bytes | bool) -> bool:
     if isinstance(value, bytes):
         value = value.decode("UTF-8")
 
-    if value.lower() in FALSE_VALUES:
-        return False
-
-    if value.lower() in TRUE_VALUES:
-        return True
-
-    raise ValueError(value)
+    return cast(bool, strtobool(value))
 
 
 def find(item: Any, items: Sequence[Any]) -> int:
