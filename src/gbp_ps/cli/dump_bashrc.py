@@ -22,7 +22,7 @@ def handler(args: argparse.Namespace, gbp: GBP, console: Console) -> int:
         filename = BASHRC_FILENAME
         formatter = format_bashrc
 
-    with resources.open_text("gbp_ps", filename, encoding="utf-8") as fp:
+    with resources.open_text("gbp_ps.assets", filename, encoding="utf-8") as fp:
         bashrc = fp.read()
 
     bashrc = formatter(bashrc, gbp)
