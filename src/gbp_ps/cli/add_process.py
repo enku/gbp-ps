@@ -3,6 +3,7 @@
 import argparse
 import datetime as dt
 import platform
+from functools import partial
 from typing import Any, Callable, TypeAlias
 
 from gbpcli import GBP
@@ -14,7 +15,7 @@ from gbp_ps.settings import Settings
 from gbp_ps.types import BuildProcess
 
 ProcessAdder: TypeAlias = Callable[[BuildProcess], Any]
-now = dt.datetime.now
+now = partial(dt.datetime.now, tz=dt.UTC)
 
 
 def handler(args: argparse.Namespace, gbp: GBP, _console: Console) -> int:
@@ -58,7 +59,7 @@ def build_process_from_args(args: argparse.Namespace) -> BuildProcess:
         machine=args.machine,
         package=args.package,
         phase=args.phase,
-        start_time=now(tz=dt.UTC),
+        start_time=now(),
     )
 
 
