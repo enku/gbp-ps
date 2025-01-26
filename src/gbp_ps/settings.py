@@ -3,7 +3,7 @@
 from dataclasses import dataclass
 from typing import ClassVar
 
-from gbp_ps.utils import BaseSettings
+from gbpcli.settings import BaseSettings
 
 DEFAULT_REDIS_KEY_EXPIRATION = 3600 * 24
 
