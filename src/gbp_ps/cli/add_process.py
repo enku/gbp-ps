@@ -6,7 +6,7 @@ import platform
 from functools import partial
 from typing import Any, Callable, TypeAlias
 
-from gbpcli import GBP
+from gbpcli.gbp import GBP
 from gbpcli.graphql import check
 from gbpcli.types import Console
 

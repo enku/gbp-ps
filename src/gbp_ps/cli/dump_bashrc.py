@@ -5,7 +5,7 @@ import subprocess as sp
 from importlib import resources
 from typing import Callable
 
-from gbpcli import GBP
+from gbpcli.gbp import GBP
 from gbpcli.types import Console
 
 BASHRC_FILENAME = "bashrc.bash"
