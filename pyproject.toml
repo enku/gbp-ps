@@ -27,6 +27,9 @@ repository = "https://github.com/enku/gbp-ps"
 [project.entry-points."gentoo_build_publisher.graphql_schema"]
 gbp_ps = "gbp_ps.graphql"
 
+[project.entry-points."gentoo_build_publisher.apps"]
+gbp_ps = "gbp_ps:APP"
+
 [project.entry-points."gbpcli.subcommands"]
 add-process = "gbp_ps.cli.add_process"
 ps = "gbp_ps.cli.ps"
@@ -38,14 +41,15 @@ redis = "gbp_ps.repository.redis:RedisRepository"
 sqlite = "gbp_ps.repository.sqlite:SqliteRepository"
 
 [project.optional-dependencies]
-backend = [
+server = [
     "ariadne>=0.21",
+    "gentoo-build-publisher>=2.3.0",
 ]
 redis = [
-    "gbp-ps[backend]",
+    "gbp-ps[server]",
     "redis[hiredis]>=5.0.1",
 ]
-all = ["gbp-ps[backend,redis]"]
+all = ["gbp-ps[server,redis]"]
 [build-system]
 requires = ["pdm-backend"]
 build-backend = "pdm.backend"

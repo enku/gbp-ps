@@ -14,7 +14,7 @@ only there were a better way.
 Now there is.
 
 <p align="center">
-<img src="https://raw.githubusercontent.com/enku/gbp-ps/master/docs/screenshot.gif" alt="gbpcli screenshot" width="100%">
+<img src="https://raw.githubusercontent.com/enku/screenshots/refs/heads/master/gbp-ps/screenshot.gif" alt="gbpcli screenshot" width="100%">
 </p>
 
 **gbp-ps** is a `ps`-like subcommand for the [Gentoo Build Publisher
@@ -60,13 +60,7 @@ Install the gbp-ps package onto the GBP instance.
 ```sh
 cd /home/gbp
 sudo -u gbp -H git -C gentoo-build-publisher pull
-sudo -u gbp -H ./bin/pip install gbp-ps[backend]
-```
-
-Now add `"gbp_ps"` to your `INSTALLED_APPS`:
-
-```sh
-$EDITOR djangoproject/settings.py
+sudo -u gbp -H ./bin/pip install gbp-ps[server]
 ```
 
 Restart your web app.
