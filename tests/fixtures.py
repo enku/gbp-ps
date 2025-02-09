@@ -5,7 +5,7 @@ from typing import Mapping
 from unittest import mock
 
 from django.test.client import Client
-from gbpcli import GBP
+from gbpcli.gbp import GBP
 from requests import PreparedRequest, Response
 from requests.adapters import BaseAdapter
 from requests.structures import CaseInsensitiveDict
