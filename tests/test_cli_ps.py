@@ -11,10 +11,10 @@ from unittest_fixtures import requires
 from gbp_ps.cli import ps
 from gbp_ps.types import BuildProcess
 
-from . import LOCAL_TIMEZONE, TestCase, factories, make_build_process, string_console
+from . import LOCAL_TIMEZONE, TestCase, factories, make_build_process
 
 
-@requires("gbp")
+@requires("gbp", "console")
 class PSTests(TestCase):
     """Tests for gbp ps"""
 
@@ -33,7 +33,7 @@ class PSTests(TestCase):
         args = Namespace(
             url="http://gbp.invalid/", node=False, continuous=False, progress=False
         )
-        console, stdout = string_console()[:2]
+        console = self.fixtures.console
 
         exit_status = ps.handler(args, self.fixtures.gbp, console)
 
@@ -48,7 +48,7 @@ class PSTests(TestCase):
 │ babette     │ 1031   │ net-misc/wget-1.21.4             │ 15:20:02    │ compile      │
 ╰─────────────┴────────┴──────────────────────────────────┴─────────────┴──────────────╯
 """
-        self.assertEqual(stdout.getvalue(), expected)
+        self.assertEqual(console.out.file.getvalue(), expected)
 
     @mock.patch("gbpcli.render.LOCAL_TIMEZONE", new=LOCAL_TIMEZONE)
     @mock.patch("gbp_ps.cli.ps.utils.get_today", new=lambda: dt.date(2024, 8, 16))
@@ -63,7 +63,7 @@ class PSTests(TestCase):
         args = Namespace(
             url="http://gbp.invalid/", node=False, continuous=False, progress=True
         )
-        console, stdout = string_console()[:2]
+        console = self.fixtures.console
 
         exit_status = ps.handler(args, self.fixtures.gbp, console)
 
@@ -78,7 +78,7 @@ class PSTests(TestCase):
 │ babette │ 1031 │ net-misc/wget-1.21.4    │ 14:20:02 │ compile   ━━━━━━━━━━           │
 ╰─────────┴──────┴─────────────────────────┴──────────┴────────────────────────────────╯
 """
-        self.assertEqual(stdout.getvalue(), expected)
+        self.assertEqual(console.out.file.getvalue(), expected)
 
     @mock.patch("gbpcli.render.LOCAL_TIMEZONE", new=LOCAL_TIMEZONE)
     @mock.patch("gbp_ps.cli.ps.utils.get_today", new=lambda: dt.date(2023, 11, 15))
@@ -93,7 +93,7 @@ class PSTests(TestCase):
         args = Namespace(
             url="http://gbp.invalid/", node=True, continuous=False, progress=False
         )
-        console, stdout = string_console()[:2]
+        console = self.fixtures.console
         exit_status = ps.handler(args, self.fixtures.gbp, console)
 
         self.assertEqual(exit_status, 0)
@@ -107,7 +107,7 @@ class PSTests(TestCase):
 │ babette   │ 1031  │ net-misc/wget-1.21.4        │ 15:20:02   │ compile     │ jenkins │
 ╰───────────┴───────┴─────────────────────────────┴────────────┴─────────────┴─────────╯
 """
-        self.assertEqual(stdout.getvalue(), expected)
+        self.assertEqual(console.out.file.getvalue(), expected)
 
     def test_from_install_to_pull(self) -> None:
         t = dt.datetime
@@ -131,11 +131,11 @@ class PSTests(TestCase):
         update(phase="world")
 
         # First compile it
-        console, stdout, _ = string_console()
+        console = self.fixtures.console
         ps.handler(args, self.fixtures.gbp, console)
 
         self.assertEqual(
-            stdout.getvalue(),
+            console.out.file.getvalue(),
             """\
                                     Ebuild Processes                                    
 ╭───────────┬────────┬──────────────────────────────┬─────────┬─────────────┬──────────╮
@@ -148,10 +148,11 @@ class PSTests(TestCase):
 
         # Now it's done compiling
         update(phase="clean", start_time=orig_start + dt.timedelta(seconds=60))
-        console, stdout, _ = string_console()
+        console.out.file.seek(0)
+        console.out.file.truncate()
         ps.handler(args, self.fixtures.gbp, console)
 
-        self.assertEqual(stdout.getvalue(), "")
+        self.assertEqual(console.out.file.getvalue(), "")
 
         # Now it's being pulled by GBP on another node
         update(
@@ -159,11 +160,12 @@ class PSTests(TestCase):
             phase="pull",
             start_time=orig_start + dt.timedelta(seconds=120),
         )
-        console, stdout, _ = string_console()
+        console.out.file.seek(0)
+        console.out.file.truncate()
         ps.handler(args, self.fixtures.gbp, console)
 
         self.assertEqual(
-            stdout.getvalue(),
+            console.out.file.getvalue(),
             """\
                                     Ebuild Processes                                    
 ╭────────────┬────────┬────────────────────────────────┬─────────┬─────────────┬───────╮
@@ -178,11 +180,11 @@ class PSTests(TestCase):
         args = Namespace(
             url="http://gbp.invalid/", node=False, continuous=False, progress=False
         )
-        console, stdout = string_console()[:2]
+        console = self.fixtures.console
         exit_status = ps.handler(args, self.fixtures.gbp, console)
 
         self.assertEqual(exit_status, 0)
-        self.assertEqual(stdout.getvalue(), "")
+        self.assertEqual(console.out.file.getvalue(), "")
 
     @mock.patch("gbpcli.render.LOCAL_TIMEZONE", new=LOCAL_TIMEZONE)
     @mock.patch("gbp_ps.cli.ps.time.sleep")
@@ -203,7 +205,7 @@ class PSTests(TestCase):
             update_interval=4,
             progress=False,
         )
-        console, stdout = string_console()[:2]
+        console = self.fixtures.console
 
         gbp = mock.Mock()
         mock_graphql_resp = [process.to_dict() for process in processes]
@@ -223,7 +225,7 @@ class PSTests(TestCase):
 │ babette     │ 1031   │ sys-apps/shadow-4.14-r4          │ 05:20:52    │ package      │
 │ babette     │ 1031   │ net-misc/wget-1.21.4             │ 05:20:52    │ compile      │
 ╰─────────────┴────────┴──────────────────────────────────┴─────────────┴──────────────╯"""
-        self.assertEqual(stdout.getvalue(), expected)
+        self.assertEqual(console.out.file.getvalue(), expected)
         mock_sleep.assert_called_with(4)
 
 

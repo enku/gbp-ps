@@ -8,28 +8,28 @@ from unittest_fixtures import requires
 
 from gbp_ps.cli import dump_bashrc
 
-from . import TestCase, string_console
+from . import TestCase
 
 
-@requires("gbp")
+@requires("gbp", "console")
 class DumpBashrcHandlerTests(TestCase):
     def test_without_local(self) -> None:
         args = argparse.Namespace(url="http://gbp.invalid/", local=False)
-        console, stdout = string_console()[:2]
         fixtures = self.fixtures
+        console = fixtures.console
 
         exit_status = dump_bashrc.handler(args, fixtures.gbp, console)
 
         self.assertEqual(exit_status, 0)
 
-        lines = stdout.getvalue().split("\n")
+        lines = console.out.file.getvalue().split("\n")
         self.assertTrue(lines[0].startswith("if [[ -f /Makefile.gbp"))
         self.assertTrue("http://gbp.invalid/graphql" in lines[-4], lines[-4])
 
     def test_local(self) -> None:
         args = argparse.Namespace(url="http://gbp.invalid/", local=True)
-        console, stdout = string_console()[:2]
         fixtures = self.fixtures
+        console = fixtures.console
         tmpdir = "/var/bogus"
 
         with mock.patch("gbp_ps.cli.dump_bashrc.sp.Popen") as popen:
@@ -40,13 +40,13 @@ class DumpBashrcHandlerTests(TestCase):
 
         self.assertEqual(exit_status, 0)
 
-        output = stdout.getvalue()
+        output = console.out.file.getvalue()
         self.assertTrue(f"{tmpdir}/portage/gbpps.db" in output, output)
 
     def test_local_portageq_fail(self) -> None:
         args = argparse.Namespace(url="http://gbp.invalid/", local=True)
-        console, stdout = string_console()[:2]
         fixtures = self.fixtures
+        console = fixtures.console
 
         with mock.patch("gbp_ps.cli.dump_bashrc.sp.Popen") as popen:
             process = popen.return_value.__enter__.return_value
@@ -55,7 +55,7 @@ class DumpBashrcHandlerTests(TestCase):
 
         self.assertEqual(exit_status, 0)
 
-        output = stdout.getvalue()
+        output = console.out.file.getvalue()
         self.assertTrue("/var/tmp/portage/gbpps.db" in output, output)
 
 

@@ -1,11 +1,15 @@
 # pylint: disable=missing-docstring
 import io
+import os
 import tempfile
 from typing import Mapping
 from unittest import mock
 
+import rich.console
 from django.test.client import Client
 from gbpcli.gbp import GBP
+from gbpcli.theme import get_theme_from_string
+from gbpcli.types import Console
 from requests import PreparedRequest, Response
 from requests.adapters import BaseAdapter
 from requests.structures import CaseInsensitiveDict
@@ -13,6 +17,8 @@ from unittest_fixtures import FixtureContext, FixtureOptions, Fixtures, depends
 
 from gbp_ps.repository import Repo, RepositoryType, sqlite
 from gbp_ps.settings import Settings
+
+COUNTER = 0
 
 
 def tempdir(_options: FixtureOptions, _fixtures: Fixtures) -> FixtureContext[str]:
@@ -93,3 +99,25 @@ class DjangoToRequestsAdapter(BaseAdapter):  # pylint: disable=abstract-method
         requests_response.request = request
 
         return requests_response
+
+
+@depends()
+def console(_options: FixtureOptions, _fixtures: Fixtures) -> FixtureContext[Console]:
+    outfile = io.StringIO()
+    errfile = io.StringIO()
+    theme = get_theme_from_string(os.getenv("GBPCLI_COLORS", ""))
+    out = rich.console.Console(
+        file=outfile, width=88, theme=theme, highlight=False, record=True
+    )
+    err = rich.console.Console(file=errfile, width=88, record=True)
+    c = Console(out=out, err=err)
+
+    yield c
+
+    # pylint: disable=no-member,global-statement
+    if "SAVE_VIRTUAL_CONSOLE" in os.environ and c.out.file.getvalue():
+        global COUNTER
+
+        COUNTER += 1
+        filename = f"{COUNTER}.svg"
+        c.out.save_svg(filename, title="Gentoo Build Publisher")

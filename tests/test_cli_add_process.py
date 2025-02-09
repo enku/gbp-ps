@@ -10,10 +10,10 @@ from unittest_fixtures import requires
 
 from gbp_ps.cli import add_process
 
-from . import TestCase, factories, make_build_process, string_console
+from . import TestCase, factories, make_build_process
 
 
-@requires("repo", "gbp")
+@requires("repo", "gbp", "console")
 class AddProcessTests(TestCase):
     """Tests for gbp add-process"""
 
@@ -25,7 +25,7 @@ class AddProcessTests(TestCase):
         process = make_build_process(
             add_to_repo=False, build_host=platform.node(), start_time=now
         )
-        console = string_console()[0]
+        console = self.fixtures.console
         args = Namespace(
             machine=process.machine,
             number=process.build_id,
