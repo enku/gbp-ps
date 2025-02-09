@@ -1,11 +1,15 @@
 """gbp-ps tests"""
 
 # pylint: disable=missing-docstring
+import argparse
 import datetime as dt
+import shlex
 from functools import wraps
 from typing import Any, Callable, Iterable, TypeVar
 
+import gbpcli
 from django.test import TestCase as DjangoTestCase
+from gbpcli.config import Config
 from unittest_fixtures import BaseTestCase
 
 from gbp_ps.repository import Repo, add_or_update_process
@@ -43,6 +47,13 @@ def make_build_process(**kwargs: Any) -> BuildProcess:
             repo.add_process(build_process)
 
     return build_process
+
+
+def parse_args(cmdline: str) -> argparse.Namespace:
+    args = shlex.split(cmdline)
+    parser = gbpcli.build_parser(Config(url="http://gbp.invalid/"))
+
+    return parser.parse_args(args[1:])
 
 
 T = TypeVar("T")

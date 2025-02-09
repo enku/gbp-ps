@@ -2,7 +2,7 @@
 
 # pylint: disable=missing-docstring
 import datetime as dt
-from argparse import ArgumentParser, Namespace
+from argparse import ArgumentParser
 from functools import partial
 from unittest import mock
 
@@ -11,7 +11,7 @@ from unittest_fixtures import requires
 from gbp_ps.cli import ps
 from gbp_ps.types import BuildProcess
 
-from . import LOCAL_TIMEZONE, TestCase, factories, make_build_process
+from . import LOCAL_TIMEZONE, TestCase, factories, make_build_process, parse_args
 
 
 @requires("gbp", "console")
@@ -30,9 +30,8 @@ class PSTests(TestCase):
             ["net-misc/wget-1.21.4", "compile", t(2023, 11, 15, 16, 20, 2)],
         ]:
             make_build_process(package=cpv, phase=phase, start_time=start_time)
-        args = Namespace(
-            url="http://gbp.invalid/", node=False, continuous=False, progress=False
-        )
+        cmdline = "gbp ps"
+        args = parse_args(cmdline)
         console = self.fixtures.console
 
         exit_status = ps.handler(args, self.fixtures.gbp, console)
@@ -60,9 +59,8 @@ class PSTests(TestCase):
             ["net-misc/wget-1.21.4", "compile", t(2024, 8, 16, 16, 20, 2)],
         ]:
             make_build_process(package=cpv, phase=phase, start_time=start_time)
-        args = Namespace(
-            url="http://gbp.invalid/", node=False, continuous=False, progress=True
-        )
+        cmdline = "gbp ps --progress"
+        args = parse_args(cmdline)
         console = self.fixtures.console
 
         exit_status = ps.handler(args, self.fixtures.gbp, console)
@@ -90,9 +88,8 @@ class PSTests(TestCase):
             ["net-misc/wget-1.21.4", "compile", t(2023, 11, 15, 16, 20, 2)],
         ]:
             make_build_process(package=cpv, phase=phase, start_time=start_time)
-        args = Namespace(
-            url="http://gbp.invalid/", node=True, continuous=False, progress=False
-        )
+        cmdline = "gbp ps --node"
+        args = parse_args(cmdline)
         console = self.fixtures.console
         exit_status = ps.handler(args, self.fixtures.gbp, console)
 
@@ -116,9 +113,8 @@ class PSTests(TestCase):
         package = "sys-apps/portage-3.0.51"
         build_host = "jenkins"
         orig_start = t(2023, 11, 15, 16, 20, 0)
-        args = Namespace(
-            url="http://gbp.invalid/", node=True, continuous=False, progress=False
-        )
+        cmdline = "gbp ps --node"
+        args = parse_args(cmdline)
         update = partial(
             make_build_process,
             machine=machine,
@@ -177,9 +173,8 @@ class PSTests(TestCase):
         )
 
     def test_empty(self) -> None:
-        args = Namespace(
-            url="http://gbp.invalid/", node=False, continuous=False, progress=False
-        )
+        cmdline = "gbp ps"
+        args = parse_args(cmdline)
         console = self.fixtures.console
         exit_status = ps.handler(args, self.fixtures.gbp, console)
 
@@ -198,13 +193,8 @@ class PSTests(TestCase):
                 ["net-misc/wget-1.21.4", "compile"],
             ]
         ]
-        args = Namespace(
-            url="http://gbp.invalid/",
-            node=False,
-            continuous=True,
-            update_interval=4,
-            progress=False,
-        )
+        cmdline = "gbp ps -c -i4"
+        args = parse_args(cmdline)
         console = self.fixtures.console
 
         gbp = mock.Mock()
