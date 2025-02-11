@@ -38,7 +38,7 @@ class PSTests(TestCase):
 
         self.assertEqual(exit_status, 0)
         expected = """\
-                                    Ebuild Processes                                    
+                                    Build Processes                                     
 ╭─────────────┬────────┬──────────────────────────────────┬─────────────┬──────────────╮
 │ Machine     │ ID     │ Package                          │ Start       │ Phase        │
 ├─────────────┼────────┼──────────────────────────────────┼─────────────┼──────────────┤
@@ -67,7 +67,7 @@ class PSTests(TestCase):
 
         self.assertEqual(exit_status, 0)
         expected = """\
-                                    Ebuild Processes                                    
+                                    Build Processes                                     
 ╭─────────┬──────┬─────────────────────────┬──────────┬────────────────────────────────╮
 │ Machine │ ID   │ Package                 │ Start    │ Phase                          │
 ├─────────┼──────┼─────────────────────────┼──────────┼────────────────────────────────┤
@@ -95,7 +95,7 @@ class PSTests(TestCase):
 
         self.assertEqual(exit_status, 0)
         expected = """\
-                                    Ebuild Processes                                    
+                                    Build Processes                                     
 ╭───────────┬───────┬─────────────────────────────┬────────────┬─────────────┬─────────╮
 │ Machine   │ ID    │ Package                     │ Start      │ Phase       │ Node    │
 ├───────────┼───────┼─────────────────────────────┼────────────┼─────────────┼─────────┤
@@ -133,7 +133,7 @@ class PSTests(TestCase):
         self.assertEqual(
             console.out.file.getvalue(),
             """\
-                                    Ebuild Processes                                    
+                                    Build Processes                                     
 ╭───────────┬────────┬──────────────────────────────┬─────────┬─────────────┬──────────╮
 │ Machine   │ ID     │ Package                      │ Start   │ Phase       │ Node     │
 ├───────────┼────────┼──────────────────────────────┼─────────┼─────────────┼──────────┤
@@ -163,7 +163,7 @@ class PSTests(TestCase):
         self.assertEqual(
             console.out.file.getvalue(),
             """\
-                                    Ebuild Processes                                    
+                                    Build Processes                                     
 ╭────────────┬────────┬────────────────────────────────┬─────────┬─────────────┬───────╮
 │ Machine    │ ID     │ Package                        │ Start   │ Phase       │ Node  │
 ├────────────┼────────┼────────────────────────────────┼─────────┼─────────────┼───────┤
@@ -207,7 +207,7 @@ class PSTests(TestCase):
 
         self.assertEqual(exit_status, 0)
         expected = """\
-                                    Ebuild Processes                                    
+                                    Build Processes                                     
 ╭─────────────┬────────┬──────────────────────────────────┬─────────────┬──────────────╮
 │ Machine     │ ID     │ Package                          │ Start       │ Phase        │
 ├─────────────┼────────┼──────────────────────────────────┼─────────────┼──────────────┤

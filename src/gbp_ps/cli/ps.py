@@ -134,7 +134,7 @@ def graphql_to_process(result: dict[str, Any]) -> BuildProcess:
 def create_table(processes: ProcessList, args: argparse.Namespace) -> Table:
     """Return a rich Table given the list of processes"""
     table = Table(
-        title="Ebuild Processes",
+        title="Build Processes",
         box=box.ROUNDED,
         expand=True,
         title_style="header",
