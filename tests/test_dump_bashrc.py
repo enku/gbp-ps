@@ -8,13 +8,14 @@ from unittest_fixtures import requires
 
 from gbp_ps.cli import dump_bashrc
 
-from . import TestCase
+from . import TestCase, parse_args
 
 
 @requires("gbp", "console")
 class DumpBashrcHandlerTests(TestCase):
     def test_without_local(self) -> None:
-        args = argparse.Namespace(url="http://gbp.invalid/", local=False)
+        cmdline = "gbp ps-dump-bashrc"
+        args = parse_args(cmdline)
         fixtures = self.fixtures
         console = fixtures.console
 
@@ -27,7 +28,8 @@ class DumpBashrcHandlerTests(TestCase):
         self.assertTrue("http://gbp.invalid/graphql" in lines[-4], lines[-4])
 
     def test_local(self) -> None:
-        args = argparse.Namespace(url="http://gbp.invalid/", local=True)
+        cmdline = "gbp ps-dump-bashrc --local"
+        args = parse_args(cmdline)
         fixtures = self.fixtures
         console = fixtures.console
         tmpdir = "/var/bogus"
@@ -44,7 +46,8 @@ class DumpBashrcHandlerTests(TestCase):
         self.assertTrue(f"{tmpdir}/portage/gbpps.db" in output, output)
 
     def test_local_portageq_fail(self) -> None:
-        args = argparse.Namespace(url="http://gbp.invalid/", local=True)
+        cmdline = "gbp ps-dump-bashrc --local"
+        args = parse_args(cmdline)
         fixtures = self.fixtures
         console = fixtures.console
 

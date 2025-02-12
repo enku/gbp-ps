@@ -11,7 +11,14 @@ from unittest_fixtures import requires
 from gbp_ps.cli import ps
 from gbp_ps.types import BuildProcess
 
-from . import LOCAL_TIMEZONE, TestCase, factories, make_build_process, parse_args
+from . import (
+    LOCAL_TIMEZONE,
+    TestCase,
+    factories,
+    make_build_process,
+    parse_args,
+    print_command,
+)
 
 
 @requires("gbp", "console")
@@ -34,10 +41,11 @@ class PSTests(TestCase):
         args = parse_args(cmdline)
         console = self.fixtures.console
 
+        print_command(cmdline, console)
         exit_status = ps.handler(args, self.fixtures.gbp, console)
 
         self.assertEqual(exit_status, 0)
-        expected = """\
+        expected = """$ gbp ps
                                     Build Processes                                     
 ╭─────────────┬────────┬──────────────────────────────────┬─────────────┬──────────────╮
 │ Machine     │ ID     │ Package                          │ Start       │ Phase        │
@@ -91,10 +99,12 @@ class PSTests(TestCase):
         cmdline = "gbp ps --node"
         args = parse_args(cmdline)
         console = self.fixtures.console
+
+        print_command(cmdline, console)
         exit_status = ps.handler(args, self.fixtures.gbp, console)
 
         self.assertEqual(exit_status, 0)
-        expected = """\
+        expected = """$ gbp ps --node
                                     Build Processes                                     
 ╭───────────┬───────┬─────────────────────────────┬────────────┬─────────────┬─────────╮
 │ Machine   │ ID    │ Package                     │ Start      │ Phase       │ Node    │

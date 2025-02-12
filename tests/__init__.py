@@ -10,6 +10,7 @@ from typing import Any, Callable, Iterable, TypeVar
 import gbpcli
 from django.test import TestCase as DjangoTestCase
 from gbpcli.config import Config
+from gbpcli.types import Console
 from unittest_fixtures import BaseTestCase
 
 from gbp_ps.repository import Repo, add_or_update_process
@@ -54,6 +55,11 @@ def parse_args(cmdline: str) -> argparse.Namespace:
     parser = gbpcli.build_parser(Config(url="http://gbp.invalid/"))
 
     return parser.parse_args(args[1:])
+
+
+def print_command(cmdline: str, console: Console) -> None:
+    """Pretty print the cmdline to console"""
+    console.out.print(f"[green]$ [/green]{cmdline}")
 
 
 T = TypeVar("T")
