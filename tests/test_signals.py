@@ -70,3 +70,31 @@ class SignalsTest(TestCase):
         processes = [*self.fixtures.repo.get_processes(include_final=True)]
         expected = signals.build_process(BUILD, NODE, "clean", START_TIME)
         self.assertEqual(processes, [expected])
+
+    def test_predelete_handler(self) -> None:
+        signals.predelete_handler(build=BUILD)
+
+        processes = [*self.fixtures.repo.get_processes(include_final=True)]
+        expected = signals.build_process(BUILD, NODE, "delete", START_TIME)
+        self.assertEqual(processes, [expected])
+
+    def test_postdelete_handler(self) -> None:
+        signals.postdelete_handler(build=BUILD)
+
+        processes = [*self.fixtures.repo.get_processes(include_final=True)]
+        expected = signals.build_process(BUILD, NODE, "clean", START_TIME)
+        self.assertEqual(processes, [expected])
+
+    def test_dispatcher_calls_predelete_handler(self) -> None:
+        dispatcher.emit("predelete", build=BUILD)
+
+        processes = [*self.fixtures.repo.get_processes(include_final=True)]
+        expected = signals.build_process(BUILD, NODE, "delete", START_TIME)
+        self.assertEqual(processes, [expected])
+
+    def test_dispatcher_calls_postdelete_handler(self) -> None:
+        dispatcher.emit("postdelete", build=BUILD)
+
+        processes = [*self.fixtures.repo.get_processes(include_final=True)]
+        expected = signals.build_process(BUILD, NODE, "clean", START_TIME)
+        self.assertEqual(processes, [expected])

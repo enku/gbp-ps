@@ -51,5 +51,17 @@ def postpull_handler(*, build: Build, **_kwargs: Any) -> None:
     set_process(build, "clean")
 
 
+def predelete_handler(*, build: Build) -> None:
+    """Signal handler for pre-deletes"""
+    set_process(build, "delete")
+
+
+def postdelete_handler(*, build: Build) -> None:
+    """Signal handler for pre-deletes"""
+    set_process(build, "clean")
+
+
 dispatcher.bind(prepull=prepull_handler)
 dispatcher.bind(postpull=postpull_handler)
+dispatcher.bind(predelete=predelete_handler)
+dispatcher.bind(postdelete=postdelete_handler)
