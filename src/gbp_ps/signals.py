@@ -61,7 +61,19 @@ def postdelete_handler(*, build: Build) -> None:
     set_process(build, "clean")
 
 
+def predump_handler(*, build: Build) -> None:
+    """Signal handler for pre-dumps"""
+    set_process(build, "dump")
+
+
+def postdump_handler(*, build: Build) -> None:
+    """Signal handler for pre-dumps"""
+    set_process(build, "clean")
+
+
 dispatcher.bind(prepull=prepull_handler)
 dispatcher.bind(postpull=postpull_handler)
 dispatcher.bind(predelete=predelete_handler)
 dispatcher.bind(postdelete=postdelete_handler)
+dispatcher.bind(predump=predump_handler)
+dispatcher.bind(postdump=postdump_handler)

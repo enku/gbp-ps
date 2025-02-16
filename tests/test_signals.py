@@ -98,3 +98,31 @@ class SignalsTest(TestCase):
         processes = [*self.fixtures.repo.get_processes(include_final=True)]
         expected = signals.build_process(BUILD, NODE, "clean", START_TIME)
         self.assertEqual(processes, [expected])
+
+    def test_predump_handler(self) -> None:
+        signals.predump_handler(build=BUILD)
+
+        processes = [*self.fixtures.repo.get_processes(include_final=True)]
+        expected = signals.build_process(BUILD, NODE, "dump", START_TIME)
+        self.assertEqual(processes, [expected])
+
+    def test_postdump_handler(self) -> None:
+        signals.postdump_handler(build=BUILD)
+
+        processes = [*self.fixtures.repo.get_processes(include_final=True)]
+        expected = signals.build_process(BUILD, NODE, "clean", START_TIME)
+        self.assertEqual(processes, [expected])
+
+    def test_dispatcher_calls_predump_handler(self) -> None:
+        dispatcher.emit("predump", build=BUILD)
+
+        processes = [*self.fixtures.repo.get_processes(include_final=True)]
+        expected = signals.build_process(BUILD, NODE, "dump", START_TIME)
+        self.assertEqual(processes, [expected])
+
+    def test_dispatcher_calls_postdump_handler(self) -> None:
+        dispatcher.emit("postdump", build=BUILD)
+
+        processes = [*self.fixtures.repo.get_processes(include_final=True)]
+        expected = signals.build_process(BUILD, NODE, "clean", START_TIME)
+        self.assertEqual(processes, [expected])
