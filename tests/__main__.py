@@ -10,7 +10,7 @@ from django.test.utils import get_runner
 
 def main() -> None:
     """Program entry point"""
-    os.environ["DJANGO_SETTINGS_MODULE"] = "tests.settings"
+    os.environ["DJANGO_SETTINGS_MODULE"] = "gbp_testkit.settings"
 
     # These values are required in order to import the publisher module
     os.environ.setdefault("BUILD_PUBLISHER_JENKINS_BASE_URL", "http://jenkins.invalid/")
