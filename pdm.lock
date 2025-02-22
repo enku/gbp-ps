@@ -5,7 +5,7 @@
 groups = ["default", "all", "dev", "redis", "server"]
 strategy = []
 lock_version = "4.5.0"
-content_hash = "sha256:1b53888cacc5137f498801464c6df4dbb4a93e1494357c75d6e9984bba3ba30c"
+content_hash = "sha256:e95fbdb71909c132a2c8ad7ab050a080112e0a865e38612f90b1425517161399"
 
 [[metadata.targets]]
 requires_python = ">=3.11"
@@ -600,6 +600,21 @@ dependencies = [
 files = [
     {file = "fakeredis-2.26.2-py3-none-any.whl", hash = "sha256:86d4129df001efc25793cb334008160fccc98425d9f94de47884a92b63988c14"},
     {file = "fakeredis-2.26.2.tar.gz", hash = "sha256:3ee5003a314954032b96b1365290541346c9cc24aab071b52cc983bb99ecafbf"},
+]
+
+[[package]]
+name = "gbp-testkit"
+version = "0.1.dev9"
+requires_python = ">=3.11"
+git = "https://github.com/enku/gbp-testkit.git"
+ref = "master"
+revision = "5efd1f3ae2bd110b5b3e9e6601d87b565f08dde3"
+summary = "Gentoo Build Publisher testing tools"
+dependencies = [
+    "django>=5.1.6",
+    "factory-boy>=3.3.3",
+    "types-requests>=2.32.0.20241016",
+    "unittest-fixtures @ git+https://github.com/enku/unittest-fixtures.git",
 ]
 
 [[package]]
@@ -1387,10 +1402,10 @@ files = [
 
 [[package]]
 name = "unittest-fixtures"
-version = "0.1.dev36"
+version = "0.1.dev57"
 requires_python = ">=3.11"
 git = "https://github.com/enku/unittest-fixtures.git"
-revision = "e3712d5b1c64b549dc2428445594176b8f52a185"
+revision = "d6c46e57045025eb9757afd395099733fe0b28c1"
 summary = "A small library for loading unittest fixtures"
 
 [[package]]

@@ -4,19 +4,18 @@
 import argparse
 from unittest import mock
 
-from unittest_fixtures import requires
+from unittest_fixtures import Fixtures, given
 
 from gbp_ps.cli import dump_bashrc
 
 from . import TestCase, parse_args
 
 
-@requires("gbp", "console")
+@given("gbp", "console")
 class DumpBashrcHandlerTests(TestCase):
-    def test_without_local(self) -> None:
+    def test_without_local(self, fixtures: Fixtures) -> None:
         cmdline = "gbp ps-dump-bashrc"
         args = parse_args(cmdline)
-        fixtures = self.fixtures
         console = fixtures.console
 
         exit_status = dump_bashrc.handler(args, fixtures.gbp, console)
@@ -27,10 +26,9 @@ class DumpBashrcHandlerTests(TestCase):
         self.assertTrue(lines[0].startswith("if [[ -f /Makefile.gbp"))
         self.assertTrue("http://gbp.invalid/graphql" in lines[-4], lines[-4])
 
-    def test_local(self) -> None:
+    def test_local(self, fixtures: Fixtures) -> None:
         cmdline = "gbp ps-dump-bashrc --local"
         args = parse_args(cmdline)
-        fixtures = self.fixtures
         console = fixtures.console
         tmpdir = "/var/bogus"
 
@@ -45,10 +43,9 @@ class DumpBashrcHandlerTests(TestCase):
         output = console.out.file.getvalue()
         self.assertTrue(f"{tmpdir}/portage/gbpps.db" in output, output)
 
-    def test_local_portageq_fail(self) -> None:
+    def test_local_portageq_fail(self, fixtures: Fixtures) -> None:
         cmdline = "gbp ps-dump-bashrc --local"
         args = parse_args(cmdline)
-        fixtures = self.fixtures
         console = fixtures.console
 
         with mock.patch("gbp_ps.cli.dump_bashrc.sp.Popen") as popen:

@@ -11,7 +11,6 @@ import gbpcli
 from django.test import TestCase as DjangoTestCase
 from gbpcli.config import Config
 from gbpcli.types import Console
-from unittest_fixtures import BaseTestCase
 
 from gbp_ps.repository import Repo, add_or_update_process
 from gbp_ps.settings import Settings
@@ -20,7 +19,7 @@ from gbp_ps.types import BuildProcess
 LOCAL_TIMEZONE = dt.timezone(dt.timedelta(days=-1, seconds=61200), "PDT")
 
 
-class TestCase(DjangoTestCase, BaseTestCase):
+class TestCase(DjangoTestCase):
     """Custom TestCase for gbp-ps tests"""
 
 

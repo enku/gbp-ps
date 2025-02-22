@@ -57,26 +57,6 @@ build-backend = "pdm.backend"
 [tool.pdm]
 version = { source = "scm" }
 
-[tool.pdm.dev-dependencies]
-dev = [
-    "mypy>=1.7.0",
-    "black>=23.11.0",
-    "isort>=5.12.0",
-    "pylint>=3.0.2",
-    "coverage[toml]>=7.3.2",
-    "django-stubs>=4.2.7",
-    "pylint-django>=2.5.5",
-    "requests>=2.31.0",
-    "types-requests>=2.31.0.10",
-    "rich>=13.6.0",
-    "types-redis>=4.6.0.10",
-    "fakeredis>=2.20.0",
-    "gentoo-build-publisher @ git+https://github.com/enku/gentoo-build-publisher",
-    "typos>=1.24.5",
-    "unittest-fixtures @ git+https://github.com/enku/unittest-fixtures.git",
-    "factory-boy>=3.3.1",
-]
-
 [tool.mypy]
 plugins =["mypy_django_plugin.main"]
 exclude = ["/migrations/"]
@@ -104,3 +84,24 @@ multi_line_output = 3
 
 [tool.black]
 skip_magic_trailing_comma = true
+
+[dependency-groups]
+dev = [
+    "mypy>=1.7.0",
+    "black>=23.11.0",
+    "isort>=5.12.0",
+    "pylint>=3.0.2",
+    "coverage[toml]>=7.3.2",
+    "django-stubs>=4.2.7",
+    "pylint-django>=2.5.5",
+    "requests>=2.31.0",
+    "types-requests>=2.31.0.10",
+    "rich>=13.6.0",
+    "types-redis>=4.6.0.10",
+    "fakeredis>=2.20.0",
+    "gentoo-build-publisher @ git+https://github.com/enku/gentoo-build-publisher",
+    "typos>=1.24.5",
+    "unittest-fixtures @ git+https://github.com/enku/unittest-fixtures.git",
+    "factory-boy>=3.3.1",
+    "gbp-testkit @ git+https://github.com/enku/gbp-testkit.git@master",
+]

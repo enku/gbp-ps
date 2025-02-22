@@ -6,7 +6,7 @@ from typing import Any, Callable
 from unittest import mock
 
 import fakeredis
-from unittest_fixtures import requires
+from unittest_fixtures import Fixtures, given, where
 
 from gbp_ps.exceptions import (
     RecordAlreadyExists,
@@ -40,22 +40,27 @@ def repos(*names: str) -> Callable[[Callable[[Any, str], None]], None]:
     return parametrized([[name] for name in names])
 
 
-@requires("settings")
-class RepositoryTests(TestCase):
-    options = {
-        "environ": {"GBP_PS_REDIS_KEY": "gbp-ps-test", "GBP_PS_KEY_EXPIRATION": "3600"}
+@given("environ", "settings")
+@where(
+    environ={
+        "GBP_PS_KEY_EXPIRATION": "3600",
+        "GBP_PS_REDIS_KEY": "gbp-ps-test",
+        "GBP_PS_STORAGE_BACKEND": "sqlite",
     }
-
+)
+class RepositoryTests(TestCase):
     @repos("django", "redis", "sqlite")
-    def test_add_process(self, backend: str) -> None:
-        repo = get_repo(backend, self.fixtures.settings)
+    def test_add_process(self, backend: str, fixtures: Fixtures) -> None:
+        repo = get_repo(backend, fixtures.settings)
         build_process: BuildProcess = factories.BuildProcessFactory()
         repo.add_process(build_process)
         self.assertEqual([*repo.get_processes()], [build_process])
 
     @repos("django", "redis", "sqlite")
-    def test_add_process_when_already_exists(self, backend: str) -> None:
-        repo = get_repo(backend, self.fixtures.settings)
+    def test_add_process_when_already_exists(
+        self, backend: str, fixtures: Fixtures
+    ) -> None:
+        repo = get_repo(backend, fixtures.settings)
         build_process: BuildProcess = factories.BuildProcessFactory()
         repo.add_process(build_process)
 
@@ -64,9 +69,9 @@ class RepositoryTests(TestCase):
 
     @repos("django", "redis", "sqlite")
     def test_add_process_same_package_in_different_builds_exist_only_once(
-        self, backend: str
+        self, backend: str, fixtures: Fixtures
     ) -> None:
-        repo = get_repo(backend, self.fixtures.settings)
+        repo = get_repo(backend, fixtures.settings)
         dead_process: BuildProcess = factories.BuildProcessFactory()
         repo.add_process(dead_process)
         new_process: BuildProcess = factories.BuildProcessFactory(
@@ -79,8 +84,8 @@ class RepositoryTests(TestCase):
         self.assertEqual([*repo.get_processes()], [new_process])
 
     @repos("django", "redis", "sqlite")
-    def test_update_process(self, backend: str) -> None:
-        repo = get_repo(backend, self.fixtures.settings)
+    def test_update_process(self, backend: str, fixtures: Fixtures) -> None:
+        repo = get_repo(backend, fixtures.settings)
         orig_process: BuildProcess = factories.BuildProcessFactory(phase="compile")
         repo.add_process(orig_process)
 
@@ -92,11 +97,13 @@ class RepositoryTests(TestCase):
         self.assertEqual([*repo.get_processes()], [expected])
 
     @repos("django", "redis", "sqlite")
-    def test_update_process_finalize_when_not_owned(self, backend: str) -> None:
+    def test_update_process_finalize_when_not_owned(
+        self, backend: str, fixtures: Fixtures
+    ) -> None:
         # This demonstrates the concept of build host "ownership". A a process can only
         # be updated with a "final" phase if the build host is the same. Otherwise it
         # should raise an exception
-        repo = get_repo(backend, self.fixtures.settings)
+        repo = get_repo(backend, fixtures.settings)
         process1 = make_build_process(add_to_repo=False)
         repo.add_process(process1)
         process2 = replace(process1, build_host="badhost", phase="clean")
@@ -106,9 +113,9 @@ class RepositoryTests(TestCase):
 
     @repos("django", "redis")
     def test_add_or_update_process_can_handle_buildhost_changes(
-        self, backend: str
+        self, backend: str, fixtures: Fixtures
     ) -> None:
-        repo = get_repo(backend, self.fixtures.settings)
+        repo = get_repo(backend, fixtures.settings)
         orig_process: BuildProcess = factories.BuildProcessFactory(phase="clean")
         repo.add_process(orig_process)
 
@@ -120,8 +127,10 @@ class RepositoryTests(TestCase):
         self.assertEqual([*repo.get_processes()], [expected])
 
     @repos("django", "redis", "sqlite")
-    def test_add_or_update_ignores_notallowederror(self, backend: str) -> None:
-        repo = get_repo(backend, self.fixtures.settings)
+    def test_add_or_update_ignores_notallowederror(
+        self, backend: str, fixtures: Fixtures
+    ) -> None:
+        repo = get_repo(backend, fixtures.settings)
         process1 = make_build_process(add_to_repo=False)
         repo.add_process(process1)
         process2 = replace(process1, build_host="badhost", phase="clean")
@@ -131,50 +140,58 @@ class RepositoryTests(TestCase):
         self.assertEqual([*repo.get_processes()], [process1])
 
     @repos("django", "redis", "sqlite")
-    def test_update_process_when_process_not_in_db(self, backend: str) -> None:
-        repo = get_repo(backend, self.fixtures.settings)
+    def test_update_process_when_process_not_in_db(
+        self, backend: str, fixtures: Fixtures
+    ) -> None:
+        repo = get_repo(backend, fixtures.settings)
         build_process: BuildProcess = factories.BuildProcessFactory()
 
         with self.assertRaises(RecordNotFoundError):
             repo.update_process(build_process)
 
     @repos("django", "redis", "sqlite")
-    def test_get_processes_with_empty_list(self, backend: str) -> None:
-        repo = get_repo(backend, self.fixtures.settings)
+    def test_get_processes_with_empty_list(
+        self, backend: str, fixtures: Fixtures
+    ) -> None:
+        repo = get_repo(backend, fixtures.settings)
         self.assertEqual([*repo.get_processes()], [])
 
     @repos("django", "redis", "sqlite")
-    def test_get_processes_with_process(self, backend: str) -> None:
-        repo = get_repo(backend, self.fixtures.settings)
+    def test_get_processes_with_process(self, backend: str, fixtures: Fixtures) -> None:
+        repo = get_repo(backend, fixtures.settings)
         build_process: BuildProcess = factories.BuildProcessFactory()
         repo.add_process(build_process)
 
         self.assertEqual([*repo.get_processes()], [build_process])
 
     @repos("django", "redis", "sqlite")
-    def test_get_processes_with_final_process(self, backend: str) -> None:
-        repo = get_repo(backend, self.fixtures.settings)
+    def test_get_processes_with_final_process(
+        self, backend: str, fixtures: Fixtures
+    ) -> None:
+        repo = get_repo(backend, fixtures.settings)
         build_process: BuildProcess = factories.BuildProcessFactory(phase="postrm")
         repo.add_process(build_process)
 
         self.assertEqual([*repo.get_processes()], [])
 
     @repos("django", "redis", "sqlite")
-    def test_get_processes_with_include_final_process(self, backend: str) -> None:
-        repo = get_repo(backend, self.fixtures.settings)
+    def test_get_processes_with_include_final_process(
+        self, backend: str, fixtures: Fixtures
+    ) -> None:
+        repo = get_repo(backend, fixtures.settings)
         build_process: BuildProcess = factories.BuildProcessFactory(phase="postrm")
         repo.add_process(build_process)
 
         self.assertEqual([*repo.get_processes(include_final=True)], [build_process])
 
-    def test_repo_factory_success(self) -> None:
-        settings = replace(self.fixtures.settings, STORAGE_BACKEND="sqlite")
+    def test_repo_factory_success(self, fixtures: Fixtures) -> None:
+        settings = replace(fixtures.settings, STORAGE_BACKEND="sqlite")
         repo = Repo(settings)
 
         self.assertTrue(isinstance(repo, sqlite.SqliteRepository))
 
-    def test_repo_factory_failure(self) -> None:
-        settings = replace(self.fixtures.settings, STORAGE_BACKEND="bogus")
+    def test_repo_factory_failure(self, fixtures: Fixtures) -> None:
+        settings = replace(fixtures.settings, STORAGE_BACKEND="bogus")
 
         with self.assertRaises(ValueError):
             Repo(settings)

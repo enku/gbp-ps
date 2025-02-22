@@ -1,11 +1,11 @@
 """Tests for the GraphQL interface for gbp-ps"""
 
-# pylint: disable=missing-docstring
+# pylint: disable=missing-docstring,unused-argument
 
 from typing import Any
 
 from django.test.client import Client
-from unittest_fixtures import requires
+from unittest_fixtures import Fixtures, given
 
 from . import TestCase, make_build_process
 
@@ -73,7 +73,7 @@ class GetProcessesTests(TestCase):
         self.assertEqual(len(result["data"]["buildProcesses"]), 2)
 
 
-@requires("repo")
+@given("repo")
 class AddBuildProcessesTests(TestCase):
     query = """
     mutation (
@@ -87,34 +87,34 @@ class AddBuildProcessesTests(TestCase):
     }
     """
 
-    def test(self) -> None:
+    def test(self, fixtures: Fixtures) -> None:
         process = make_build_process()
         result = graphql(self.query, {"process": process.to_dict()})
 
         self.assertNotIn("errors", result)
-        processes = [*self.fixtures.repo.get_processes()]
+        processes = [*fixtures.repo.get_processes()]
         self.assertEqual(processes, [process])
 
-    def test_update(self) -> None:
+    def test_update(self, fixtures: Fixtures) -> None:
         p_dict = make_build_process().to_dict()
         graphql(self.query, {"process": p_dict})
 
         p_dict["phase"] = "postinst"
         result = graphql(self.query, {"process": p_dict})
         self.assertNotIn("errors", result)
-        processes = [*self.fixtures.repo.get_processes()]
+        processes = [*fixtures.repo.get_processes()]
         self.assertEqual(processes[0].phase, "postinst")
 
-    def test_empty_phase_does_not_get_added(self) -> None:
+    def test_empty_phase_does_not_get_added(self, fixtures: Fixtures) -> None:
         p_dict = make_build_process(phase="", add_to_repo=False).to_dict()
         result = graphql(self.query, {"process": p_dict})
 
         self.assertNotIn("errors", result)
-        self.assertEqual([*self.fixtures.repo.get_processes(include_final=True)], [])
+        self.assertEqual([*fixtures.repo.get_processes(include_final=True)], [])
 
-    def test_empty_machine_does_not_get_added(self) -> None:
+    def test_empty_machine_does_not_get_added(self, fixtures: Fixtures) -> None:
         p_dict = make_build_process(machine="", add_to_repo=False).to_dict()
         result = graphql(self.query, {"process": p_dict})
 
         self.assertNotIn("errors", result)
-        self.assertEqual([*self.fixtures.repo.get_processes(include_final=True)], [])
+        self.assertEqual([*fixtures.repo.get_processes(include_final=True)], [])

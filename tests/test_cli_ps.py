@@ -1,12 +1,12 @@
 """CLI unit tests for gbp-ps ps subcommand"""
 
-# pylint: disable=missing-docstring
+# pylint: disable=missing-docstring,unused-argument
 import datetime as dt
 from argparse import ArgumentParser
 from functools import partial
 from unittest import mock
 
-from unittest_fixtures import requires
+from unittest_fixtures import Fixtures, given
 
 from gbp_ps.cli import ps
 from gbp_ps.types import BuildProcess
@@ -21,7 +21,7 @@ from . import (
 )
 
 
-@requires("gbp", "console")
+@given("gbp", "console")
 class PSTests(TestCase):
     """Tests for gbp ps"""
 
@@ -29,7 +29,7 @@ class PSTests(TestCase):
 
     @mock.patch("gbpcli.render.LOCAL_TIMEZONE", new=LOCAL_TIMEZONE)
     @mock.patch("gbp_ps.cli.ps.utils.get_today", new=lambda: dt.date(2023, 11, 15))
-    def test(self) -> None:
+    def test(self, fixtures: Fixtures) -> None:
         t = dt.datetime
         for cpv, phase, start_time in [
             ["sys-apps/portage-3.0.51", "postinst", t(2023, 11, 14, 16, 20, 0)],
@@ -39,10 +39,10 @@ class PSTests(TestCase):
             make_build_process(package=cpv, phase=phase, start_time=start_time)
         cmdline = "gbp ps"
         args = parse_args(cmdline)
-        console = self.fixtures.console
+        console = fixtures.console
 
         print_command(cmdline, console)
-        exit_status = ps.handler(args, self.fixtures.gbp, console)
+        exit_status = ps.handler(args, fixtures.gbp, console)
 
         self.assertEqual(exit_status, 0)
         expected = """$ gbp ps
@@ -59,7 +59,7 @@ class PSTests(TestCase):
 
     @mock.patch("gbpcli.render.LOCAL_TIMEZONE", new=LOCAL_TIMEZONE)
     @mock.patch("gbp_ps.cli.ps.utils.get_today", new=lambda: dt.date(2024, 8, 16))
-    def test_with_progress(self) -> None:
+    def test_with_progress(self, fixtures: Fixtures) -> None:
         t = dt.datetime
         for cpv, phase, start_time in [
             ["pipeline", "world", t(2024, 8, 16, 16, 20, 1)],
@@ -69,9 +69,9 @@ class PSTests(TestCase):
             make_build_process(package=cpv, phase=phase, start_time=start_time)
         cmdline = "gbp ps --progress"
         args = parse_args(cmdline)
-        console = self.fixtures.console
+        console = fixtures.console
 
-        exit_status = ps.handler(args, self.fixtures.gbp, console)
+        exit_status = ps.handler(args, fixtures.gbp, console)
 
         self.assertEqual(exit_status, 0)
         expected = """\
@@ -88,7 +88,7 @@ class PSTests(TestCase):
 
     @mock.patch("gbpcli.render.LOCAL_TIMEZONE", new=LOCAL_TIMEZONE)
     @mock.patch("gbp_ps.cli.ps.utils.get_today", new=lambda: dt.date(2023, 11, 15))
-    def test_with_node(self) -> None:
+    def test_with_node(self, fixtures: Fixtures) -> None:
         t = dt.datetime
         for cpv, phase, start_time in [
             ["sys-apps/portage-3.0.51", "postinst", t(2023, 11, 15, 16, 20, 0)],
@@ -98,10 +98,10 @@ class PSTests(TestCase):
             make_build_process(package=cpv, phase=phase, start_time=start_time)
         cmdline = "gbp ps --node"
         args = parse_args(cmdline)
-        console = self.fixtures.console
+        console = fixtures.console
 
         print_command(cmdline, console)
-        exit_status = ps.handler(args, self.fixtures.gbp, console)
+        exit_status = ps.handler(args, fixtures.gbp, console)
 
         self.assertEqual(exit_status, 0)
         expected = """$ gbp ps --node
@@ -116,7 +116,7 @@ class PSTests(TestCase):
 """
         self.assertEqual(console.out.file.getvalue(), expected)
 
-    def test_from_install_to_pull(self) -> None:
+    def test_from_install_to_pull(self, fixtures: Fixtures) -> None:
         t = dt.datetime
         machine = "babette"
         build_id = "1031"
@@ -137,8 +137,8 @@ class PSTests(TestCase):
         update(phase="world")
 
         # First compile it
-        console = self.fixtures.console
-        ps.handler(args, self.fixtures.gbp, console)
+        console = fixtures.console
+        ps.handler(args, fixtures.gbp, console)
 
         self.assertEqual(
             console.out.file.getvalue(),
@@ -156,7 +156,7 @@ class PSTests(TestCase):
         update(phase="clean", start_time=orig_start + dt.timedelta(seconds=60))
         console.out.file.seek(0)
         console.out.file.truncate()
-        ps.handler(args, self.fixtures.gbp, console)
+        ps.handler(args, fixtures.gbp, console)
 
         self.assertEqual(console.out.file.getvalue(), "")
 
@@ -168,7 +168,7 @@ class PSTests(TestCase):
         )
         console.out.file.seek(0)
         console.out.file.truncate()
-        ps.handler(args, self.fixtures.gbp, console)
+        ps.handler(args, fixtures.gbp, console)
 
         self.assertEqual(
             console.out.file.getvalue(),
@@ -182,11 +182,11 @@ class PSTests(TestCase):
 """,
         )
 
-    def test_empty(self) -> None:
+    def test_empty(self, fixtures: Fixtures) -> None:
         cmdline = "gbp ps"
         args = parse_args(cmdline)
-        console = self.fixtures.console
-        exit_status = ps.handler(args, self.fixtures.gbp, console)
+        console = fixtures.console
+        exit_status = ps.handler(args, fixtures.gbp, console)
 
         self.assertEqual(exit_status, 0)
         self.assertEqual(console.out.file.getvalue(), "")
@@ -194,7 +194,7 @@ class PSTests(TestCase):
     @mock.patch("gbpcli.render.LOCAL_TIMEZONE", new=LOCAL_TIMEZONE)
     @mock.patch("gbp_ps.cli.ps.time.sleep")
     @mock.patch("gbp_ps.cli.ps.utils.get_today", new=lambda: dt.date(2023, 11, 11))
-    def test_continuous_mode(self, mock_sleep: mock.Mock) -> None:
+    def test_continuous_mode(self, mock_sleep: mock.Mock, fixtures: Fixtures) -> None:
         processes = [
             make_build_process(package=cpv, phase=phase)
             for cpv, phase in [
@@ -205,7 +205,7 @@ class PSTests(TestCase):
         ]
         cmdline = "gbp ps -c -i4"
         args = parse_args(cmdline)
-        console = self.fixtures.console
+        console = fixtures.console
 
         gbp = mock.Mock()
         mock_graphql_resp = [process.to_dict() for process in processes]
@@ -236,31 +236,31 @@ class PSParseArgsTests(TestCase):
         ps.parse_args(parser)
 
 
-@requires("tempdb", "repo_fixture")
+@given("tempdb", repo="repo_fixture")
 class PSGetLocalProcessesTests(TestCase):
-    def test_with_0_processes(self) -> None:
-        p = ps.get_local_processes(self.fixtures.tempdb)()
+    def test_with_0_processes(self, fixtures: Fixtures) -> None:
+        p = ps.get_local_processes(fixtures.tempdb)()
 
         self.assertEqual(p, [])
 
-    def test_with_1_process(self) -> None:
+    def test_with_1_process(self, fixtures: Fixtures) -> None:
         process = factories.BuildProcessFactory()
-        self.fixtures.repo.add_process(process)
+        fixtures.repo.add_process(process)
 
-        p = ps.get_local_processes(self.fixtures.tempdb)()
+        p = ps.get_local_processes(fixtures.tempdb)()
 
         self.assertEqual(p, [process])
 
-    def test_with_multiple_processes(self) -> None:
+    def test_with_multiple_processes(self, fixtures: Fixtures) -> None:
         for _ in range(5):
             process = factories.BuildProcessFactory()
-            self.fixtures.repo.add_process(process)
+            fixtures.repo.add_process(process)
 
-        self.assertEqual(len(ps.get_local_processes(self.fixtures.tempdb)()), 5)
+        self.assertEqual(len(ps.get_local_processes(fixtures.tempdb)()), 5)
 
-    def test_with_final_processes(self) -> None:
+    def test_with_final_processes(self, fixtures: Fixtures) -> None:
         for phase in BuildProcess.final_phases:
             process = factories.BuildProcessFactory(phase=phase)
-            self.fixtures.repo.add_process(process)
+            fixtures.repo.add_process(process)
 
-        self.assertEqual(len(ps.get_local_processes(self.fixtures.tempdb)()), 0)
+        self.assertEqual(len(ps.get_local_processes(fixtures.tempdb)()), 0)
