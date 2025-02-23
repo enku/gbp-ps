@@ -4,11 +4,12 @@
 import argparse
 from unittest import mock
 
+from gbp_testkit.helpers import parse_args
 from unittest_fixtures import Fixtures, given
 
 from gbp_ps.cli import dump_bashrc
 
-from . import TestCase, parse_args
+from . import TestCase
 
 
 @given("gbp", "console")

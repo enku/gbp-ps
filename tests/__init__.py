@@ -47,34 +47,3 @@ def make_build_process(**kwargs: Any) -> BuildProcess:
             repo.add_process(build_process)
 
     return build_process
-
-
-def parse_args(cmdline: str) -> argparse.Namespace:
-    args = shlex.split(cmdline)
-    parser = gbpcli.build_parser(Config(url="http://gbp.invalid/"))
-
-    return parser.parse_args(args[1:])
-
-
-def print_command(cmdline: str, console: Console) -> None:
-    """Pretty print the cmdline to console"""
-    console.out.print(f"[green]$ [/green]{cmdline}")
-
-
-T = TypeVar("T")
-
-
-def parametrized(lists_of_args: Iterable[Iterable[Any]]) -> Callable[..., Any]:
-    """Parameterized test"""
-
-    def dec(func: Callable[..., Any]) -> Callable[[TestCase, T], None]:
-        @wraps(func)
-        def wrapper(self: TestCase, *args: Any, **kwargs: Any) -> None:
-            for list_of_args in lists_of_args:
-                name = ",".join(str(i) for i in list_of_args)
-                with self.subTest(name):
-                    func(self, *args, *list_of_args, **kwargs)
-
-        return wrapper
-
-    return dec

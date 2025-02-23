@@ -6,11 +6,12 @@ import platform
 from argparse import ArgumentParser
 from unittest import mock
 
+from gbp_testkit.helpers import parse_args
 from unittest_fixtures import Fixtures, given
 
 from gbp_ps.cli import add_process
 
-from . import TestCase, factories, make_build_process, parse_args
+from . import TestCase, make_build_process
 
 
 @given("repo", "gbp", "console")
@@ -39,10 +40,10 @@ class AddProcessTests(TestCase):
         add_process.parse_args(parser)
 
 
-@given("tempdb", "repo_fixture")
+@given("tempdb", "repo_fixture", process="build_process")
 class AddProcessAddLocalProcessesTests(TestCase):
     def test(self, fixtures: Fixtures) -> None:
-        process = factories.BuildProcessFactory()
+        process = fixtures.process
 
         add_process.add_local_process(fixtures.tempdb)(process)
 
@@ -51,9 +52,10 @@ class AddProcessAddLocalProcessesTests(TestCase):
         self.assertEqual(list(result), [process])
 
 
+@given("build_process")
 class BuildProcessFromArgsTests(TestCase):
-    def test(self) -> None:
-        expected = factories.BuildProcessFactory()
+    def test(self, fixtures: Fixtures) -> None:
+        expected = fixtures.build_process
         cmdline = (
             f"gbp add-process {expected.machine} {expected.build_id} {expected.package}"
             f" {expected.phase}"

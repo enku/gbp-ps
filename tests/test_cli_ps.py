@@ -6,19 +6,13 @@ from argparse import ArgumentParser
 from functools import partial
 from unittest import mock
 
+from gbp_testkit.helpers import parse_args, print_command
 from unittest_fixtures import Fixtures, given
 
 from gbp_ps.cli import ps
 from gbp_ps.types import BuildProcess
 
-from . import (
-    LOCAL_TIMEZONE,
-    TestCase,
-    factories,
-    make_build_process,
-    parse_args,
-    print_command,
-)
+from . import LOCAL_TIMEZONE, TestCase, factories, make_build_process
 
 
 @given("gbp", "console")
@@ -236,7 +230,7 @@ class PSParseArgsTests(TestCase):
         ps.parse_args(parser)
 
 
-@given("tempdb", repo="repo_fixture")
+@given("tempdb", repo="repo_fixture", process="build_process")
 class PSGetLocalProcessesTests(TestCase):
     def test_with_0_processes(self, fixtures: Fixtures) -> None:
         p = ps.get_local_processes(fixtures.tempdb)()
@@ -244,7 +238,7 @@ class PSGetLocalProcessesTests(TestCase):
         self.assertEqual(p, [])
 
     def test_with_1_process(self, fixtures: Fixtures) -> None:
-        process = factories.BuildProcessFactory()
+        process = fixtures.process
         fixtures.repo.add_process(process)
 
         p = ps.get_local_processes(fixtures.tempdb)()

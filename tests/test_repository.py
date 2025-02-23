@@ -6,7 +6,7 @@ from typing import Any, Callable
 from unittest import mock
 
 import fakeredis
-from unittest_fixtures import Fixtures, given, where
+from unittest_fixtures import Fixtures, given, parametrized, where
 
 from gbp_ps.exceptions import (
     RecordAlreadyExists,
@@ -17,7 +17,7 @@ from gbp_ps.repository import Repo, RepositoryType, add_or_update_process, sqlit
 from gbp_ps.settings import Settings
 from gbp_ps.types import BuildProcess
 
-from . import TestCase, factories, make_build_process, parametrized
+from . import TestCase, make_build_process
 
 HOST = 0
 REDIS_FROM_URL = "gbp_ps.repository.redis.redis.Redis.from_url"
@@ -40,19 +40,20 @@ def repos(*names: str) -> Callable[[Callable[[Any, str], None]], None]:
     return parametrized([[name] for name in names])
 
 
-@given("environ", "settings")
+@given("environ", "settings", "build_process")
 @where(
     environ={
         "GBP_PS_KEY_EXPIRATION": "3600",
         "GBP_PS_REDIS_KEY": "gbp-ps-test",
         "GBP_PS_STORAGE_BACKEND": "sqlite",
-    }
+    },
+    build_process__phase="compile",
 )
 class RepositoryTests(TestCase):
     @repos("django", "redis", "sqlite")
     def test_add_process(self, backend: str, fixtures: Fixtures) -> None:
         repo = get_repo(backend, fixtures.settings)
-        build_process: BuildProcess = factories.BuildProcessFactory()
+        build_process: BuildProcess = fixtures.build_process
         repo.add_process(build_process)
         self.assertEqual([*repo.get_processes()], [build_process])
 
@@ -61,7 +62,7 @@ class RepositoryTests(TestCase):
         self, backend: str, fixtures: Fixtures
     ) -> None:
         repo = get_repo(backend, fixtures.settings)
-        build_process: BuildProcess = factories.BuildProcessFactory()
+        build_process: BuildProcess = fixtures.build_process
         repo.add_process(build_process)
 
         with self.assertRaises(RecordAlreadyExists):
@@ -72,12 +73,10 @@ class RepositoryTests(TestCase):
         self, backend: str, fixtures: Fixtures
     ) -> None:
         repo = get_repo(backend, fixtures.settings)
-        dead_process: BuildProcess = factories.BuildProcessFactory()
+        dead_process: BuildProcess = fixtures.build_process
         repo.add_process(dead_process)
-        new_process: BuildProcess = factories.BuildProcessFactory(
-            machine=dead_process.machine,
-            build_host=dead_process.build_host,
-            package=dead_process.package,
+        new_process = replace(
+            dead_process, build_id=str(int(dead_process.build_id) + 1)
         )
         repo.add_process(new_process)
 
@@ -86,7 +85,7 @@ class RepositoryTests(TestCase):
     @repos("django", "redis", "sqlite")
     def test_update_process(self, backend: str, fixtures: Fixtures) -> None:
         repo = get_repo(backend, fixtures.settings)
-        orig_process: BuildProcess = factories.BuildProcessFactory(phase="compile")
+        orig_process: BuildProcess = replace(fixtures.build_process, phase="compile")
         repo.add_process(orig_process)
 
         updated_process = replace(orig_process, phase="postinst")
@@ -116,7 +115,7 @@ class RepositoryTests(TestCase):
         self, backend: str, fixtures: Fixtures
     ) -> None:
         repo = get_repo(backend, fixtures.settings)
-        orig_process: BuildProcess = factories.BuildProcessFactory(phase="clean")
+        orig_process: BuildProcess = replace(fixtures.build_process, phase="clean")
         repo.add_process(orig_process)
 
         updated_process = replace(orig_process, build_host="gbp", phase="pull")
@@ -144,7 +143,7 @@ class RepositoryTests(TestCase):
         self, backend: str, fixtures: Fixtures
     ) -> None:
         repo = get_repo(backend, fixtures.settings)
-        build_process: BuildProcess = factories.BuildProcessFactory()
+        build_process: BuildProcess = fixtures.build_process
 
         with self.assertRaises(RecordNotFoundError):
             repo.update_process(build_process)
@@ -159,7 +158,7 @@ class RepositoryTests(TestCase):
     @repos("django", "redis", "sqlite")
     def test_get_processes_with_process(self, backend: str, fixtures: Fixtures) -> None:
         repo = get_repo(backend, fixtures.settings)
-        build_process: BuildProcess = factories.BuildProcessFactory()
+        build_process: BuildProcess = fixtures.build_process
         repo.add_process(build_process)
 
         self.assertEqual([*repo.get_processes()], [build_process])
@@ -169,7 +168,7 @@ class RepositoryTests(TestCase):
         self, backend: str, fixtures: Fixtures
     ) -> None:
         repo = get_repo(backend, fixtures.settings)
-        build_process: BuildProcess = factories.BuildProcessFactory(phase="postrm")
+        build_process: BuildProcess = replace(fixtures.build_process, phase="postrm")
         repo.add_process(build_process)
 
         self.assertEqual([*repo.get_processes()], [])
@@ -179,7 +178,7 @@ class RepositoryTests(TestCase):
         self, backend: str, fixtures: Fixtures
     ) -> None:
         repo = get_repo(backend, fixtures.settings)
-        build_process: BuildProcess = factories.BuildProcessFactory(phase="postrm")
+        build_process: BuildProcess = replace(fixtures.build_process, phase="postrm")
         repo.add_process(build_process)
 
         self.assertEqual([*repo.get_processes(include_final=True)], [build_process])

@@ -4,9 +4,9 @@
 from typing import Any
 from unittest import TestCase, mock
 
-from gbp_ps.exceptions import RETURN_EXCEPTION, swallow_exception
+from unittest_fixtures import parametrized
 
-from . import parametrized
+from gbp_ps.exceptions import RETURN_EXCEPTION, swallow_exception
 
 
 class SwallowExceptionTests(TestCase):
