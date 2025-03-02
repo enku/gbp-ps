@@ -1,3 +1,4 @@
 """gbp-ps"""
 
-APP = "gbp_ps"
+# Plugin definition
+plugin = {"name": "gbp-ps", "app": "gbp_ps", "graphql": "gbp_ps.graphql"}

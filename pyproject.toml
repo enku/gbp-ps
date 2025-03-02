@@ -24,11 +24,8 @@ license = {text = "GPL3+"}
 homepage = "https://github.com/enku/gbp-ps"
 repository = "https://github.com/enku/gbp-ps"
 
-[project.entry-points."gentoo_build_publisher.graphql_schema"]
-gbp_ps = "gbp_ps.graphql"
-
-[project.entry-points."gentoo_build_publisher.apps"]
-gbp_ps = "gbp_ps:APP"
+[project.entry-points."gentoo_build_publisher.plugins"]
+gbp_ps = "gbp_ps:plugin"
 
 [project.entry-points."gbpcli.subcommands"]
 add-process = "gbp_ps.cli.add_process"
@@ -43,7 +40,7 @@ sqlite = "gbp_ps.repository.sqlite:SqliteRepository"
 [project.optional-dependencies]
 server = [
     "ariadne>=0.21",
-    "gentoo-build-publisher>=2.3.0",
+    "gentoo-build-publisher>=2.4.0rc1",
 ]
 redis = [
     "gbp-ps[server]",
