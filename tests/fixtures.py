@@ -1,7 +1,8 @@
 """unittest fixtures for gbp-ps"""
 
-# pylint: disable=missing-docstring
+# pylint: disable=missing-docstring,redefined-outer-name
 
+import datetime as dt
 from typing import Any
 from unittest import mock
 
@@ -12,6 +13,7 @@ from gbp_ps.repository import Repo, RepositoryType, sqlite
 from gbp_ps.settings import Settings
 from gbp_ps.types import BuildProcess
 
+from . import LOCAL_TIMEZONE
 from .factories import BuildProcessFactory
 
 console = testkit.console
@@ -55,3 +57,11 @@ def environ(
     new_environ.update(environ or {})
     with mock.patch.dict("os.environ", new_environ):
         yield new_environ
+
+
+@fixture()
+def local_timezone(
+    _: Fixtures, local_timezone: dt.timezone = LOCAL_TIMEZONE
+) -> FixtureContext[dt.timezone]:
+    with mock.patch("gbpcli.render.LOCAL_TIMEZONE", new=local_timezone):
+        yield local_timezone

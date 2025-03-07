@@ -12,16 +12,15 @@ from unittest_fixtures import Fixtures, given
 from gbp_ps.cli import ps
 from gbp_ps.types import BuildProcess
 
-from . import LOCAL_TIMEZONE, TestCase, factories, make_build_process
+from . import TestCase, factories, make_build_process
 
 
-@given("gbp", "console")
+@given("gbp", "console", "local_timezone")
 class PSTests(TestCase):
     """Tests for gbp ps"""
 
     maxDiff = None
 
-    @mock.patch("gbpcli.render.LOCAL_TIMEZONE", new=LOCAL_TIMEZONE)
     @mock.patch("gbp_ps.cli.ps.utils.get_today", new=lambda: dt.date(2023, 11, 15))
     def test(self, fixtures: Fixtures) -> None:
         t = dt.datetime
@@ -51,7 +50,6 @@ class PSTests(TestCase):
 """
         self.assertEqual(console.out.file.getvalue(), expected)
 
-    @mock.patch("gbpcli.render.LOCAL_TIMEZONE", new=LOCAL_TIMEZONE)
     @mock.patch("gbp_ps.cli.ps.utils.get_today", new=lambda: dt.date(2024, 8, 16))
     def test_with_progress(self, fixtures: Fixtures) -> None:
         t = dt.datetime
@@ -80,7 +78,6 @@ class PSTests(TestCase):
 """
         self.assertEqual(console.out.file.getvalue(), expected)
 
-    @mock.patch("gbpcli.render.LOCAL_TIMEZONE", new=LOCAL_TIMEZONE)
     @mock.patch("gbp_ps.cli.ps.utils.get_today", new=lambda: dt.date(2023, 11, 15))
     def test_with_node(self, fixtures: Fixtures) -> None:
         t = dt.datetime
@@ -185,7 +182,6 @@ class PSTests(TestCase):
         self.assertEqual(exit_status, 0)
         self.assertEqual(console.out.file.getvalue(), "")
 
-    @mock.patch("gbpcli.render.LOCAL_TIMEZONE", new=LOCAL_TIMEZONE)
     @mock.patch("gbp_ps.cli.ps.time.sleep")
     @mock.patch("gbp_ps.cli.ps.utils.get_today", new=lambda: dt.date(2023, 11, 11))
     def test_continuous_mode(self, mock_sleep: mock.Mock, fixtures: Fixtures) -> None:
