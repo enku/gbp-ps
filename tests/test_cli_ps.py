@@ -215,6 +215,38 @@ class PSTests(TestCase):
         mock_sleep.assert_called_with(4)
 
 
+@given("console", "gbp", "get_today")
+class PSWithMFlagTests(TestCase):
+    maxDiff = None
+
+    def test(self, fixtures: Fixtures) -> None:
+        make_build_process(machine="babette", package="sys-devel/gcc-14.2.1_p20241221")
+        make_build_process(machine="lighthouse", package="app-i18n/ibus-1.5.31-r1")
+        make_build_process(machine="babette", package="sys-devel/flex-2.6.4-r6")
+        make_build_process(machine="lighthouse", package="media-libs/gd-2.3.3-r4")
+
+        cmdline = "gbp ps -m lighthouse"
+        args = parse_args(cmdline)
+        console = fixtures.console
+
+        print_command(cmdline, console)
+        exit_status = ps.handler(args, fixtures.gbp, console)
+
+        self.assertEqual(exit_status, 0)
+
+        expected = """\
+$ gbp ps -m lighthouse
+                                    Build Processes                                     
+╭────────────────┬────────┬────────────────────────────────┬─────────────┬─────────────╮
+│ Machine        │ ID     │ Package                        │ Start       │ Phase       │
+├────────────────┼────────┼────────────────────────────────┼─────────────┼─────────────┤
+│ lighthouse     │ 1031   │ app-i18n/ibus-1.5.31-r1        │ 06:20:52    │ compile     │
+│ lighthouse     │ 1031   │ media-libs/gd-2.3.3-r4         │ 06:20:52    │ compile     │
+╰────────────────┴────────┴────────────────────────────────┴─────────────┴─────────────╯
+"""
+        self.assertEqual(expected, console.out.file.getvalue())
+
+
 class PSParseArgsTests(TestCase):
     def test(self) -> None:
         # Just ensure that parse_args is there and works

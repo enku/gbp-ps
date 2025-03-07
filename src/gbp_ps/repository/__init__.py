@@ -33,7 +33,9 @@ class RepositoryType(Protocol):
         If the build process doesn't exist in the repo, RecordNotFoundError is raised.
         """
 
-    def get_processes(self, include_final: bool = False) -> Iterable[BuildProcess]:
+    def get_processes(
+        self, include_final: bool = False, machine: str | None = None
+    ) -> Iterable[BuildProcess]:
         """Return the process records from the repository
 
         If include_final is True also include processes in their "final" phase. The

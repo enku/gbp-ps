@@ -33,14 +33,20 @@ def handler(args: argparse.Namespace, gbp: GBP, console: Console) -> int:
     """Show currently building packages"""
     mode: ModeHandler = MODES[args.continuous]
     local: str | None = getattr(args, "local", None)
+    machine: str | None = args.machine
 
-    get_processes = get_local_processes(local) if local else get_gbp_processes(gbp)
+    get_processes = (
+        get_local_processes(local) if local else get_gbp_processes(gbp, machine)
+    )
 
     return mode(args, get_processes, console)
 
 
 def parse_args(parser: argparse.ArgumentParser) -> None:
     """Set subcommand arguments"""
+    parser.add_argument(
+        "-m", "--machine", default=None, help="Exclude processes to the given machine"
+    )
     parser.add_argument(
         "--node", action="store_true", default=False, help="display the build node"
     )
@@ -80,11 +86,12 @@ def single_handler(
     return 0
 
 
-def get_gbp_processes(gbp: GBP) -> ProcessGetter:
+def get_gbp_processes(gbp: GBP, machine: str | None) -> ProcessGetter:
     """Retrieve and return the ProcessList"""
 
     def get_processes() -> ProcessList:
-        results = check(gbp.query.gbp_ps.get_processes())  # type: ignore[attr-defined]
+        query = gbp.query.gbp_ps.get_processes  # type: ignore[attr-defined]
+        results = check(query(machine=machine))
 
         return [graphql_to_process(result) for result in results["buildProcesses"]]
 

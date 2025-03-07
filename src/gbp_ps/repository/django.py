@@ -62,14 +62,20 @@ class DjangoRepository:
         build_process_model.build_host = process.build_host
         build_process_model.save()
 
-    def get_processes(self, include_final: bool = False) -> Iterable[BuildProcess]:
+    def get_processes(
+        self, include_final: bool = False, machine: str | None = None
+    ) -> Iterable[BuildProcess]:
         """Return the process records from the repository
 
         If include_final is True also include processes in their "final" phase. The
         default value is False.
         """
         query = self.model.objects.order_by("start_time")
+
         if not include_final:
             query = query.exclude(phase__in=BuildProcess.final_phases)
+
+        if machine:
+            query = query.filter(machine=machine)
 
         return (model.to_object() for model in query)

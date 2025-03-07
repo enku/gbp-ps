@@ -2,7 +2,8 @@
 
 import datetime as dt
 import json
-from typing import Iterable
+from dataclasses import dataclass
+from typing import Iterable, Self
 
 import redis
 
@@ -11,6 +12,41 @@ from gbp_ps.settings import Settings
 from gbp_ps.types import BuildProcess
 
 ENCODING = "UTF-8"
+
+
+@dataclass(kw_only=True, frozen=True, slots=True)
+class Key:
+    """Redis key bytes parsed"""
+
+    redis_key: str
+    machine: str
+    build_id: str
+    package: str
+
+    def __bytes__(self) -> bytes:
+        return (
+            f"{self.redis_key}:{self.machine}:{self.package}:{self.build_id}"
+        ).encode(ENCODING)
+
+    @classmethod
+    def from_bytes(cls, b: bytes) -> Self:
+        """Return the redis key as bytes"""
+        string = b.decode(ENCODING)
+        redis_key, machine, package, build_id = string.split(":")
+
+        return cls(
+            redis_key=redis_key, machine=machine, build_id=build_id, package=package
+        )
+
+    @classmethod
+    def from_process(cls, process: BuildProcess, redis_key: str) -> Self:
+        """Return Key given BuildProcess and redis_key"""
+        return cls(
+            redis_key=redis_key,
+            machine=process.machine,
+            build_id=process.build_id,
+            package=process.package,
+        )
 
 
 class RedisRepository:
@@ -23,9 +59,7 @@ class RedisRepository:
 
     def key(self, process: BuildProcess) -> bytes:
         """Return the redis key for the given BuildProcess"""
-        return f"{self._key}:{process.machine}:{process.package}:{process.build_id}".encode(
-            ENCODING
-        )
+        return bytes(Key.from_process(process, self._key))
 
     def value(self, process: BuildProcess) -> bytes:
         """Return the redis value for the given BuildProcess"""
@@ -41,16 +75,16 @@ class RedisRepository:
         """Return the redis key and value for the given BuildProcess"""
         return self.key(process), self.value(process)
 
-    def redis_to_process(self, key: bytes, value: bytes) -> BuildProcess:
+    def redis_to_process(self, key_bytes: bytes, value: bytes) -> BuildProcess:
         """Convert the given key and value to a BuildProcess"""
-        machine, package, build_id = key.decode(ENCODING).split(":")[1:]
+        key = Key.from_bytes(key_bytes)
         data = json.loads(value.decode(ENCODING))
 
         return BuildProcess(
             build_host=data["build_host"],
-            build_id=build_id,
-            machine=machine,
-            package=package,
+            build_id=key.build_id,
+            machine=key.machine,
+            package=key.package,
             phase=data["phase"],
             start_time=dt.datetime.fromisoformat(data["start_time"]),
         )
@@ -79,12 +113,13 @@ class RedisRepository:
 
         Return the number of processes deleted.
         """
-        build_id = process.build_id.encode(ENCODING)
+        build_id = process.build_id
         deleted_count = 0
         pattern = f"{self._key}:{process.machine}:{process.package}:*".encode(ENCODING)
-        for key in self._redis.keys(pattern):
-            if key.split(b":")[3] != build_id:
-                self._redis.delete(key)
+        for key_bytes in self._redis.keys(pattern):
+            key = Key.from_bytes(key_bytes)
+            if key.build_id != build_id:
+                self._redis.delete(key_bytes)
                 deleted_count += 1
         return deleted_count
 
@@ -95,20 +130,22 @@ class RedisRepository:
 
         If the build process doesn't exist in the repo, RecordNotFoundError is raised.
         """
-        key = self.key(process)
-        previous_value = self._redis.get(key)
+        key_bytes = self.key(process)
+        previous_value = self._redis.get(key_bytes)
 
         if previous_value is None:
             raise RecordNotFoundError(process)
 
-        self.redis_to_process(key, previous_value).ensure_updateable(process)
+        self.redis_to_process(key_bytes, previous_value).ensure_updateable(process)
         new_value = {
             **json.loads(previous_value),
             **{"phase": process.phase, "build_host": process.build_host},
         }
-        self._redis.setex(key, self.time, json.dumps(new_value).encode(ENCODING))
+        self._redis.setex(key_bytes, self.time, json.dumps(new_value).encode(ENCODING))
 
-    def get_processes(self, include_final: bool = False) -> Iterable[BuildProcess]:
+    def get_processes(
+        self, include_final: bool = False, machine: str | None = None
+    ) -> Iterable[BuildProcess]:
         """Return the process records from the repository
 
         If include_final is True also include processes in their "final" phase. The
@@ -116,9 +153,11 @@ class RedisRepository:
         """
         processes = []
 
-        for key in self._redis.keys(f"{self._key}:*".encode(ENCODING)):
-            if value := self._redis.get(key):
-                process = self.redis_to_process(key, value)
+        for key_bytes in self._redis.keys(f"{self._key}:*".encode(ENCODING)):
+            if machine and Key.from_bytes(key_bytes).machine != machine:
+                continue
+            if value := self._redis.get(key_bytes):
+                process = self.redis_to_process(key_bytes, value)
 
                 if include_final or not process.is_finished():
                     processes.append(process)

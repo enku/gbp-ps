@@ -1,5 +1,5 @@
-{
-  buildProcesses {
+query BuildProcesses($machine: String = null) {
+  buildProcesses(machine: $machine) {
     machine
     id
     buildHost

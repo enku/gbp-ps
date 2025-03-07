@@ -14,7 +14,7 @@ class SqliteRepository:
     """Sqlite Based Repository"""
 
     final_phases_t = tuple(BuildProcess.final_phases)
-    filter_phases = f"WHERE phase NOT IN ({','.join(['?' for _ in final_phases_t])})"
+    filter_phases = f"phase NOT IN ({','.join(['?' for _ in final_phases_t])})"
     row_names = "machine, build_id, build_host, package, phase, start_time"
 
     def __init__(self, settings: Settings) -> None:
@@ -78,20 +78,33 @@ class SqliteRepository:
                 (process.phase, process.machine, process.build_id, process.package),
             )
 
-    def get_processes(self, include_final: bool = False) -> Iterable[BuildProcess]:
+    def get_processes(
+        self, include_final: bool = False, machine: str | None = None
+    ) -> Iterable[BuildProcess]:
         """Return the process records from the repository
 
         If include_final is True also include processes in their "final" phase. The
         default value is False.
         """
-        exclude_final = not include_final
+        wheres: list[str] = []
+        params: tuple[str, ...] = ()
+
+        if not include_final:
+            wheres.append(self.filter_phases)
+            params = params + self.final_phases_t
+
+        if machine:
+            wheres.append("machine=?")
+            params = params + (machine,)
+
+        wheres_s = "WHERE " + " AND ".join(wheres) if wheres else ""
+
         query = f"""
             SELECT machine,build_id,build_host,package,phase,start_time
             FROM ebuild_process
-            {self.filter_phases if exclude_final else ""}
+            {wheres_s}
             ORDER BY start_time
         """
-        params = self.final_phases_t if exclude_final else ()
 
         with self.cursor() as cursor:
             result = cursor.execute(query, params)

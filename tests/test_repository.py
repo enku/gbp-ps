@@ -183,6 +183,15 @@ class RepositoryTests(TestCase):
 
         self.assertEqual([*repo.get_processes(include_final=True)], [build_process])
 
+    @repos("django", "redis", "sqlite")
+    def test_get_processes_with_machine(self, backend: str, fixtures: Fixtures) -> None:
+        repo = get_repo(backend, fixtures.settings)
+        repo.add_process(fixtures.build_process)
+        build_process = replace(fixtures.build_process, machine="laika")
+        repo.add_process(build_process)
+
+        self.assertEqual([*repo.get_processes(machine="laika")], [build_process])
+
     def test_repo_factory_success(self, fixtures: Fixtures) -> None:
         settings = replace(fixtures.settings, STORAGE_BACKEND="sqlite")
         repo = Repo(settings)
