@@ -66,7 +66,7 @@ def build_process_from_args(args: argparse.Namespace) -> BuildProcess:
 def parse_args(parser: argparse.ArgumentParser) -> None:
     """Set subcommand arguments"""
     parser.add_argument(
-        "--local", "-l", default=None, help="(Where to) Use a local process database"
+        "-l", "--local", default=None, help="(Where to) Use a local process database"
     )
     parser.add_argument("machine", metavar="MACHINE", help="name of the machine")
     parser.add_argument("number", metavar="NUMBER", help="build number")

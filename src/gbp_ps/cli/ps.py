@@ -45,25 +45,25 @@ def parse_args(parser: argparse.ArgumentParser) -> None:
         "--node", action="store_true", default=False, help="display the build node"
     )
     parser.add_argument(
-        "--local", "-l", default=None, help="(Where to) Use a local process database"
+        "-l", "--local", default=None, help="(Where to) Use a local process database"
     )
     parser.add_argument(
-        "--continuous",
         "-c",
+        "--continuous",
         action="store_true",
         default=False,
         help="Run and continuously poll and update",
     )
     parser.add_argument(
-        "--update-interval",
         "-i",
+        "--update-interval",
         type=float,
         default=1,
         help="In continuous mode, the interval, in seconds, between updates",
     )
     parser.add_argument(
-        "--progress",
         "-p",
+        "--progress",
         action="store_true",
         default=False,
         help="Display progress bars for package phase",
