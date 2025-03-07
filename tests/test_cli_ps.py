@@ -15,19 +15,18 @@ from gbp_ps.types import BuildProcess
 from . import TestCase, factories, make_build_process
 
 
-@given("gbp", "console", "local_timezone")
+@given("gbp", "console", "local_timezone", "get_today")
 class PSTests(TestCase):
     """Tests for gbp ps"""
 
     maxDiff = None
 
-    @mock.patch("gbp_ps.cli.ps.utils.get_today", new=lambda: dt.date(2023, 11, 15))
     def test(self, fixtures: Fixtures) -> None:
         t = dt.datetime
         for cpv, phase, start_time in [
-            ["sys-apps/portage-3.0.51", "postinst", t(2023, 11, 14, 16, 20, 0)],
-            ["sys-apps/shadow-4.14-r4", "package", t(2023, 11, 15, 16, 20, 1)],
-            ["net-misc/wget-1.21.4", "compile", t(2023, 11, 15, 16, 20, 2)],
+            ["sys-apps/portage-3.0.51", "postinst", t(2023, 11, 10, 16, 20, 0)],
+            ["sys-apps/shadow-4.14-r4", "package", t(2023, 11, 11, 16, 20, 1)],
+            ["net-misc/wget-1.21.4", "compile", t(2023, 11, 11, 16, 20, 2)],
         ]:
             make_build_process(package=cpv, phase=phase, start_time=start_time)
         cmdline = "gbp ps"
@@ -43,20 +42,19 @@ class PSTests(TestCase):
 ╭─────────────┬────────┬──────────────────────────────────┬─────────────┬──────────────╮
 │ Machine     │ ID     │ Package                          │ Start       │ Phase        │
 ├─────────────┼────────┼──────────────────────────────────┼─────────────┼──────────────┤
-│ babette     │ 1031   │ sys-apps/portage-3.0.51          │ Nov14       │ postinst     │
+│ babette     │ 1031   │ sys-apps/portage-3.0.51          │ Nov10       │ postinst     │
 │ babette     │ 1031   │ sys-apps/shadow-4.14-r4          │ 15:20:01    │ package      │
 │ babette     │ 1031   │ net-misc/wget-1.21.4             │ 15:20:02    │ compile      │
 ╰─────────────┴────────┴──────────────────────────────────┴─────────────┴──────────────╯
 """
         self.assertEqual(console.out.file.getvalue(), expected)
 
-    @mock.patch("gbp_ps.cli.ps.utils.get_today", new=lambda: dt.date(2024, 8, 16))
     def test_with_progress(self, fixtures: Fixtures) -> None:
         t = dt.datetime
         for cpv, phase, start_time in [
-            ["pipeline", "world", t(2024, 8, 16, 16, 20, 1)],
-            ["sys-apps/shadow-4.14-r4", "package", t(2024, 8, 16, 16, 20, 1)],
-            ["net-misc/wget-1.21.4", "compile", t(2024, 8, 16, 16, 20, 2)],
+            ["pipeline", "world", t(2023, 11, 11, 16, 20, 1)],
+            ["sys-apps/shadow-4.14-r4", "package", t(2023, 11, 11, 16, 20, 1)],
+            ["net-misc/wget-1.21.4", "compile", t(2023, 11, 11, 16, 20, 2)],
         ]:
             make_build_process(package=cpv, phase=phase, start_time=start_time)
         cmdline = "gbp ps --progress"
@@ -71,20 +69,19 @@ class PSTests(TestCase):
 ╭─────────┬──────┬─────────────────────────┬──────────┬────────────────────────────────╮
 │ Machine │ ID   │ Package                 │ Start    │ Phase                          │
 ├─────────┼──────┼─────────────────────────┼──────────┼────────────────────────────────┤
-│ babette │ 1031 │ pipeline                │ 14:20:01 │ world     ━━━━━━━━━━━━━━━━━━━━ │
-│ babette │ 1031 │ sys-apps/shadow-4.14-r4 │ 14:20:01 │ package   ━━━━━━━━━━━━━━━      │
-│ babette │ 1031 │ net-misc/wget-1.21.4    │ 14:20:02 │ compile   ━━━━━━━━━━           │
+│ babette │ 1031 │ pipeline                │ 15:20:01 │ world     ━━━━━━━━━━━━━━━━━━━━ │
+│ babette │ 1031 │ sys-apps/shadow-4.14-r4 │ 15:20:01 │ package   ━━━━━━━━━━━━━━━      │
+│ babette │ 1031 │ net-misc/wget-1.21.4    │ 15:20:02 │ compile   ━━━━━━━━━━           │
 ╰─────────┴──────┴─────────────────────────┴──────────┴────────────────────────────────╯
 """
         self.assertEqual(console.out.file.getvalue(), expected)
 
-    @mock.patch("gbp_ps.cli.ps.utils.get_today", new=lambda: dt.date(2023, 11, 15))
     def test_with_node(self, fixtures: Fixtures) -> None:
         t = dt.datetime
         for cpv, phase, start_time in [
-            ["sys-apps/portage-3.0.51", "postinst", t(2023, 11, 15, 16, 20, 0)],
-            ["sys-apps/shadow-4.14-r4", "package", t(2023, 11, 15, 16, 20, 1)],
-            ["net-misc/wget-1.21.4", "compile", t(2023, 11, 15, 16, 20, 2)],
+            ["sys-apps/portage-3.0.51", "postinst", t(2023, 11, 11, 16, 20, 0)],
+            ["sys-apps/shadow-4.14-r4", "package", t(2023, 11, 11, 16, 20, 1)],
+            ["net-misc/wget-1.21.4", "compile", t(2023, 11, 11, 16, 20, 2)],
         ]:
             make_build_process(package=cpv, phase=phase, start_time=start_time)
         cmdline = "gbp ps --node"
@@ -183,7 +180,6 @@ class PSTests(TestCase):
         self.assertEqual(console.out.file.getvalue(), "")
 
     @mock.patch("gbp_ps.cli.ps.time.sleep")
-    @mock.patch("gbp_ps.cli.ps.utils.get_today", new=lambda: dt.date(2023, 11, 11))
     def test_continuous_mode(self, mock_sleep: mock.Mock, fixtures: Fixtures) -> None:
         processes = [
             make_build_process(package=cpv, phase=phase)
