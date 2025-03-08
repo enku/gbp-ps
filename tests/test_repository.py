@@ -110,6 +110,50 @@ class RepositoryTests(TestCase):
         with self.assertRaises(UpdateNotAllowedError):
             repo.update_process(process2)
 
+    @repos("django", "redis", "sqlite")
+    def test_new_build_does_not_wipe_out_previous_if_no_packages(
+        self, backend: str, fixtures: Fixtures
+    ) -> None:
+        # We want to demonstate the following scenario
+        #
+        # | t | machine | build | package  | phase |
+        # |---|---------|-------|----------|-------|
+        # | 1 | babette |     1 | pipeline | clean |
+        # | 2 | babette |     2 | pipeline | world |
+        # | 3 | babette |     1 | pipeline | index |
+        #
+        # In this scenario, the update in t3 should not wipe out t2
+        repo = get_repo(backend, fixtures.settings)
+
+        t1 = make_build_process(
+            machine="babette",
+            build_id="1",
+            package="pipeline",
+            phase="clean",
+            add_to_repo=False,
+        )
+        t2 = make_build_process(
+            machine="babette",
+            build_id="2",
+            package="pipeline",
+            phase="world",
+            add_to_repo=False,
+        )
+        t3 = make_build_process(
+            machine="babette",
+            build_id="1",
+            package="pipeline",
+            phase="index",
+            add_to_repo=False,
+        )
+        add_or_update_process(repo, t1)
+        add_or_update_process(repo, t2)
+        add_or_update_process(repo, t3)
+
+        processes = set(repo.get_processes())
+
+        self.assertEqual({t2, t3}, processes)
+
     @repos("django", "redis")
     def test_add_or_update_process_can_handle_buildhost_changes(
         self, backend: str, fixtures: Fixtures

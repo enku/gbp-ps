@@ -119,8 +119,12 @@ class RedisRepository:
         for key_bytes in self._redis.keys(pattern):
             key = Key.from_bytes(key_bytes)
             if key.build_id != build_id:
-                self._redis.delete(key_bytes)
-                deleted_count += 1
+                value = self._redis.get(key_bytes)
+                assert value
+                existing_process = self.redis_to_process(key_bytes, value)
+                if existing_process.phase in BuildProcess.build_phases:
+                    self._redis.delete(key_bytes)
+                    deleted_count += 1
         return deleted_count
 
     def update_process(self, process: BuildProcess) -> None:

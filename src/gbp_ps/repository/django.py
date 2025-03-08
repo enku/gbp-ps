@@ -31,6 +31,7 @@ class DjangoRepository:
             ~Q(build_id=process.build_id),
             machine=process.machine,
             package=process.package,
+            phase__in=BuildProcess.build_phases,
         ).delete()
 
         build_process_model = self.model.from_object(process)

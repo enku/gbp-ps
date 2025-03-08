@@ -29,12 +29,19 @@ class SqliteRepository:
         """
         # If this package exists in another build, remove it. This (usually) means the
         # other build failed
-        query = """
+        build_phases = BuildProcess.build_phases
+        placeholders = ", ".join("?" for _ in build_phases)
+        query = f"""
             DELETE FROM ebuild_process
-            WHERE build_id != ? AND machine = ? AND package = ?
+            WHERE
+              build_id != ?
+              AND machine = ?
+              AND package = ?
+              AND phase in ({placeholders})
         """
+        params = (process.build_id, process.machine, process.package, *build_phases)
         with self.cursor() as cursor:
-            cursor.execute(query, (process.build_id, process.machine, process.package))
+            cursor.execute(query, params)
 
         query = f"""
             INSERT INTO ebuild_process ({self.row_names})
