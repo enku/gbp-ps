@@ -215,7 +215,7 @@ class PSTests(TestCase):
         mock_sleep.assert_called_with(4)
 
 
-@given("console", "gbp", "get_today")
+@given("local_timezone", "console", "gbp", "get_today")
 class PSWithMFlagTests(TestCase):
     maxDiff = None
 
@@ -240,8 +240,8 @@ $ gbp ps -m lighthouse
 ╭────────────────┬────────┬────────────────────────────────┬─────────────┬─────────────╮
 │ Machine        │ ID     │ Package                        │ Start       │ Phase       │
 ├────────────────┼────────┼────────────────────────────────┼─────────────┼─────────────┤
-│ lighthouse     │ 1031   │ app-i18n/ibus-1.5.31-r1        │ 06:20:52    │ compile     │
-│ lighthouse     │ 1031   │ media-libs/gd-2.3.3-r4         │ 06:20:52    │ compile     │
+│ lighthouse     │ 1031   │ app-i18n/ibus-1.5.31-r1        │ 05:20:52    │ compile     │
+│ lighthouse     │ 1031   │ media-libs/gd-2.3.3-r4         │ 05:20:52    │ compile     │
 ╰────────────────┴────────┴────────────────────────────────┴─────────────┴─────────────╯
 """
         self.assertEqual(expected, console.out.file.getvalue())
