@@ -17,7 +17,7 @@ ADD_BUILD_FIELDS = {"machine", "id", "package", "phase"}
 
 @Mutation.field("addBuildProcess")
 @convert_kwargs_to_snake_case
-def add_build_process(_obj: Any, _info: Info, process: dict[str, Any]) -> None:
+def _(_obj: Any, _info: Info, process: dict[str, Any]) -> None:
     """Add the given process to the process table
 
     If the process already exists in the table, it is updated with the new value

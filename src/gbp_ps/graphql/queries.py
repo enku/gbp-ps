@@ -15,7 +15,7 @@ Query = ObjectType("Query")
 
 @Query.field("buildProcesses")
 @convert_kwargs_to_snake_case
-def build_processes(
+def _(
     _obj: Any, _info: Info, *, include_final: bool = False, machine: str
 ) -> list[BuildProcess]:
     """Return the list of BuildProcesses

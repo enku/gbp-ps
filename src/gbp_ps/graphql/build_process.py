@@ -5,14 +5,14 @@ from typing import TypeAlias
 from ariadne import ObjectType
 from graphql import GraphQLResolveInfo
 
-from gbp_ps.types import BuildProcess
+from gbp_ps import types
 
-BuildProcessType = ObjectType("BuildProcess")
+BuildProcess = ObjectType("BuildProcess")
 Info: TypeAlias = GraphQLResolveInfo
 
 # pylint: disable=missing-docstring
 
 
-@BuildProcessType.field("id")
-def process_id(process: BuildProcess, _info: Info) -> str:
+@BuildProcess.field("id")
+def _(process: types.BuildProcess, _info: Info) -> str:
     return process.build_id
