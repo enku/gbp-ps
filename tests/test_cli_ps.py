@@ -22,7 +22,7 @@ class PSTests(TestCase):
     maxDiff = None
 
     def test(self, fixtures: Fixtures) -> None:
-        t = dt.datetime
+        t = partial(dt.datetime, tzinfo=fixtures.local_timezone)
         for cpv, phase, start_time in [
             ["sys-apps/portage-3.0.51", "postinst", t(2023, 11, 10, 16, 20, 0)],
             ["sys-apps/shadow-4.14-r4", "package", t(2023, 11, 11, 16, 20, 1)],
@@ -43,14 +43,14 @@ class PSTests(TestCase):
 │ Machine     │ ID     │ Package                          │ Start       │ Phase        │
 ├─────────────┼────────┼──────────────────────────────────┼─────────────┼──────────────┤
 │ babette     │ 1031   │ sys-apps/portage-3.0.51          │ Nov10       │ postinst     │
-│ babette     │ 1031   │ sys-apps/shadow-4.14-r4          │ 15:20:01    │ package      │
-│ babette     │ 1031   │ net-misc/wget-1.21.4             │ 15:20:02    │ compile      │
+│ babette     │ 1031   │ sys-apps/shadow-4.14-r4          │ 16:20:01    │ package      │
+│ babette     │ 1031   │ net-misc/wget-1.21.4             │ 16:20:02    │ compile      │
 ╰─────────────┴────────┴──────────────────────────────────┴─────────────┴──────────────╯
 """
         self.assertEqual(console.out.file.getvalue(), expected)
 
     def test_with_progress(self, fixtures: Fixtures) -> None:
-        t = dt.datetime
+        t = partial(dt.datetime, tzinfo=fixtures.local_timezone)
         for cpv, phase, start_time in [
             ["pipeline", "world", t(2023, 11, 11, 16, 20, 1)],
             ["sys-apps/shadow-4.14-r4", "package", t(2023, 11, 11, 16, 20, 1)],
@@ -69,15 +69,15 @@ class PSTests(TestCase):
 ╭─────────┬──────┬─────────────────────────┬──────────┬────────────────────────────────╮
 │ Machine │ ID   │ Package                 │ Start    │ Phase                          │
 ├─────────┼──────┼─────────────────────────┼──────────┼────────────────────────────────┤
-│ babette │ 1031 │ pipeline                │ 15:20:01 │ world     ━━━━━━━━━━━━━━━━━━━━ │
-│ babette │ 1031 │ sys-apps/shadow-4.14-r4 │ 15:20:01 │ package   ━━━━━━━━━━━━━━━      │
-│ babette │ 1031 │ net-misc/wget-1.21.4    │ 15:20:02 │ compile   ━━━━━━━━━━           │
+│ babette │ 1031 │ pipeline                │ 16:20:01 │ world     ━━━━━━━━━━━━━━━━━━━━ │
+│ babette │ 1031 │ sys-apps/shadow-4.14-r4 │ 16:20:01 │ package   ━━━━━━━━━━━━━━━      │
+│ babette │ 1031 │ net-misc/wget-1.21.4    │ 16:20:02 │ compile   ━━━━━━━━━━           │
 ╰─────────┴──────┴─────────────────────────┴──────────┴────────────────────────────────╯
 """
         self.assertEqual(console.out.file.getvalue(), expected)
 
     def test_with_node(self, fixtures: Fixtures) -> None:
-        t = dt.datetime
+        t = partial(dt.datetime, tzinfo=fixtures.local_timezone)
         for cpv, phase, start_time in [
             ["sys-apps/portage-3.0.51", "postinst", t(2023, 11, 11, 16, 20, 0)],
             ["sys-apps/shadow-4.14-r4", "package", t(2023, 11, 11, 16, 20, 1)],
@@ -97,15 +97,15 @@ class PSTests(TestCase):
 ╭───────────┬───────┬─────────────────────────────┬────────────┬─────────────┬─────────╮
 │ Machine   │ ID    │ Package                     │ Start      │ Phase       │ Node    │
 ├───────────┼───────┼─────────────────────────────┼────────────┼─────────────┼─────────┤
-│ babette   │ 1031  │ sys-apps/portage-3.0.51     │ 15:20:00   │ postinst    │ jenkins │
-│ babette   │ 1031  │ sys-apps/shadow-4.14-r4     │ 15:20:01   │ package     │ jenkins │
-│ babette   │ 1031  │ net-misc/wget-1.21.4        │ 15:20:02   │ compile     │ jenkins │
+│ babette   │ 1031  │ sys-apps/portage-3.0.51     │ 16:20:00   │ postinst    │ jenkins │
+│ babette   │ 1031  │ sys-apps/shadow-4.14-r4     │ 16:20:01   │ package     │ jenkins │
+│ babette   │ 1031  │ net-misc/wget-1.21.4        │ 16:20:02   │ compile     │ jenkins │
 ╰───────────┴───────┴─────────────────────────────┴────────────┴─────────────┴─────────╯
 """
         self.assertEqual(console.out.file.getvalue(), expected)
 
     def test_from_install_to_pull(self, fixtures: Fixtures) -> None:
-        t = dt.datetime
+        t = partial(dt.datetime, tzinfo=fixtures.local_timezone)
         machine = "babette"
         build_id = "1031"
         package = "sys-apps/portage-3.0.51"
