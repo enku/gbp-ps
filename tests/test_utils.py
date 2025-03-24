@@ -26,3 +26,22 @@ class FormatTimestampTests(TestCase):
             date_str = utils.format_timestamp(timestamp)
 
         self.assertEqual(date_str, "[timestamp]Feb07[/timestamp]")
+
+
+class FormatElapsedTests(TestCase):
+    def test(self) -> None:
+        timestamp = dt.datetime(2024, 2, 7, 20, 10, 37)
+        since = dt.datetime(2024, 2, 7, 20, 14, 51)
+
+        date_str = utils.format_elapsed(timestamp, since)
+
+        self.assertEqual("[timestamp]0:04:14[/timestamp]", date_str)
+
+    def test_with_default_since(self) -> None:
+        timestamp = dt.datetime(2024, 2, 7, 20, 10, 37)
+        since = dt.datetime(2024, 2, 7, 20, 14, 51)
+
+        with mock.patch("gbp_ps.utils.now", return_value=since):
+            date_str = utils.format_elapsed(timestamp)
+
+        self.assertEqual("[timestamp]0:04:14[/timestamp]", date_str)

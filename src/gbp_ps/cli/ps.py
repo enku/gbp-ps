@@ -74,6 +74,13 @@ def parse_args(parser: argparse.ArgumentParser) -> None:
         default=False,
         help="Display progress bars for package phase",
     )
+    parser.add_argument(
+        "-e",
+        "--elapsed",
+        action="store_true",
+        default=False,
+        help="Dispay elapsed time instead of wall time",
+    )
 
 
 def single_handler(
@@ -150,7 +157,7 @@ def create_table(processes: ProcessList, args: argparse.Namespace) -> Table:
     table.add_column("Machine", header_style="header")
     table.add_column("ID", header_style="header")
     table.add_column("Package", header_style="header")
-    table.add_column("Start", header_style="header")
+    table.add_column("Elapsed" if args.elapsed else "Start", header_style="header")
     table.add_column("Phase", header_style="header")
 
     if args.node:
@@ -168,7 +175,9 @@ def row(process: BuildProcess, args: argparse.Namespace) -> list[RenderableType]
         render.format_machine(process.machine, args),
         render.format_build_number(int(process.build_id)),
         f"[package]{process.package}[/package]",
-        utils.format_timestamp(process.start_time.astimezone(render.LOCAL_TIMEZONE)),
+        (utils.format_elapsed if args.elapsed else utils.format_timestamp)(
+            process.start_time.astimezone(render.LOCAL_TIMEZONE)
+        ),
         phase_column(process.phase, args),
         *([f"[build_host]{process.build_host}[/build_host]"] if args.node else []),
     ]

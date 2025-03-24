@@ -5,10 +5,12 @@ from typing import Any, Sequence
 
 from gbpcli.render import LOCAL_TIMEZONE
 
+now = dt.datetime.now
+
 
 def get_today() -> dt.date:
     """Return today's date"""
-    return dt.datetime.now().astimezone(LOCAL_TIMEZONE).date()
+    return now().astimezone(LOCAL_TIMEZONE).date()
 
 
 def format_timestamp(timestamp: dt.datetime) -> str:
@@ -20,6 +22,19 @@ def format_timestamp(timestamp: dt.datetime) -> str:
     if (date := timestamp.date()) == get_today():
         return f"[timestamp]{timestamp.strftime('%X')}[/timestamp]"
     return f"[timestamp]{date.strftime('%b%d')}[/timestamp]"
+
+
+def format_elapsed(timestamp: dt.datetime, since: dt.datetime | None = None) -> str:
+    """Format the timestamp as elapsed time since `since`
+
+    `since` defaults to "now".
+    """
+    since = since or now(dt.UTC)
+    timedelta = since - timestamp
+    total_seconds = round(timedelta.total_seconds())
+    hours, seconds = divmod(total_seconds, 3600)
+    minutes, seconds = divmod(seconds, 60)
+    return f"[timestamp]{hours}:{minutes:02d}:{seconds:02d}[/timestamp]"
 
 
 def find(item: Any, items: Sequence[Any]) -> int:

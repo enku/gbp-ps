@@ -15,7 +15,7 @@ from gbp_ps.types import BuildProcess
 from . import TestCase, factories, make_build_process
 
 
-@given("gbp", "console", "local_timezone", "get_today")
+@given("gbp", "console", "local_timezone", "get_today", "now")
 class PSTests(TestCase):
     """Tests for gbp ps"""
 
@@ -213,6 +213,32 @@ class PSTests(TestCase):
 ╰─────────────┴────────┴──────────────────────────────────┴─────────────┴──────────────╯"""
         self.assertEqual(console.out.file.getvalue(), expected)
         mock_sleep.assert_called_with(4)
+
+    def test_elapsed_mode(self, fixtures: Fixtures) -> None:
+        t = partial(dt.datetime, tzinfo=fixtures.local_timezone)
+        for cpv, phase, start_time in [
+            ["sys-apps/shadow-4.14-r4", "package", t(2023, 11, 11, 16, 20, 1)],
+            ["net-misc/wget-1.21.4", "compile", t(2023, 11, 11, 16, 20, 2)],
+        ]:
+            make_build_process(package=cpv, phase=phase, start_time=start_time)
+        cmdline = "gbp ps -e"
+        args = parse_args(cmdline)
+        console = fixtures.console
+
+        print_command(cmdline, console)
+        exit_status = ps.handler(args, fixtures.gbp, console)
+
+        self.assertEqual(exit_status, 0)
+        expected = """$ gbp ps -e
+                                    Build Processes                                     
+╭─────────────┬─────────┬──────────────────────────────────┬────────────┬──────────────╮
+│ Machine     │ ID      │ Package                          │ Elapsed    │ Phase        │
+├─────────────┼─────────┼──────────────────────────────────┼────────────┼──────────────┤
+│ babette     │ 1031    │ sys-apps/shadow-4.14-r4          │ 0:09:59    │ package      │
+│ babette     │ 1031    │ net-misc/wget-1.21.4             │ 0:09:58    │ compile      │
+╰─────────────┴─────────┴──────────────────────────────────┴────────────┴──────────────╯
+"""
+        self.assertEqual(console.out.file.getvalue(), expected)
 
 
 @given("local_timezone", "console", "gbp", "get_today")
