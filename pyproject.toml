@@ -45,6 +45,7 @@ server = [
 redis = [
     "gbp-ps[server]",
     "redis[hiredis]>=5.0.1",
+    "orjson>=3.10.16",
 ]
 all = ["gbp-ps[server,redis]"]
 [build-system]

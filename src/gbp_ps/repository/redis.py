@@ -1,10 +1,10 @@
 """Redis RepositoryType"""
 
 import datetime as dt
-import json
 from dataclasses import dataclass
-from typing import Iterable, Self
+from typing import Any, Callable, Iterable, Self
 
+import orjson
 import redis
 
 from gbp_ps.exceptions import RecordAlreadyExists, RecordNotFoundError
@@ -12,6 +12,9 @@ from gbp_ps.settings import Settings
 from gbp_ps.types import BuildProcess
 
 ENCODING = "UTF-8"
+
+dumps: Callable[[Any], bytes] = orjson.dumps  # pylint: disable=no-member
+loads: Callable[[str | bytes], Any] = orjson.loads  # pylint: disable=no-member
 
 
 @dataclass(kw_only=True, frozen=True, slots=True)
@@ -63,13 +66,13 @@ class RedisRepository:
 
     def value(self, process: BuildProcess) -> bytes:
         """Return the redis value for the given BuildProcess"""
-        return json.dumps(
+        return dumps(
             {
                 "build_host": process.build_host,
                 "phase": process.phase,
                 "start_time": process.start_time.isoformat(),
             }
-        ).encode(ENCODING)
+        )
 
     def process_to_redis(self, process: BuildProcess) -> tuple[bytes, bytes]:
         """Return the redis key and value for the given BuildProcess"""
@@ -78,7 +81,7 @@ class RedisRepository:
     def redis_to_process(self, key_bytes: bytes, value: bytes) -> BuildProcess:
         """Convert the given key and value to a BuildProcess"""
         key = Key.from_bytes(key_bytes)
-        data = json.loads(value.decode(ENCODING))
+        data = loads(value.decode(ENCODING))
 
         return BuildProcess(
             build_host=data["build_host"],
@@ -142,10 +145,10 @@ class RedisRepository:
 
         self.redis_to_process(key_bytes, previous_value).ensure_updateable(process)
         new_value = {
-            **json.loads(previous_value),
+            **loads(previous_value),
             **{"phase": process.phase, "build_host": process.build_host},
         }
-        self._redis.setex(key_bytes, self.time, json.dumps(new_value).encode(ENCODING))
+        self._redis.setex(key_bytes, self.time, dumps(new_value))
 
     def get_processes(
         self, include_final: bool = False, machine: str | None = None
