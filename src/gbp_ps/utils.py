@@ -16,8 +16,8 @@ def get_today() -> dt.date:
 def format_timestamp(timestamp: dt.datetime) -> str:
     """Format the timestamp as a string
 
-    Like render.from_timestamp(), but if the date is today's date then only display the
-    time. If the date is not today's date then only return the date.
+    If the date is today's date then only display the time. If the date is not today's
+    date then only return the date.
     """
     if (date := timestamp.date()) == get_today():
         return f"[timestamp]{timestamp.strftime('%X')}[/timestamp]"
