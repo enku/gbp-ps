@@ -1,10 +1,11 @@
 """Redis RepositoryType"""
 
 import datetime as dt
+import functools
 from dataclasses import dataclass
 from typing import Any, Callable, Iterable, Self
 
-import orjson
+import ormsgpack
 import redis
 
 from gbp_ps.exceptions import RecordAlreadyExists, RecordNotFoundError
@@ -13,8 +14,10 @@ from gbp_ps.types import BuildProcess
 
 ENCODING = "UTF-8"
 
-dumps: Callable[[Any], bytes] = orjson.dumps  # pylint: disable=no-member
-loads: Callable[[str | bytes], Any] = orjson.loads  # pylint: disable=no-member
+dumps: Callable[[Any], bytes] = functools.partial(
+    ormsgpack.packb, option=ormsgpack.OPT_NAIVE_UTC
+)
+loads: Callable[[bytes], Any] = ormsgpack.unpackb  # pylint: disable=no-member
 
 
 @dataclass(kw_only=True, frozen=True, slots=True)
@@ -33,7 +36,7 @@ class Key:
 
     @classmethod
     def from_bytes(cls, b: bytes) -> Self:
-        """Return the redis key as bytes"""
+        """Return the redis key from bytes"""
         string = b.decode(ENCODING)
         redis_key, machine, package, build_id = string.split(":")
 
@@ -70,7 +73,7 @@ class RedisRepository:
             {
                 "build_host": process.build_host,
                 "phase": process.phase,
-                "start_time": process.start_time.isoformat(),
+                "start_time": process.start_time,
             }
         )
 
@@ -81,7 +84,7 @@ class RedisRepository:
     def redis_to_process(self, key_bytes: bytes, value: bytes) -> BuildProcess:
         """Convert the given key and value to a BuildProcess"""
         key = Key.from_bytes(key_bytes)
-        data = loads(value.decode(ENCODING))
+        data = loads(value)
 
         return BuildProcess(
             build_host=data["build_host"],
