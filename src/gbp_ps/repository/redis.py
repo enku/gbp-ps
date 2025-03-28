@@ -69,13 +69,7 @@ class RedisRepository:
 
     def value(self, process: BuildProcess) -> bytes:
         """Return the redis value for the given BuildProcess"""
-        return dumps(
-            {
-                "build_host": process.build_host,
-                "phase": process.phase,
-                "start_time": process.start_time,
-            }
-        )
+        return dumps((process.build_host, process.phase, process.start_time))
 
     def process_to_redis(self, process: BuildProcess) -> tuple[bytes, bytes]:
         """Return the redis key and value for the given BuildProcess"""
@@ -87,12 +81,12 @@ class RedisRepository:
         data = loads(value)
 
         return BuildProcess(
-            build_host=data["build_host"],
+            build_host=data[0],
             build_id=key.build_id,
             machine=key.machine,
             package=key.package,
-            phase=data["phase"],
-            start_time=dt.datetime.fromisoformat(data["start_time"]),
+            phase=data[1],
+            start_time=dt.datetime.fromisoformat(data[2]),
         )
 
     def add_process(self, process: BuildProcess) -> None:
@@ -147,10 +141,7 @@ class RedisRepository:
             raise RecordNotFoundError(process)
 
         self.redis_to_process(key_bytes, previous_value).ensure_updateable(process)
-        new_value = {
-            **loads(previous_value),
-            **{"phase": process.phase, "build_host": process.build_host},
-        }
+        new_value = (process.build_host, process.phase, loads(previous_value)[2])
         self._redis.setex(key_bytes, self.time, dumps(new_value))
 
     def get_processes(
