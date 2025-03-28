@@ -12,7 +12,7 @@ from gbp_ps.exceptions import RecordAlreadyExists, RecordNotFoundError
 from gbp_ps.settings import Settings
 from gbp_ps.types import BuildProcess
 
-ENCODING = "UTF-8"
+ENCODING = "ascii"
 
 dumps: Callable[[Any], bytes] = functools.partial(
     ormsgpack.packb, option=ormsgpack.OPT_NAIVE_UTC
