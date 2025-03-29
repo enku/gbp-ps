@@ -29,9 +29,7 @@ def format_elapsed(timestamp: dt.datetime, since: dt.datetime | None = None) -> 
 
     `since` defaults to "now".
     """
-    since = since or now(dt.UTC)
-    timedelta = since - timestamp
-    total_seconds = round(timedelta.total_seconds())
+    total_seconds = round(((since or now(dt.UTC)) - timestamp).total_seconds())
     hours, seconds = divmod(total_seconds, 3600)
     minutes, seconds = divmod(seconds, 60)
     return f"[timestamp]{hours}:{minutes:02d}:{seconds:02d}[/timestamp]"
