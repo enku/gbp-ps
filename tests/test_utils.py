@@ -1,10 +1,21 @@
 """Tests for gbp_ps.utils"""
 
-# pylint: disable=missing-docstring
+# pylint: disable=missing-docstring,unused-argument
 import datetime as dt
 from unittest import TestCase, mock
 
+from unittest_fixtures import Fixtures, given
+
 from gbp_ps import utils
+
+
+@given("local_timezone")
+class GetTodayTests(TestCase):
+    def test(self, fixtures: Fixtures) -> None:
+        now = dt.datetime(2024, 2, 7, 20, 10, 57, 312885)
+        with mock.patch.object(utils, "now", return_value=now):
+            expected = dt.date(2024, 2, 7)
+            self.assertEqual(expected, utils.get_today())
 
 
 class FormatTimestampTests(TestCase):
