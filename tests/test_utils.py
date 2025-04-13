@@ -56,3 +56,17 @@ class FormatElapsedTests(TestCase):
             date_str = utils.format_elapsed(timestamp)
 
         self.assertEqual("[timestamp]0:04:14[/timestamp]", date_str)
+
+
+class FindTests(TestCase):
+    def test_item_in_sequence(self) -> None:
+        self.assertEqual(1, utils.find("test", ("this", "test", "is", "a")))
+
+    def test_item_not_insequence(self) -> None:
+        self.assertEqual(-1, utils.find("test", ("a", "is", "this")))
+
+    def test_empty_sequence_self(self) -> None:
+        self.assertEqual(-1, utils.find("test", ()))
+
+    def test_item_exists_twice_in_sequence(self) -> None:
+        self.assertEqual(1, utils.find("test", ("is", "test", "a", "this", "test")))
