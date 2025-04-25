@@ -12,7 +12,7 @@ class DjangoRepository:
 
     def __init__(self, _settings: Settings) -> None:
         # pylint: disable=import-outside-toplevel
-        from gbp_ps.models import BuildProcess as BuildProcessModel
+        from gbp_ps.django.gbp_ps.models import BuildProcess as BuildProcessModel
 
         self.model: type[BuildProcessModel] = BuildProcessModel
 
