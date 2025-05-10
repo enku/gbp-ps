@@ -147,22 +147,18 @@ def graphql_to_process(result: dict[str, Any]) -> BuildProcess:
 
 def create_table(processes: ProcessList, args: argparse.Namespace) -> Table:
     """Return a rich Table given the list of processes"""
+    col4 = "Elapsed" if args.elapsed else "Start"
+    headers = ["Machine", "ID", "Package", col4, "Phase"]
+    headers = headers + (["Node"] if args.node else [])
     table = Table(
+        *headers,
         title="Build Processes",
         box=box.ROUNDED,
         expand=True,
-        title_style="header",
         style="box",
+        header_style="header",
+        title_style="header",
     )
-    table.add_column("Machine", header_style="header")
-    table.add_column("ID", header_style="header")
-    table.add_column("Package", header_style="header")
-    table.add_column("Elapsed" if args.elapsed else "Start", header_style="header")
-    table.add_column("Phase", header_style="header")
-
-    if args.node:
-        table.add_column("Node", header_style="header")
-
     for process in processes:
         table.add_row(*row(process, args))
 
