@@ -34,7 +34,7 @@ class DjangoRepository:
             phase__in=BuildProcess.build_phases,
         ).delete()
 
-        build_process_model = self.model.from_object(process)
+        build_process_model = self.model.from_dataclass(process)
 
         try:
             build_process_model.save()
@@ -57,7 +57,7 @@ class DjangoRepository:
         except self.model.DoesNotExist:
             raise RecordNotFoundError(process) from None
 
-        build_process_model.to_object().ensure_updateable(process)
+        build_process_model.to_dataclass().ensure_updateable(process)
 
         build_process_model.phase = process.phase
         build_process_model.build_host = process.build_host
@@ -79,4 +79,4 @@ class DjangoRepository:
         if machine:
             query = query.filter(machine=machine)
 
-        return (model.to_object() for model in query)
+        return (model.to_dataclass() for model in query)

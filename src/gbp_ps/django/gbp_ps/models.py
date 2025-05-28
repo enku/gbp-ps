@@ -4,7 +4,7 @@ from typing import TypeVar
 
 from django.db import models
 
-from gbp_ps.types import BuildProcess as BuildProcessObject
+from gbp_ps.types import BuildProcess as BuildProcessDataClass
 
 T = TypeVar("T", bound="BuildProcess")
 
@@ -22,9 +22,9 @@ class BuildProcess(models.Model):
     class Meta:
         unique_together = [["machine", "build_id", "build_host", "package"]]
 
-    def to_object(self) -> BuildProcessObject:
+    def to_dataclass(self) -> BuildProcessDataClass:
         """Convert to the non-ORM object"""
-        return BuildProcessObject(
+        return BuildProcessDataClass(
             machine=self.machine,
             build_id=self.build_id,
             build_host=self.build_host,
@@ -34,7 +34,7 @@ class BuildProcess(models.Model):
         )
 
     @classmethod
-    def from_object(cls: type[T], obj: BuildProcessObject) -> T:
+    def from_dataclass(cls: type[T], obj: BuildProcessDataClass) -> T:
         """Convert the non-ORM object to an ORM model"""
         return cls(
             machine=obj.machine,
