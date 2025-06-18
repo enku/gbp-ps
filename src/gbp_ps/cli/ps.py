@@ -31,15 +31,12 @@ PHASE_PADDING = max(len(i) for i in BuildProcess.build_phases)
 
 def handler(args: argparse.Namespace, gbp: GBP, console: Console) -> int:
     """Show currently building packages"""
-    mode: ModeHandler = MODES[args.continuous]
-    local: str | None = getattr(args, "local", None)
-    machine: str | None = args.machine
-
-    get_processes = (
-        get_local_processes(local) if local else get_gbp_processes(gbp, machine)
+    continuous: bool = args.continuous
+    a = args
+    proc_getter = (
+        get_local_processes(a.local) if a.local else get_gbp_processes(gbp, a.machine)
     )
-
-    return mode(args, get_processes, console)
+    return MODES[continuous](args, proc_getter, console)
 
 
 def parse_args(parser: argparse.ArgumentParser) -> None:
@@ -211,4 +208,4 @@ def progress(text: str, steps: tuple[int, int] | None) -> Progress:
     return prog
 
 
-MODES = [single_handler, continuous_handler]
+MODES: list[ModeHandler] = [single_handler, continuous_handler]
