@@ -31,7 +31,7 @@ class SqliteRepository:
         # other build failed
         build_phases = BuildProcess.build_phases
         placeholders = ", ".join("?" for _ in build_phases)
-        query = f"""
+        sql = f"""
             DELETE FROM ebuild_process
             WHERE
               build_id != ?
@@ -41,15 +41,15 @@ class SqliteRepository:
         """
         params = (process.build_id, process.machine, process.package, *build_phases)
         with self.cursor() as cursor:
-            cursor.execute(query, params)
+            cursor.execute(sql, params)
 
-        query = f"""
+        sql = f"""
             INSERT INTO ebuild_process ({self.row_names})
             VALUES (?,?,?,?,?,?)
         """
         with self.cursor() as cursor:
             try:
-                cursor.execute(query, self.process_to_row(process))
+                cursor.execute(sql, self.process_to_row(process))
             except sqlite3.IntegrityError:
                 raise RecordAlreadyExists(process) from None
 
@@ -60,28 +60,28 @@ class SqliteRepository:
 
         If the build process doesn't exist in the repo, RecordNotFoundError is raised.
         """
-        query = """
+        sql = """
             SELECT machine,build_id,build_host,package,phase,start_time
             FROM ebuild_process
             WHERE machine = ? AND build_id = ? AND package = ?
         """
         with self.cursor() as cursor:
             result = cursor.execute(
-                query, (process.machine, process.build_id, process.package)
+                sql, (process.machine, process.build_id, process.package)
             )
             row = result.fetchone()
         if not row:
             raise RecordNotFoundError(process) from None
         previous = self.row_to_process(*row)
         previous.ensure_updateable(process)
-        query = """
+        sql = """
             UPDATE ebuild_process
             SET phase = ?
             WHERE machine = ? AND build_id = ? AND package = ?
         """
         p = process
         with self.cursor() as cursor:
-            cursor.execute(query, (p.phase, p.machine, p.build_id, p.package))
+            cursor.execute(sql, (p.phase, p.machine, p.build_id, p.package))
 
     def get_processes(
         self, include_final: bool = False, machine: str | None = None
@@ -104,7 +104,7 @@ class SqliteRepository:
 
         wheres_s = "WHERE " + " AND ".join(wheres) if wheres else ""
 
-        query = f"""
+        sql = f"""
             SELECT machine,build_id,build_host,package,phase,start_time
             FROM ebuild_process
             {wheres_s}
@@ -112,7 +112,7 @@ class SqliteRepository:
         """
 
         with self.cursor() as cursor:
-            result = cursor.execute(query, params)
+            result = cursor.execute(sql, params)
             for row in result:
                 yield self.row_to_process(*row)
 
