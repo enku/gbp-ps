@@ -79,11 +79,9 @@ class SqliteRepository:
             SET phase = ?
             WHERE machine = ? AND build_id = ? AND package = ?
         """
+        p = process
         with self.cursor() as cursor:
-            result = cursor.execute(
-                query,
-                (process.phase, process.machine, process.build_id, process.package),
-            )
+            cursor.execute(query, (p.phase, p.machine, p.build_id, p.package))
 
     def get_processes(
         self, include_final: bool = False, machine: str | None = None
