@@ -1,16 +1,10 @@
 """gbp-ps tests"""
 
 # pylint: disable=missing-docstring
-import argparse
 import datetime as dt
-import shlex
-from functools import wraps
-from typing import Any, Callable, Iterable, TypeVar
+from typing import Any
 
-import gbpcli
 from django.test import TestCase as DjangoTestCase
-from gbpcli.config import Config
-from gbpcli.types import Console
 
 from gbp_ps.repository import Repo, add_or_update_process
 from gbp_ps.settings import Settings

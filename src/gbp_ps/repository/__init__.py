@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import importlib.metadata
 from collections.abc import Iterable
-from typing import Generator, Protocol
+from typing import Protocol
 
 from gbp_ps.exceptions import RecordNotFoundError, UpdateNotAllowedError
 from gbp_ps.settings import Settings
