@@ -114,7 +114,7 @@ class RepositoryTests(TestCase):
     def test_new_build_does_not_wipe_out_previous_if_no_packages(
         self, backend: str, fixtures: Fixtures
     ) -> None:
-        # We want to demonstate the following scenario
+        # We want to demonstrate the following scenario
         #
         # | t | machine | build | package  | phase |
         # |---|---------|-------|----------|-------|
