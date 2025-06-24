@@ -49,6 +49,32 @@ class PSTests(TestCase):
 """
         self.assertEqual(console.out.file.getvalue(), expected)
 
+    def test_without_title(self, fixtures: Fixtures) -> None:
+        t = partial(dt.datetime, tzinfo=fixtures.local_timezone)
+        for cpv, phase, start_time in [
+            ["sys-apps/portage-3.0.51", "postinst", t(2023, 11, 10, 16, 20, 0)],
+            ["sys-apps/shadow-4.14-r4", "package", t(2023, 11, 11, 16, 20, 1)],
+            ["net-misc/wget-1.21.4", "compile", t(2023, 11, 11, 16, 20, 2)],
+        ]:
+            make_build_process(package=cpv, phase=phase, start_time=start_time)
+        cmdline = "gbp ps -t"
+        args = parse_args(cmdline)
+        console = fixtures.console
+
+        print_command(cmdline, console)
+        ps.handler(args, fixtures.gbp, console)
+
+        expected = """$ gbp ps -t
+╭─────────────┬────────┬──────────────────────────────────┬─────────────┬──────────────╮
+│ Machine     │ ID     │ Package                          │ Start       │ Phase        │
+├─────────────┼────────┼──────────────────────────────────┼─────────────┼──────────────┤
+│ babette     │ 1031   │ sys-apps/portage-3.0.51          │ Nov10       │ postinst     │
+│ babette     │ 1031   │ sys-apps/shadow-4.14-r4          │ 16:20:01    │ package      │
+│ babette     │ 1031   │ net-misc/wget-1.21.4             │ 16:20:02    │ compile      │
+╰─────────────┴────────┴──────────────────────────────────┴─────────────┴──────────────╯
+"""
+        self.assertEqual(console.out.file.getvalue(), expected)
+
     def test_with_progress(self, fixtures: Fixtures) -> None:
         t = partial(dt.datetime, tzinfo=fixtures.local_timezone)
         for cpv, phase, start_time in [

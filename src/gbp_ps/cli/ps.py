@@ -78,6 +78,13 @@ def parse_args(parser: argparse.ArgumentParser) -> None:
         default=False,
         help="Display elapsed time instead of wall time",
     )
+    parser.add_argument(
+        "-t",
+        "--no-title",
+        action="store_true",
+        default=False,
+        help="Do not display the header",
+    )
 
 
 def single_handler(
@@ -147,15 +154,16 @@ def create_table(processes: ProcessList, args: argparse.Namespace) -> Table:
     col4 = "Elapsed" if args.elapsed else "Start"
     headers = ["Machine", "ID", "Package", col4, "Phase"]
     headers = headers + (["Node"] if args.node else [])
-    table = Table(
-        *headers,
-        title="Build Processes",
-        box=box.ROUNDED,
-        expand=True,
-        style="box",
-        header_style="header",
-        title_style="header",
-    )
+    table_opts = {
+        "box": box.ROUNDED,
+        "expand": True,
+        "header_style": "header",
+        "style": "box",
+        "title_style": "header",
+    }
+    if not args.no_title:
+        table_opts["title"] = "Build Processes"
+    table = Table(*headers, **table_opts)  # type: ignore
     for process in processes:
         table.add_row(*row(process, args))
 
