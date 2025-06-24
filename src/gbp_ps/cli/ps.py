@@ -76,7 +76,7 @@ def parse_args(parser: argparse.ArgumentParser) -> None:
         "--elapsed",
         action="store_true",
         default=False,
-        help="Dispay elapsed time instead of wall time",
+        help="Display elapsed time instead of wall time",
     )
 
 
