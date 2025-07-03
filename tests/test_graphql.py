@@ -7,9 +7,7 @@ from typing import Any
 from django.test.client import Client
 from unittest_fixtures import Fixtures, given
 
-from . import TestCase
-from . import fixtures as tf
-from . import make_build_process
+from . import lib
 
 
 def graphql(query: str, variables: dict[str, Any] | None = None) -> Any:
@@ -27,7 +25,7 @@ def graphql(query: str, variables: dict[str, Any] | None = None) -> Any:
     return response.json()
 
 
-class GetProcessesTests(TestCase):
+class GetProcessesTests(lib.TestCase):
     query = """
     {
       buildProcesses {
@@ -48,7 +46,7 @@ class GetProcessesTests(TestCase):
         self.assertEqual(result["data"]["buildProcesses"], [])
 
     def test_nonempty(self) -> None:
-        build_process = make_build_process()
+        build_process = lib.make_build_process()
 
         result = graphql(self.query)
 
@@ -56,8 +54,8 @@ class GetProcessesTests(TestCase):
         self.assertEqual(result["data"]["buildProcesses"], [build_process.to_dict()])
 
     def test_non_empty_with_final_processes(self) -> None:
-        live_process = make_build_process(package="sys-apps/systemd-254.5-r1")
-        make_build_process(package="sys-libs/efivar-38", phase="clean")
+        live_process = lib.make_build_process(package="sys-apps/systemd-254.5-r1")
+        lib.make_build_process(package="sys-libs/efivar-38", phase="clean")
 
         result = graphql(self.query)
 
@@ -65,8 +63,8 @@ class GetProcessesTests(TestCase):
         self.assertEqual(result["data"]["buildProcesses"], [live_process.to_dict()])
 
     def test_non_empty_with_final_processes_included(self) -> None:
-        make_build_process(package="sys-apps/systemd-254.5-r1")
-        make_build_process(package="sys-libs/efivar-38", phase="clean")
+        lib.make_build_process(package="sys-apps/systemd-254.5-r1")
+        lib.make_build_process(package="sys-libs/efivar-38", phase="clean")
         query = "{buildProcesses(includeFinal: true) { machine id package startTime }}"
 
         result = graphql(query)
@@ -75,8 +73,8 @@ class GetProcessesTests(TestCase):
         self.assertEqual(len(result["data"]["buildProcesses"]), 2)
 
 
-@given(tf.repo)
-class AddBuildProcessesTests(TestCase):
+@given(lib.repo)
+class AddBuildProcessesTests(lib.TestCase):
     query = """
     mutation (
       $process: BuildProcessInput!,
@@ -90,7 +88,7 @@ class AddBuildProcessesTests(TestCase):
     """
 
     def test(self, fixtures: Fixtures) -> None:
-        process = make_build_process()
+        process = lib.make_build_process()
         result = graphql(self.query, {"process": process.to_dict()})
 
         self.assertNotIn("errors", result)
@@ -98,7 +96,7 @@ class AddBuildProcessesTests(TestCase):
         self.assertEqual(processes, [process])
 
     def test_update(self, fixtures: Fixtures) -> None:
-        p_dict = make_build_process().to_dict()
+        p_dict = lib.make_build_process().to_dict()
         graphql(self.query, {"process": p_dict})
 
         p_dict["phase"] = "postinst"
@@ -108,14 +106,14 @@ class AddBuildProcessesTests(TestCase):
         self.assertEqual(processes[0].phase, "postinst")
 
     def test_empty_phase_does_not_get_added(self, fixtures: Fixtures) -> None:
-        p_dict = make_build_process(phase="", add_to_repo=False).to_dict()
+        p_dict = lib.make_build_process(phase="", add_to_repo=False).to_dict()
         result = graphql(self.query, {"process": p_dict})
 
         self.assertNotIn("errors", result)
         self.assertEqual([*fixtures.repo.get_processes(include_final=True)], [])
 
     def test_empty_machine_does_not_get_added(self, fixtures: Fixtures) -> None:
-        p_dict = make_build_process(machine="", add_to_repo=False).to_dict()
+        p_dict = lib.make_build_process(machine="", add_to_repo=False).to_dict()
         result = graphql(self.query, {"process": p_dict})
 
         self.assertNotIn("errors", result)

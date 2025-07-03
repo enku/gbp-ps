@@ -12,13 +12,11 @@ from unittest_fixtures import Fixtures, given
 
 from gbp_ps.cli import add_process
 
-from . import TestCase
-from . import fixtures as tf
-from . import make_build_process
+from . import lib
 
 
-@given(tf.repo, testkit.gbp, testkit.console)
-class AddProcessTests(TestCase):
+@given(lib.repo, testkit.gbp, testkit.console)
+class AddProcessTests(lib.TestCase):
     """Tests for gbp add-process"""
 
     maxDiff = None
@@ -26,7 +24,7 @@ class AddProcessTests(TestCase):
     @mock.patch("gbp_ps.cli.add_process.now")
     def test(self, mock_now: mock.Mock, fixtures: Fixtures) -> None:
         now = mock_now.return_value = dt.datetime(2023, 11, 20, 17, 57, tzinfo=dt.UTC)
-        proc = make_build_process(
+        proc = lib.make_build_process(
             add_to_repo=False, build_host=platform.node(), start_time=now
         )
         console = fixtures.console
@@ -43,8 +41,8 @@ class AddProcessTests(TestCase):
         add_process.parse_args(parser)
 
 
-@given(tf.tempdb, tf.repo_fixture, process=tf.build_process)
-class AddProcessAddLocalProcessesTests(TestCase):
+@given(lib.tempdb, lib.repo_fixture, process=lib.build_process)
+class AddProcessAddLocalProcessesTests(lib.TestCase):
     def test(self, fixtures: Fixtures) -> None:
         process = fixtures.process
 
@@ -55,8 +53,8 @@ class AddProcessAddLocalProcessesTests(TestCase):
         self.assertEqual(list(result), [process])
 
 
-@given(tf.build_process)
-class BuildProcessFromArgsTests(TestCase):
+@given(lib.build_process)
+class BuildProcessFromArgsTests(lib.TestCase):
     def test(self, fixtures: Fixtures) -> None:
         expected = fixtures.build_process
         cmdline = (

@@ -10,7 +10,7 @@ from unittest_fixtures import Fixtures, given
 
 from gbp_ps.cli import dump_bashrc
 
-from . import TestCase
+from .lib import TestCase
 
 
 @given(testkit.gbp, testkit.console)

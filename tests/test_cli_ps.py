@@ -13,13 +13,11 @@ from unittest_fixtures import Fixtures, given
 from gbp_ps.cli import ps
 from gbp_ps.types import BuildProcess
 
-from . import TestCase, factories
-from . import fixtures as tf
-from . import make_build_process
+from . import lib
 
 
-@given(testkit.gbp, testkit.console, tf.local_timezone, tf.get_today, tf.now)
-class PSTests(TestCase):
+@given(testkit.gbp, testkit.console, lib.local_timezone, lib.get_today, lib.now)
+class PSTests(lib.TestCase):
     """Tests for gbp ps"""
 
     maxDiff = None
@@ -31,7 +29,7 @@ class PSTests(TestCase):
             ["sys-apps/shadow-4.14-r4", "package", t(2023, 11, 11, 16, 20, 1)],
             ["net-misc/wget-1.21.4", "compile", t(2023, 11, 11, 16, 20, 2)],
         ]:
-            make_build_process(package=cpv, phase=phase, start_time=start_time)
+            lib.make_build_process(package=cpv, phase=phase, start_time=start_time)
         cmdline = "gbp ps"
         args = parse_args(cmdline)
         console = fixtures.console
@@ -59,7 +57,7 @@ class PSTests(TestCase):
             ["sys-apps/shadow-4.14-r4", "package", t(2023, 11, 11, 16, 20, 1)],
             ["net-misc/wget-1.21.4", "compile", t(2023, 11, 11, 16, 20, 2)],
         ]:
-            make_build_process(package=cpv, phase=phase, start_time=start_time)
+            lib.make_build_process(package=cpv, phase=phase, start_time=start_time)
         cmdline = "gbp ps -t"
         args = parse_args(cmdline)
         console = fixtures.console
@@ -85,7 +83,7 @@ class PSTests(TestCase):
             ["sys-apps/shadow-4.14-r4", "package", t(2023, 11, 11, 16, 20, 1)],
             ["net-misc/wget-1.21.4", "compile", t(2023, 11, 11, 16, 20, 2)],
         ]:
-            make_build_process(package=cpv, phase=phase, start_time=start_time)
+            lib.make_build_process(package=cpv, phase=phase, start_time=start_time)
         cmdline = "gbp ps --progress"
         args = parse_args(cmdline)
         console = fixtures.console
@@ -112,7 +110,7 @@ class PSTests(TestCase):
             ["sys-apps/shadow-4.14-r4", "package", t(2023, 11, 11, 16, 20, 1)],
             ["net-misc/wget-1.21.4", "compile", t(2023, 11, 11, 16, 20, 2)],
         ]:
-            make_build_process(package=cpv, phase=phase, start_time=start_time)
+            lib.make_build_process(package=cpv, phase=phase, start_time=start_time)
         cmdline = "gbp ps --node"
         args = parse_args(cmdline)
         console = fixtures.console
@@ -143,7 +141,7 @@ class PSTests(TestCase):
         cmdline = "gbp ps --node"
         args = parse_args(cmdline)
         update = partial(
-            make_build_process,
+            lib.make_build_process,
             machine=machine,
             build_id=build_id,
             package=package,
@@ -211,7 +209,7 @@ class PSTests(TestCase):
     @mock.patch("gbp_ps.cli.ps.time.sleep")
     def test_continuous_mode(self, mock_sleep: mock.Mock, fixtures: Fixtures) -> None:
         processes = [
-            make_build_process(package=cpv, phase=phase)
+            lib.make_build_process(package=cpv, phase=phase)
             for cpv, phase in [
                 ["sys-apps/portage-3.0.51", "postinst"],
                 ["sys-apps/shadow-4.14-r4", "package"],
@@ -249,7 +247,7 @@ class PSTests(TestCase):
             ["sys-apps/shadow-4.14-r4", "package", t(2023, 11, 11, 16, 20, 1)],
             ["net-misc/wget-1.21.4", "compile", t(2023, 11, 11, 16, 20, 2)],
         ]:
-            make_build_process(package=cpv, phase=phase, start_time=start_time)
+            lib.make_build_process(package=cpv, phase=phase, start_time=start_time)
         cmdline = "gbp ps -e"
         args = parse_args(cmdline)
         console = fixtures.console
@@ -270,15 +268,17 @@ class PSTests(TestCase):
         self.assertEqual(console.out.file.getvalue(), expected)
 
 
-@given(tf.local_timezone, testkit.console, testkit.gbp, tf.get_today)
-class PSWithMFlagTests(TestCase):
+@given(lib.local_timezone, testkit.console, testkit.gbp, lib.get_today)
+class PSWithMFlagTests(lib.TestCase):
     maxDiff = None
 
     def test(self, fixtures: Fixtures) -> None:
-        make_build_process(machine="babette", package="sys-devel/gcc-14.2.1_p20241221")
-        make_build_process(machine="lighthouse", package="app-i18n/ibus-1.5.31-r1")
-        make_build_process(machine="babette", package="sys-devel/flex-2.6.4-r6")
-        make_build_process(machine="lighthouse", package="media-libs/gd-2.3.3-r4")
+        lib.make_build_process(
+            machine="babette", package="sys-devel/gcc-14.2.1_p20241221"
+        )
+        lib.make_build_process(machine="lighthouse", package="app-i18n/ibus-1.5.31-r1")
+        lib.make_build_process(machine="babette", package="sys-devel/flex-2.6.4-r6")
+        lib.make_build_process(machine="lighthouse", package="media-libs/gd-2.3.3-r4")
 
         cmdline = "gbp ps -m lighthouse"
         args = parse_args(cmdline)
@@ -302,15 +302,15 @@ $ gbp ps -m lighthouse
         self.assertEqual(expected, console.out.file.getvalue())
 
 
-class PSParseArgsTests(TestCase):
+class PSParseArgsTests(lib.TestCase):
     def test(self) -> None:
         # Just ensure that parse_args is there and works
         parser = ArgumentParser()
         ps.parse_args(parser)
 
 
-@given(tf.tempdb, repo=tf.repo_fixture, process=tf.build_process)
-class PSGetLocalProcessesTests(TestCase):
+@given(lib.tempdb, repo=lib.repo_fixture, process=lib.build_process)
+class PSGetLocalProcessesTests(lib.TestCase):
     def test_with_0_processes(self, fixtures: Fixtures) -> None:
         p = ps.get_local_processes(fixtures.tempdb)()
 
@@ -326,14 +326,14 @@ class PSGetLocalProcessesTests(TestCase):
 
     def test_with_multiple_processes(self, fixtures: Fixtures) -> None:
         for _ in range(5):
-            process = factories.BuildProcessFactory()
+            process = lib.BuildProcessFactory()
             fixtures.repo.add_process(process)
 
         self.assertEqual(len(ps.get_local_processes(fixtures.tempdb)()), 5)
 
     def test_with_final_processes(self, fixtures: Fixtures) -> None:
         for phase in BuildProcess.final_phases:
-            process = factories.BuildProcessFactory(phase=phase)
+            process = lib.BuildProcessFactory(phase=phase)
             fixtures.repo.add_process(process)
 
         self.assertEqual(len(ps.get_local_processes(fixtures.tempdb)()), 0)

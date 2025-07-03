@@ -11,22 +11,23 @@ from unittest_fixtures import Fixtures, given
 from gbp_ps import signals
 from gbp_ps.types import BuildProcess
 
-from . import TestCase, factories
-from . import fixtures as tf
+from . import lib
 
 NODE = "wopr"
 START_TIME = dt.datetime(2023, 12, 10, 13, 53, 46, tzinfo=dt.UTC)
 BUILD = Build(machine="babette", build_id="10")
 
+TestCase = lib.TestCase
 
-@given(tf.repo)
+
+@given(lib.repo)
 @mock.patch("gbp_ps.signals._NODE", new=NODE)
 @mock.patch("gbp_ps.signals._now", mock.Mock(return_value=START_TIME))
 class SignalsTest(TestCase):
     def test_create_build_process(self, fixtures: Fixtures) -> None:
         process = signals.build_process(BUILD, NODE, "test", START_TIME)
 
-        expected: BuildProcess = factories.BuildProcessFactory(
+        expected: BuildProcess = lib.BuildProcessFactory(
             build_id=BUILD.build_id,
             build_host=NODE,
             machine=BUILD.machine,

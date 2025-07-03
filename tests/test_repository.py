@@ -17,9 +17,7 @@ from gbp_ps.repository import Repo, RepositoryType, add_or_update_process, sqlit
 from gbp_ps.settings import Settings
 from gbp_ps.types import BuildProcess
 
-from . import TestCase
-from . import fixtures as tf
-from . import make_build_process
+from . import lib
 
 HOST = 0
 REDIS_FROM_URL = "gbp_ps.repository.redis.redis.Redis.from_url"
@@ -42,7 +40,7 @@ def repos(*names: str) -> Callable[[Callable[[Any, str], None]], None]:
     return parametrized([[name] for name in names])
 
 
-@given(tf.environ, tf.settings, tf.build_process)
+@given(lib.environ, lib.settings, lib.build_process)
 @where(
     environ={
         "GBP_PS_KEY_EXPIRATION": "3600",
@@ -51,7 +49,7 @@ def repos(*names: str) -> Callable[[Callable[[Any, str], None]], None]:
     },
     build_process__phase="compile",
 )
-class RepositoryTests(TestCase):
+class RepositoryTests(lib.TestCase):
     @repos("django", "redis", "sqlite")
     def test_add_process(self, backend: str, fixtures: Fixtures) -> None:
         repo = get_repo(backend, fixtures.settings)
@@ -105,7 +103,7 @@ class RepositoryTests(TestCase):
         # be updated with a "final" phase if the build host is the same. Otherwise it
         # should raise an exception
         repo = get_repo(backend, fixtures.settings)
-        process1 = make_build_process(add_to_repo=False)
+        process1 = lib.make_build_process(add_to_repo=False)
         repo.add_process(process1)
         process2 = replace(process1, build_host="badhost", phase="clean")
 
@@ -127,21 +125,21 @@ class RepositoryTests(TestCase):
         # In this scenario, the update in t3 should not wipe out t2
         repo = get_repo(backend, fixtures.settings)
 
-        t1 = make_build_process(
+        t1 = lib.make_build_process(
             machine="babette",
             build_id="1",
             package="pipeline",
             phase="clean",
             add_to_repo=False,
         )
-        t2 = make_build_process(
+        t2 = lib.make_build_process(
             machine="babette",
             build_id="2",
             package="pipeline",
             phase="world",
             add_to_repo=False,
         )
-        t3 = make_build_process(
+        t3 = lib.make_build_process(
             machine="babette",
             build_id="1",
             package="pipeline",
@@ -176,7 +174,7 @@ class RepositoryTests(TestCase):
         self, backend: str, fixtures: Fixtures
     ) -> None:
         repo = get_repo(backend, fixtures.settings)
-        process1 = make_build_process(add_to_repo=False)
+        process1 = lib.make_build_process(add_to_repo=False)
         repo.add_process(process1)
         process2 = replace(process1, build_host="badhost", phase="clean")
 
