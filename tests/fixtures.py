@@ -74,7 +74,7 @@ def get_today(
 def now(
     _: Fixtures,
     now: dt.datetime = dt.datetime(2023, 11, 11, 16, 30, tzinfo=LOCAL_TIMEZONE),
-):
+) -> FixtureContext[dt.datetime]:
     with mock.patch("gbp_ps.utils.now") as mock_now:
         mock_now.return_value = now
         yield now
