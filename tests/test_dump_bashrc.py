@@ -4,6 +4,7 @@
 import argparse
 from unittest import mock
 
+import gbp_testkit.fixtures as testkit
 from gbp_testkit.helpers import parse_args
 from unittest_fixtures import Fixtures, given
 
@@ -12,7 +13,7 @@ from gbp_ps.cli import dump_bashrc
 from . import TestCase
 
 
-@given("gbp", "console")
+@given(testkit.gbp, testkit.console)
 class DumpBashrcHandlerTests(TestCase):
     def test_without_local(self, fixtures: Fixtures) -> None:
         cmdline = "gbp ps-dump-bashrc"

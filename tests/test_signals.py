@@ -12,13 +12,14 @@ from gbp_ps import signals
 from gbp_ps.types import BuildProcess
 
 from . import TestCase, factories
+from . import fixtures as tf
 
 NODE = "wopr"
 START_TIME = dt.datetime(2023, 12, 10, 13, 53, 46, tzinfo=dt.UTC)
 BUILD = Build(machine="babette", build_id="10")
 
 
-@given("repo")
+@given(tf.repo)
 @mock.patch("gbp_ps.signals._NODE", new=NODE)
 @mock.patch("gbp_ps.signals._now", mock.Mock(return_value=START_TIME))
 class SignalsTest(TestCase):

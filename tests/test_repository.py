@@ -17,7 +17,9 @@ from gbp_ps.repository import Repo, RepositoryType, add_or_update_process, sqlit
 from gbp_ps.settings import Settings
 from gbp_ps.types import BuildProcess
 
-from . import TestCase, make_build_process
+from . import TestCase
+from . import fixtures as tf
+from . import make_build_process
 
 HOST = 0
 REDIS_FROM_URL = "gbp_ps.repository.redis.redis.Redis.from_url"
@@ -40,7 +42,7 @@ def repos(*names: str) -> Callable[[Callable[[Any, str], None]], None]:
     return parametrized([[name] for name in names])
 
 
-@given("environ", "settings", "build_process")
+@given(tf.environ, tf.settings, tf.build_process)
 @where(
     environ={
         "GBP_PS_KEY_EXPIRATION": "3600",

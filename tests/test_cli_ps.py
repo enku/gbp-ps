@@ -6,16 +6,19 @@ from argparse import ArgumentParser
 from functools import partial
 from unittest import mock
 
+import gbp_testkit.fixtures as testkit
 from gbp_testkit.helpers import parse_args, print_command
 from unittest_fixtures import Fixtures, given
 
 from gbp_ps.cli import ps
 from gbp_ps.types import BuildProcess
 
-from . import TestCase, factories, make_build_process
+from . import TestCase, factories
+from . import fixtures as tf
+from . import make_build_process
 
 
-@given("gbp", "console", "local_timezone", "get_today", "now")
+@given(testkit.gbp, testkit.console, tf.local_timezone, tf.get_today, tf.now)
 class PSTests(TestCase):
     """Tests for gbp ps"""
 
@@ -267,7 +270,7 @@ class PSTests(TestCase):
         self.assertEqual(console.out.file.getvalue(), expected)
 
 
-@given("local_timezone", "console", "gbp", "get_today")
+@given(tf.local_timezone, testkit.console, testkit.gbp, tf.get_today)
 class PSWithMFlagTests(TestCase):
     maxDiff = None
 
@@ -306,7 +309,7 @@ class PSParseArgsTests(TestCase):
         ps.parse_args(parser)
 
 
-@given("tempdb", repo="repo_fixture", process="build_process")
+@given(tf.tempdb, repo=tf.repo_fixture, process=tf.build_process)
 class PSGetLocalProcessesTests(TestCase):
     def test_with_0_processes(self, fixtures: Fixtures) -> None:
         p = ps.get_local_processes(fixtures.tempdb)()

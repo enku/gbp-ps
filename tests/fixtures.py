@@ -6,7 +6,7 @@ import datetime as dt
 from typing import Any
 from unittest import mock
 
-from gbp_testkit import fixtures as testkit
+import gbp_testkit.fixtures as testkit
 from unittest_fixtures import FixtureContext, Fixtures, fixture
 
 from gbp_ps.repository import Repo, RepositoryType, sqlite
@@ -16,38 +16,18 @@ from gbp_ps.types import BuildProcess
 from . import LOCAL_TIMEZONE
 from .factories import BuildProcessFactory
 
-console = testkit.console
-gbp = testkit.gbp
-publisher = testkit.publisher
-tmpdir = testkit.tmpdir
-
 
 @fixture()
 def build_process(_fixtures: Fixtures, **options: Any) -> BuildProcess:
     return BuildProcessFactory(**options)
 
 
-@fixture("tmpdir")
+@fixture(testkit.tmpdir)
 def tempdb(fixtures: Fixtures) -> str:
     return f"{fixtures.tmpdir}/processes.db"
 
 
-@fixture("settings")
-def repo(fixtures: Fixtures) -> RepositoryType:
-    return Repo(fixtures.settings)
-
-
-@fixture("tempdb")
-def repo_fixture(fixtures: Fixtures) -> sqlite.SqliteRepository:
-    return sqlite.SqliteRepository(Settings(SQLITE_DATABASE=fixtures.tempdb))
-
-
-@fixture("environ")
-def settings(_fixtures: Fixtures) -> Settings:
-    return Settings.from_environ()
-
-
-@fixture("tmpdir")
+@fixture(testkit.tmpdir)
 def environ(
     fixtures: Fixtures,
     environ: dict[str, str] | None = None,  # pylint: disable=redefined-outer-name
@@ -57,6 +37,21 @@ def environ(
     new_environ.update(environ or {})
     with mock.patch.dict("os.environ", new_environ):
         yield new_environ
+
+
+@fixture(environ)
+def settings(_fixtures: Fixtures) -> Settings:
+    return Settings.from_environ()
+
+
+@fixture(settings)
+def repo(fixtures: Fixtures) -> RepositoryType:
+    return Repo(fixtures.settings)
+
+
+@fixture(tempdb)
+def repo_fixture(fixtures: Fixtures) -> sqlite.SqliteRepository:
+    return sqlite.SqliteRepository(Settings(SQLITE_DATABASE=fixtures.tempdb))
 
 
 @fixture()

@@ -8,8 +8,10 @@ from unittest_fixtures import Fixtures, given
 
 from gbp_ps import utils
 
+from . import fixtures as tf
 
-@given("local_timezone")
+
+@given(tf.local_timezone)
 class GetTodayTests(TestCase):
     def test(self, fixtures: Fixtures) -> None:
         now = dt.datetime(2024, 2, 7, 20, 10, 57, 312885)

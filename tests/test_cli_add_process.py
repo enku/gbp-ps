@@ -6,15 +6,18 @@ import platform
 from argparse import ArgumentParser
 from unittest import mock
 
+import gbp_testkit.fixtures as testkit
 from gbp_testkit.helpers import parse_args
 from unittest_fixtures import Fixtures, given
 
 from gbp_ps.cli import add_process
 
-from . import TestCase, make_build_process
+from . import TestCase
+from . import fixtures as tf
+from . import make_build_process
 
 
-@given("repo", "gbp", "console")
+@given(tf.repo, testkit.gbp, testkit.console)
 class AddProcessTests(TestCase):
     """Tests for gbp add-process"""
 
@@ -40,19 +43,19 @@ class AddProcessTests(TestCase):
         add_process.parse_args(parser)
 
 
-@given("tempdb", "repo_fixture", process="build_process")
+@given(tf.tempdb, tf.repo_fixture, process=tf.build_process)
 class AddProcessAddLocalProcessesTests(TestCase):
     def test(self, fixtures: Fixtures) -> None:
         process = fixtures.process
 
         add_process.add_local_process(fixtures.tempdb)(process)
 
-        result = fixtures.repo_fixture.get_processes()
+        result = fixtures.repo.get_processes()
 
         self.assertEqual(list(result), [process])
 
 
-@given("build_process")
+@given(tf.build_process)
 class BuildProcessFromArgsTests(TestCase):
     def test(self, fixtures: Fixtures) -> None:
         expected = fixtures.build_process

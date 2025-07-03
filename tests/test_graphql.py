@@ -7,7 +7,9 @@ from typing import Any
 from django.test.client import Client
 from unittest_fixtures import Fixtures, given
 
-from . import TestCase, make_build_process
+from . import TestCase
+from . import fixtures as tf
+from . import make_build_process
 
 
 def graphql(query: str, variables: dict[str, Any] | None = None) -> Any:
@@ -73,7 +75,7 @@ class GetProcessesTests(TestCase):
         self.assertEqual(len(result["data"]["buildProcesses"]), 2)
 
 
-@given("repo")
+@given(tf.repo)
 class AddBuildProcessesTests(TestCase):
     query = """
     mutation (
