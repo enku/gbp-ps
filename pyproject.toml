@@ -76,7 +76,7 @@ init-import = "yes"
 django_settings_module = "gbp_testkit.settings"
 
 [tool.coverage.run]
-source = ["gbp_ps"]
+source = ["gbp_ps", "tests"]
 omit = ["src/gbp_ps/migrations/*"]
 
 [tool.isort]
