@@ -38,22 +38,22 @@ class SignalsTest(TestCase):
         self.assertEqual(process, expected)
 
     def test_prepull_handler(self, fixtures: Fixtures) -> None:
-        signals.prepull_handler(build=BUILD)
+        dispatcher.emit("prepull", build=BUILD)
 
         processes = [*fixtures.repo.get_processes(include_final=True)]
         expected = signals.build_process(BUILD, NODE, "pull", START_TIME)
         self.assertEqual(processes, [expected])
 
     def test_postpull_handler(self, fixtures: Fixtures) -> None:
-        signals.postpull_handler(build=BUILD)
+        dispatcher.emit("postpull", build=BUILD)
 
         processes = [*fixtures.repo.get_processes(include_final=True)]
         expected = signals.build_process(BUILD, NODE, "clean", START_TIME)
         self.assertEqual(processes, [expected])
 
     def test_handler_updates(self, fixtures: Fixtures) -> None:
-        signals.prepull_handler(build=BUILD)
-        signals.postpull_handler(build=BUILD)
+        dispatcher.emit("prepull", build=BUILD)
+        dispatcher.emit("postpull", build=BUILD)
 
         processes = [*fixtures.repo.get_processes(include_final=True)]
         expected = signals.build_process(BUILD, NODE, "clean", START_TIME)
@@ -74,14 +74,14 @@ class SignalsTest(TestCase):
         self.assertEqual(processes, [expected])
 
     def test_predelete_handler(self, fixtures: Fixtures) -> None:
-        signals.predelete_handler(build=BUILD)
+        dispatcher.emit("predelete", build=BUILD)
 
         processes = [*fixtures.repo.get_processes(include_final=True)]
         expected = signals.build_process(BUILD, NODE, "delete", START_TIME)
         self.assertEqual(processes, [expected])
 
     def test_postdelete_handler(self, fixtures: Fixtures) -> None:
-        signals.postdelete_handler(build=BUILD)
+        dispatcher.emit("postdelete", build=BUILD)
 
         processes = [*fixtures.repo.get_processes(include_final=True)]
         expected = signals.build_process(BUILD, NODE, "clean", START_TIME)

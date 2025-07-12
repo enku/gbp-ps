@@ -3,7 +3,7 @@
 import datetime as dt
 import platform
 from functools import cache, partial
-from typing import Any
+from typing import Any, Protocol
 
 from gentoo_build_publisher.signals import dispatcher
 from gentoo_build_publisher.types import Build
@@ -13,7 +13,13 @@ from gbp_ps.settings import Settings
 from gbp_ps.types import BuildProcess
 
 _now = partial(dt.datetime.now, tz=dt.UTC)
+_HANDLERS: list["Handler"] = []
 _NODE = platform.node()
+
+
+class Handler(Protocol):
+    # pylint: disable=too-few-public-methods,missing-docstring
+    def __call__(self, *, build: Build, **_kwargs: Any) -> Any: ...
 
 
 def build_process(
@@ -36,32 +42,22 @@ def repo() -> RepositoryType:
     return Repo(Settings.from_environ())
 
 
+def handle(phase: str) -> Handler:
+    """Return a event handler for the given phase"""
+
+    def handler(*, build: Build, **_kwargs: Any) -> None:
+        set_process(build, phase)
+
+    _HANDLERS.append(handler)
+    return handler
+
+
 def set_process(build: Build, phase: str) -> None:
     """Add or update the given Build process in the repo"""
     add_or_update_process(repo(), build_process(build, _NODE, phase, _now()))
 
 
-def prepull_handler(*, build: Build) -> None:
-    """Signal handler for pre-pulls"""
-    set_process(build, "pull")
-
-
-def postpull_handler(*, build: Build, **_kwargs: Any) -> None:
-    """Signal handler for post-pulls"""
-    set_process(build, "clean")
-
-
-def predelete_handler(*, build: Build) -> None:
-    """Signal handler for pre-deletes"""
-    set_process(build, "delete")
-
-
-def postdelete_handler(*, build: Build) -> None:
-    """Signal handler for pre-deletes"""
-    set_process(build, "clean")
-
-
-dispatcher.bind(prepull=prepull_handler)
-dispatcher.bind(postpull=postpull_handler)
-dispatcher.bind(predelete=predelete_handler)
-dispatcher.bind(postdelete=postdelete_handler)
+dispatcher.bind(prepull=handle("pull"))
+dispatcher.bind(postpull=handle("clean"))
+dispatcher.bind(predelete=handle("delete"))
+dispatcher.bind(postdelete=handle("clean"))
