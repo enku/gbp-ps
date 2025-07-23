@@ -45,11 +45,9 @@ class BuildProcess:
         Two process are considered the "same" if the machine, package and build_id are
         the same.
         """
-        return (
-            self.package == other.package
-            and self.machine == other.machine
-            and self.build_id == other.build_id
-        )
+        fields = ["build_id", "machine", "package"]
+
+        return all(getattr(self, f) == getattr(other, f) for f in fields)
 
     def ensure_updateable(self, new: BuildProcess) -> None:
         """Raise an exception if process should not be updated to new"""
