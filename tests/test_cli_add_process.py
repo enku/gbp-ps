@@ -54,19 +54,19 @@ class AddProcessAddLocalProcessesTests(lib.TestCase):
 
 
 @given(lib.build_process)
+@mock.patch("gbp_ps.cli.add_process.now")
+@mock.patch("gbp_ps.cli.add_process.platform.node")
 class BuildProcessFromArgsTests(lib.TestCase):
-    def test(self, fixtures: Fixtures) -> None:
+    def test(self, node: mock.Mock, now: mock.Mock, fixtures: Fixtures) -> None:
         expected = fixtures.build_process
+        node.return_value = expected.build_host
+        now.return_value = expected.start_time
         cmdline = (
             f"gbp add-process {expected.machine} {expected.build_id} {expected.package}"
             f" {expected.phase}"
         )
         args = parse_args(cmdline)
 
-        with mock.patch("gbp_ps.cli.add_process.now", return_value=expected.start_time):
-            with mock.patch(
-                "gbp_ps.cli.add_process.platform.node", return_value=expected.build_host
-            ):
-                process = add_process.build_process_from_args(args)
+        process = add_process.build_process_from_args(args)
 
         self.assertEqual(process, expected)
