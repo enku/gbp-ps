@@ -2,18 +2,18 @@
 
 # pylint: disable=missing-docstring
 import argparse
-from unittest import mock
 
 import gbp_testkit.fixtures as testkit
 from gbp_testkit.helpers import parse_args
-from unittest_fixtures import Fixtures, given
+from unittest_fixtures import Fixtures, given, where
 
 from gbp_ps.cli import dump_bashrc
 
-from .lib import TestCase
+from .lib import TestCase, patch
 
 
-@given(testkit.gbp, testkit.console)
+@given(testkit.gbp, testkit.console, popen=patch)
+@where(popen__target="gbp_ps.cli.dump_bashrc.sp.Popen")
 class DumpBashrcHandlerTests(TestCase):
     def test_without_local(self, fixtures: Fixtures) -> None:
         cmdline = "gbp ps-dump-bashrc"
@@ -34,11 +34,10 @@ class DumpBashrcHandlerTests(TestCase):
         console = fixtures.console
         tmpdir = "/var/bogus"
 
-        with mock.patch("gbp_ps.cli.dump_bashrc.sp.Popen") as popen:
-            process = popen.return_value.__enter__.return_value
-            process.wait.return_value = 0
-            process.stdout.read.return_value = tmpdir.encode("utf-8")
-            exit_status = dump_bashrc.handler(args, fixtures.gbp, console)
+        process = fixtures.popen.return_value.__enter__.return_value
+        process.wait.return_value = 0
+        process.stdout.read.return_value = tmpdir.encode("utf-8")
+        exit_status = dump_bashrc.handler(args, fixtures.gbp, console)
 
         self.assertEqual(exit_status, 0)
 
@@ -50,10 +49,9 @@ class DumpBashrcHandlerTests(TestCase):
         args = parse_args(cmdline)
         console = fixtures.console
 
-        with mock.patch("gbp_ps.cli.dump_bashrc.sp.Popen") as popen:
-            process = popen.return_value.__enter__.return_value
-            process.wait.return_value = 1
-            exit_status = dump_bashrc.handler(args, fixtures.gbp, console)
+        process = fixtures.popen.return_value.__enter__.return_value
+        process.wait.return_value = 1
+        exit_status = dump_bashrc.handler(args, fixtures.gbp, console)
 
         self.assertEqual(exit_status, 0)
 

@@ -4,11 +4,10 @@
 import datetime as dt
 from argparse import ArgumentParser
 from functools import partial
-from unittest import mock
 
 import gbp_testkit.fixtures as testkit
 from gbp_testkit.helpers import parse_args, print_command
-from unittest_fixtures import Fixtures, given
+from unittest_fixtures import Fixtures, given, where
 
 from gbp_ps.cli import ps
 from gbp_ps.types import BuildProcess
@@ -17,6 +16,8 @@ from . import lib
 
 
 @given(testkit.gbp, testkit.console, lib.local_timezone, lib.get_today, lib.now)
+@given(sleep=lib.patch, mock_gbp=lib.patch)
+@where(sleep__target="gbp_ps.cli.ps.time.sleep")
 class PSTests(lib.TestCase):
     """Tests for gbp ps"""
 
@@ -206,8 +207,7 @@ class PSTests(lib.TestCase):
         self.assertEqual(exit_status, 0)
         self.assertEqual(console.out.file.getvalue(), "")
 
-    @mock.patch("gbp_ps.cli.ps.time.sleep")
-    def test_continuous_mode(self, mock_sleep: mock.Mock, fixtures: Fixtures) -> None:
+    def test_continuous_mode(self, fixtures: Fixtures) -> None:
         processes = [
             lib.make_build_process(package=cpv, phase=phase)
             for cpv, phase in [
@@ -220,7 +220,7 @@ class PSTests(lib.TestCase):
         args = parse_args(cmdline)
         console = fixtures.console
 
-        gbp = mock.Mock()
+        gbp = fixtures.mock_gbp
         mock_graphql_resp = [process.to_dict() for process in processes]
         gbp.query.gbp_ps.get_processes.side_effect = (
             ({"buildProcesses": mock_graphql_resp}, None),
@@ -239,7 +239,7 @@ class PSTests(lib.TestCase):
 │ babette     │ 1031   │ net-misc/wget-1.21.4             │ 05:20:52    │ compile      │
 ╰─────────────┴────────┴──────────────────────────────────┴─────────────┴──────────────╯"""
         self.assertEqual(console.out.file.getvalue(), expected)
-        mock_sleep.assert_called_with(4)
+        fixtures.sleep.assert_called_with(4)
 
     def test_elapsed_mode(self, fixtures: Fixtures) -> None:
         t = partial(dt.datetime, tzinfo=fixtures.local_timezone)

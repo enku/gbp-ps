@@ -4,28 +4,27 @@
 import datetime as dt
 import platform
 from argparse import ArgumentParser
-from unittest import mock
 
 import gbp_testkit.fixtures as testkit
 from gbp_testkit.helpers import parse_args
-from unittest_fixtures import Fixtures, given
+from unittest_fixtures import Fixtures, given, where
 
 from gbp_ps.cli import add_process
 
 from . import lib
 
 
-@given(lib.repo, testkit.gbp, testkit.console)
+@given(lib.repo, testkit.gbp, testkit.console, now=lib.patch)
+@where(now__target="gbp_ps.cli.add_process.now")
+@where(now__return_value=dt.datetime(2023, 11, 20, 17, 57, tzinfo=dt.UTC))
 class AddProcessTests(lib.TestCase):
     """Tests for gbp add-process"""
 
     maxDiff = None
 
-    @mock.patch("gbp_ps.cli.add_process.now")
-    def test(self, mock_now: mock.Mock, fixtures: Fixtures) -> None:
-        now = mock_now.return_value = dt.datetime(2023, 11, 20, 17, 57, tzinfo=dt.UTC)
+    def test(self, fixtures: Fixtures) -> None:
         proc = lib.make_build_process(
-            add_to_repo=False, build_host=platform.node(), start_time=now
+            add_to_repo=False, build_host=platform.node(), start_time=fixtures.now()
         )
         console = fixtures.console
         cmdline = f"gbp add-process {proc.machine} {proc.build_id} {proc.package} {proc.phase}"
@@ -53,14 +52,14 @@ class AddProcessAddLocalProcessesTests(lib.TestCase):
         self.assertEqual(list(result), [process])
 
 
-@given(lib.build_process)
-@mock.patch("gbp_ps.cli.add_process.now")
-@mock.patch("gbp_ps.cli.add_process.platform.node")
+@given(lib.build_process, now=lib.patch, node=lib.patch)
+@where(now__target="gbp_ps.cli.add_process.now")
+@where(node__target="gbp_ps.cli.add_process.platform.node")
 class BuildProcessFromArgsTests(lib.TestCase):
-    def test(self, node: mock.Mock, now: mock.Mock, fixtures: Fixtures) -> None:
+    def test(self, fixtures: Fixtures) -> None:
         expected = fixtures.build_process
-        node.return_value = expected.build_host
-        now.return_value = expected.start_time
+        fixtures.node.return_value = expected.build_host
+        fixtures.now.return_value = expected.start_time
         cmdline = (
             f"gbp add-process {expected.machine} {expected.build_id} {expected.package}"
             f" {expected.phase}"

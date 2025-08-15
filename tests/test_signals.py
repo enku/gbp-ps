@@ -2,11 +2,10 @@
 
 # pylint: disable=missing-docstring,unused-argument
 import datetime as dt
-from unittest import mock
 
 from gentoo_build_publisher.signals import dispatcher
 from gentoo_build_publisher.types import Build
-from unittest_fixtures import Fixtures, given
+from unittest_fixtures import Fixtures, given, where
 
 from gbp_ps import signals
 from gbp_ps.types import BuildProcess
@@ -20,9 +19,9 @@ BUILD = Build(machine="babette", build_id="10")
 TestCase = lib.TestCase
 
 
-@given(lib.repo)
-@mock.patch("gbp_ps.signals._NODE", new=NODE)
-@mock.patch("gbp_ps.signals._now", mock.Mock(return_value=START_TIME))
+@given(lib.repo, node=lib.patch, now=lib.patch)
+@where(node__target="gbp_ps.signals._NODE", node__new=NODE)
+@where(now__target="gbp_ps.signals._now", now__return_value=START_TIME)
 class SignalsTest(TestCase):
     def test_create_build_process(self, fixtures: Fixtures) -> None:
         process = signals.build_process(BUILD, NODE, "test", START_TIME)
