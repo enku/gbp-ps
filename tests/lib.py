@@ -140,13 +140,3 @@ def get_today(
 ) -> FixtureContext[dt.date]:
     with mock.patch("gbp_ps.cli.ps.utils.get_today", new=lambda: get_today):
         yield get_today
-
-
-@fixture()
-def now(
-    _: Fixtures,
-    now: dt.datetime = dt.datetime(2023, 11, 11, 16, 30, tzinfo=LOCAL_TIMEZONE),
-) -> FixtureContext[dt.datetime]:
-    with mock.patch("gbp_ps.utils.now") as mock_now:
-        mock_now.return_value = now
-        yield now
