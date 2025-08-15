@@ -132,11 +132,3 @@ def local_timezone(
 ) -> FixtureContext[dt.timezone]:
     with mock.patch("gbpcli.render.LOCAL_TIMEZONE", new=local_timezone):
         yield local_timezone
-
-
-@fixture()
-def get_today(
-    _: Fixtures, get_today: dt.date = dt.date(2023, 11, 11)
-) -> FixtureContext[dt.date]:
-    with mock.patch("gbp_ps.cli.ps.utils.get_today", new=lambda: get_today):
-        yield get_today

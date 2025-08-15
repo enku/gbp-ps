@@ -15,11 +15,14 @@ from gbp_ps.types import BuildProcess
 from . import lib
 
 
-@given(testkit.gbp, testkit.console, lib.local_timezone, lib.get_today, now=lib.patch)
+@given(testkit.gbp, testkit.console, lib.local_timezone, now=lib.patch)
 @given(sleep=lib.patch, mock_gbp=lib.patch)
+@given(get_today=lib.patch)
 @where(sleep__target="gbp_ps.cli.ps.time.sleep")
 @where(now__target="gbp_ps.utils.now")
 @where(now__return_value=dt.datetime(2023, 11, 11, 16, 30, tzinfo=lib.LOCAL_TIMEZONE))
+@where(get_today__target="gbp_ps.cli.ps.utils.get_today")
+@where(get_today__return_value=dt.date(2023, 11, 11))
 class PSTests(lib.TestCase):
     """Tests for gbp ps"""
 
@@ -270,7 +273,9 @@ class PSTests(lib.TestCase):
         self.assertEqual(console.out.file.getvalue(), expected)
 
 
-@given(lib.local_timezone, testkit.console, testkit.gbp, lib.get_today)
+@given(lib.local_timezone, testkit.console, testkit.gbp, get_today=lib.patch)
+@where(get_today__target="gbp_ps.cli.ps.utils.get_today")
+@where(get_today__return_value=dt.date(2023, 11, 11))
 class PSWithMFlagTests(lib.TestCase):
     maxDiff = None
 
