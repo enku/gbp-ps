@@ -124,11 +124,3 @@ def patch(
 
     if patch:
         patch.stop()
-
-
-@fixture()
-def local_timezone(
-    _: Fixtures, local_timezone: dt.timezone = LOCAL_TIMEZONE
-) -> FixtureContext[dt.timezone]:
-    with mock.patch("gbpcli.render.LOCAL_TIMEZONE", new=local_timezone):
-        yield local_timezone

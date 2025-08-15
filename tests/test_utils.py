@@ -11,9 +11,11 @@ from gbp_ps import utils
 from . import lib
 
 
-@given(lib.local_timezone, now=lib.patch)
+@given(local_timezone=lib.patch, now=lib.patch)
 @where(now__target="gbp_ps.utils.now")
 @where(now__return_value=dt.datetime(2024, 2, 7, 20, 10, 57, 312885))
+@where(local_timezone__target="gbpcli.render.LOCAL_TIMEZONE")
+@where(local_timezone__new=lib.LOCAL_TIMEZONE)
 class GetTodayTests(TestCase):
     def test(self, fixtures: Fixtures) -> None:
         self.assertEqual(dt.date(2024, 2, 7), utils.get_today())
