@@ -14,7 +14,7 @@ from gbp_ps.cli import add_process
 from . import lib
 
 
-@given(lib.repo, testkit.gbp, testkit.console, now=testkit.patch)
+@given(lib.repo, testkit.gbpcli, now=testkit.patch)
 @where(now__target="gbp_ps.cli.add_process.now")
 @where(now__return_value=dt.datetime(2023, 11, 20, 17, 57, tzinfo=dt.UTC))
 class AddProcessTests(lib.TestCase):
@@ -26,10 +26,8 @@ class AddProcessTests(lib.TestCase):
         proc = lib.make_build_process(
             add_to_repo=False, build_host=platform.node(), start_time=fixtures.now()
         )
-        console = fixtures.console
         cmdline = f"gbp add-process {proc.machine} {proc.build_id} {proc.package} {proc.phase}"
-        args = parse_args(cmdline)
-        exit_status = add_process.handler(args, fixtures.gbp, console)
+        exit_status = fixtures.gbpcli(cmdline)
 
         self.assertEqual(exit_status, 0)
         self.assertEqual([*fixtures.repo.get_processes()], [proc])
