@@ -1,12 +1,12 @@
 # pylint: disable=missing-docstring,too-few-public-methods,redefined-outer-name
 import datetime as dt
+import os
 from typing import Any
-from unittest import mock
 
 import factory
 import gbp_testkit.fixtures as testkit
 from django.test import TestCase as DjangoTestCase
-from unittest_fixtures import FixtureContext, Fixtures, fixture
+from unittest_fixtures import Fixtures, fixture
 
 from gbp_ps.repository import Repo, RepositoryType, add_or_update_process, sqlite
 from gbp_ps.settings import Settings
@@ -77,20 +77,10 @@ def tempdb(fixtures: Fixtures) -> str:
     return f"{fixtures.tmpdir}/processes.db"
 
 
-@fixture(testkit.tmpdir)
-def environ(
-    fixtures: Fixtures,
-    environ: dict[str, str] | None = None,  # pylint: disable=redefined-outer-name
-) -> FixtureContext[dict[str, str]]:
-    new_environ: dict[str, str] = next(testkit.environ(fixtures), {}).copy()
-    new_environ["GBP_PS_SQLITE_DATABASE"] = f"{fixtures.tmpdir}/db.sqlite"
-    new_environ.update(environ or {})
-    with mock.patch.dict("os.environ", new_environ):
-        yield new_environ
+@fixture(testkit.environ)
+def settings(fixtures: Fixtures) -> Settings:
+    os.environ["GBP_PS_SQLITE_DATABASE"] = f"{fixtures.tmpdir}/db.sqlite"
 
-
-@fixture(environ)
-def settings(_fixtures: Fixtures) -> Settings:
     return Settings.from_environ()
 
 

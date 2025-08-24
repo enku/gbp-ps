@@ -19,6 +19,11 @@ from gbp_ps.types import BuildProcess
 
 from . import lib
 
+ENVIRON = {
+    "GBP_PS_KEY_EXPIRATION": "3600",
+    "GBP_PS_REDIS_KEY": "gbp-ps-test",
+    "GBP_PS_STORAGE_BACKEND": "sqlite",
+}
 HOST = 0
 REDIS_FROM_URL = "gbp_ps.repository.redis.redis.Redis.from_url"
 
@@ -40,15 +45,8 @@ def repos(*names: str) -> Callable[[Callable[[Any, str], None]], None]:
     return parametrized([[name] for name in names])
 
 
-@given(lib.environ, lib.settings, lib.build_process)
-@where(
-    environ={
-        "GBP_PS_KEY_EXPIRATION": "3600",
-        "GBP_PS_REDIS_KEY": "gbp-ps-test",
-        "GBP_PS_STORAGE_BACKEND": "sqlite",
-    },
-    build_process__phase="compile",
-)
+@given(lib.settings, lib.build_process)
+@where(environ=ENVIRON, build_process__phase="compile")
 class RepositoryTests(lib.TestCase):
     @repos("django", "redis", "sqlite")
     def test_add_process(self, backend: str, fixtures: Fixtures) -> None:
