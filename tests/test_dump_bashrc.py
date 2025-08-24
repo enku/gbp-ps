@@ -4,7 +4,6 @@
 import argparse
 
 import gbp_testkit.fixtures as testkit
-from gbp_testkit.helpers import parse_args
 from unittest_fixtures import Fixtures, given, where
 
 from gbp_ps.cli import dump_bashrc
@@ -12,50 +11,40 @@ from gbp_ps.cli import dump_bashrc
 from .lib import TestCase
 
 
-@given(testkit.gbp, testkit.console, popen=testkit.patch)
+@given(testkit.gbpcli, popen=testkit.patch)
 @where(popen__target="gbp_ps.cli.dump_bashrc.sp.Popen")
 class DumpBashrcHandlerTests(TestCase):
     def test_without_local(self, fixtures: Fixtures) -> None:
-        cmdline = "gbp ps-dump-bashrc"
-        args = parse_args(cmdline)
-        console = fixtures.console
-
-        exit_status = dump_bashrc.handler(args, fixtures.gbp, console)
+        exit_status = fixtures.gbpcli("gbp ps-dump-bashrc")
 
         self.assertEqual(exit_status, 0)
 
-        lines = console.out.file.getvalue().split("\n")
-        self.assertTrue(lines[0].startswith("if [[ -f /Makefile.gbp"))
+        lines = fixtures.console.out.file.getvalue().split("\n")
+        self.assertTrue(lines[1].startswith("if [[ -f /Makefile.gbp"))
         self.assertTrue("http://gbp.invalid/graphql" in lines[-4], lines[-4])
 
     def test_local(self, fixtures: Fixtures) -> None:
-        cmdline = "gbp ps-dump-bashrc --local"
-        args = parse_args(cmdline)
-        console = fixtures.console
         tmpdir = "/var/bogus"
 
         process = fixtures.popen.return_value.__enter__.return_value
         process.wait.return_value = 0
         process.stdout.read.return_value = tmpdir.encode("utf-8")
-        exit_status = dump_bashrc.handler(args, fixtures.gbp, console)
+        exit_status = fixtures.gbpcli("gbp ps-dump-bashrc --local")
 
         self.assertEqual(exit_status, 0)
 
-        output = console.out.file.getvalue()
+        output = fixtures.console.out.file.getvalue()
         self.assertTrue(f"{tmpdir}/portage/gbpps.db" in output, output)
 
     def test_local_portageq_fail(self, fixtures: Fixtures) -> None:
-        cmdline = "gbp ps-dump-bashrc --local"
-        args = parse_args(cmdline)
-        console = fixtures.console
-
         process = fixtures.popen.return_value.__enter__.return_value
         process.wait.return_value = 1
-        exit_status = dump_bashrc.handler(args, fixtures.gbp, console)
+
+        exit_status = fixtures.gbpcli("gbp ps-dump-bashrc --local")
 
         self.assertEqual(exit_status, 0)
 
-        output = console.out.file.getvalue()
+        output = fixtures.console.out.file.getvalue()
         self.assertTrue("/var/tmp/portage/gbpps.db" in output, output)
 
 
