@@ -4,6 +4,7 @@
 import datetime as dt
 from unittest import TestCase
 
+import gbp_testkit.fixtures as testkit
 from unittest_fixtures import Fixtures, given, where
 
 from gbp_ps import utils
@@ -11,7 +12,7 @@ from gbp_ps import utils
 from . import lib
 
 
-@given(local_timezone=lib.patch, now=lib.patch)
+@given(local_timezone=testkit.patch, now=testkit.patch)
 @where(now__target="gbp_ps.utils.now")
 @where(now__return_value=dt.datetime(2024, 2, 7, 20, 10, 57, 312885))
 @where(local_timezone__target="gbpcli.render.LOCAL_TIMEZONE")
@@ -21,7 +22,7 @@ class GetTodayTests(TestCase):
         self.assertEqual(dt.date(2024, 2, 7), utils.get_today())
 
 
-@given(get_today=lib.patch)
+@given(get_today=testkit.patch)
 @where(get_today__target="gbp_ps.utils.get_today")
 class FormatTimestampTests(TestCase):
 
@@ -44,7 +45,7 @@ class FormatTimestampTests(TestCase):
         self.assertEqual(date_str, "[timestamp]Feb07[/timestamp]")
 
 
-@given(now=lib.patch)
+@given(now=testkit.patch)
 @where(now__target="gbp_ps.utils.now")
 class FormatElapsedTests(TestCase):
     def test(self, fixtures: Fixtures) -> None:

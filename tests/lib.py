@@ -102,25 +102,3 @@ def repo(fixtures: Fixtures) -> RepositoryType:
 @fixture(tempdb)
 def repo_fixture(fixtures: Fixtures) -> sqlite.SqliteRepository:
     return sqlite.SqliteRepository(Settings(SQLITE_DATABASE=fixtures.tempdb))
-
-
-@fixture()
-def patch(
-    _: Fixtures, target: str = "", attrs: dict[str, Any] | None = None, **kwargs: Any
-) -> FixtureContext[mock.Mock]:
-    attrs = attrs or {}
-
-    if target:
-        patch = mock.patch(target, **kwargs)
-        fake = patch.start()
-    else:
-        patch = None
-        fake = mock.Mock(**kwargs)
-
-    for name, value in attrs.items():
-        setattr(fake, name, value)
-
-    yield fake
-
-    if patch:
-        patch.stop()

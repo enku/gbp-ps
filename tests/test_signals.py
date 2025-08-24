@@ -3,6 +3,7 @@
 # pylint: disable=missing-docstring,unused-argument
 import datetime as dt
 
+import gbp_testkit.fixtures as testkit
 from gentoo_build_publisher.signals import dispatcher
 from gentoo_build_publisher.types import Build
 from unittest_fixtures import Fixtures, given, where
@@ -19,7 +20,7 @@ BUILD = Build(machine="babette", build_id="10")
 TestCase = lib.TestCase
 
 
-@given(lib.repo, node=lib.patch, now=lib.patch)
+@given(lib.repo, node=testkit.patch, now=testkit.patch)
 @where(node__target="gbp_ps.signals._NODE", node__new=NODE)
 @where(now__target="gbp_ps.signals._now", now__return_value=START_TIME)
 class SignalsTest(TestCase):

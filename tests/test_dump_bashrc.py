@@ -9,10 +9,10 @@ from unittest_fixtures import Fixtures, given, where
 
 from gbp_ps.cli import dump_bashrc
 
-from .lib import TestCase, patch
+from .lib import TestCase
 
 
-@given(testkit.gbp, testkit.console, popen=patch)
+@given(testkit.gbp, testkit.console, popen=testkit.patch)
 @where(popen__target="gbp_ps.cli.dump_bashrc.sp.Popen")
 class DumpBashrcHandlerTests(TestCase):
     def test_without_local(self, fixtures: Fixtures) -> None:

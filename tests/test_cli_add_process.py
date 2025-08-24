@@ -14,7 +14,7 @@ from gbp_ps.cli import add_process
 from . import lib
 
 
-@given(lib.repo, testkit.gbp, testkit.console, now=lib.patch)
+@given(lib.repo, testkit.gbp, testkit.console, now=testkit.patch)
 @where(now__target="gbp_ps.cli.add_process.now")
 @where(now__return_value=dt.datetime(2023, 11, 20, 17, 57, tzinfo=dt.UTC))
 class AddProcessTests(lib.TestCase):
@@ -52,7 +52,7 @@ class AddProcessAddLocalProcessesTests(lib.TestCase):
         self.assertEqual(list(result), [process])
 
 
-@given(lib.build_process, now=lib.patch, node=lib.patch)
+@given(lib.build_process, now=testkit.patch, node=testkit.patch)
 @where(now__target="gbp_ps.cli.add_process.now")
 @where(node__target="gbp_ps.cli.add_process.platform.node")
 class BuildProcessFromArgsTests(lib.TestCase):

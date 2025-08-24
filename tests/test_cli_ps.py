@@ -15,9 +15,9 @@ from gbp_ps.types import BuildProcess
 from . import lib
 
 
-@given(testkit.gbp, testkit.console, local_timezone=lib.patch, now=lib.patch)
-@given(sleep=lib.patch, mock_gbp=lib.patch)
-@given(get_today=lib.patch)
+@given(testkit.gbp, testkit.console, local_timezone=testkit.patch, now=testkit.patch)
+@given(sleep=testkit.patch, mock_gbp=testkit.patch)
+@given(get_today=testkit.patch)
 @where(sleep__target="gbp_ps.cli.ps.time.sleep")
 @where(now__target="gbp_ps.utils.now")
 @where(now__return_value=dt.datetime(2023, 11, 11, 16, 30, tzinfo=lib.LOCAL_TIMEZONE))
@@ -275,7 +275,8 @@ class PSTests(lib.TestCase):
         self.assertEqual(console.out.file.getvalue(), expected)
 
 
-@given(testkit.console, testkit.gbp, get_today=lib.patch, local_timezone=lib.patch)
+@given(local_timezone=testkit.patch)
+@given(testkit.console, testkit.gbp, get_today=testkit.patch)
 @where(get_today__target="gbp_ps.cli.ps.utils.get_today")
 @where(get_today__return_value=dt.date(2023, 11, 11))
 @where(local_timezone__target="gbpcli.render.LOCAL_TIMEZONE")
