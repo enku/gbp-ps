@@ -6,7 +6,7 @@ from argparse import ArgumentParser
 from functools import partial
 
 import gbp_testkit.fixtures as testkit
-from gbp_testkit.helpers import LOCAL_TIMEZONE, parse_args, print_command
+from gbp_testkit.helpers import LOCAL_TIMEZONE
 from unittest_fixtures import Fixtures, given, where
 
 from gbp_ps.cli import ps
@@ -15,10 +15,10 @@ from gbp_ps.types import BuildProcess
 from . import lib
 
 
-@given(testkit.gbp, testkit.console, local_timezone=testkit.patch, now=testkit.patch)
+@given(testkit.gbpcli, local_timezone=testkit.patch, now=testkit.patch)
 @given(sleep=testkit.patch, mock_gbp=testkit.patch)
 @given(get_today=testkit.patch)
-@where(sleep__target="gbp_ps.cli.ps.time.sleep")
+@where(sleep__target="gbp_ps.cli.ps.time.sleep", sleep__side_effect=KeyboardInterrupt)
 @where(now__target="gbp_ps.utils.now")
 @where(now__return_value=dt.datetime(2023, 11, 11, 16, 30, tzinfo=LOCAL_TIMEZONE))
 @where(get_today__target="gbp_ps.cli.ps.utils.get_today")
@@ -38,12 +38,8 @@ class PSTests(lib.TestCase):
             ["net-misc/wget-1.21.4", "compile", t(2023, 11, 11, 16, 20, 2)],
         ]:
             lib.make_build_process(package=cpv, phase=phase, start_time=start_time)
-        cmdline = "gbp ps"
-        args = parse_args(cmdline)
-        console = fixtures.console
 
-        print_command(cmdline, console)
-        exit_status = ps.handler(args, fixtures.gbp, console)
+        exit_status = fixtures.gbpcli("gbp ps")
 
         self.assertEqual(exit_status, 0)
         expected = """$ gbp ps
@@ -56,7 +52,7 @@ class PSTests(lib.TestCase):
 │ babette     │ 1031   │ net-misc/wget-1.21.4             │ 16:20:02    │ compile      │
 ╰─────────────┴────────┴──────────────────────────────────┴─────────────┴──────────────╯
 """
-        self.assertEqual(console.out.file.getvalue(), expected)
+        self.assertEqual(fixtures.console.out.file.getvalue(), expected)
 
     def test_without_title(self, fixtures: Fixtures) -> None:
         t = partial(dt.datetime, tzinfo=fixtures.local_timezone)
@@ -66,12 +62,8 @@ class PSTests(lib.TestCase):
             ["net-misc/wget-1.21.4", "compile", t(2023, 11, 11, 16, 20, 2)],
         ]:
             lib.make_build_process(package=cpv, phase=phase, start_time=start_time)
-        cmdline = "gbp ps -t"
-        args = parse_args(cmdline)
-        console = fixtures.console
 
-        print_command(cmdline, console)
-        ps.handler(args, fixtures.gbp, console)
+        fixtures.gbpcli("gbp ps -t")
 
         expected = """$ gbp ps -t
 ╭─────────────┬────────┬──────────────────────────────────┬─────────────┬──────────────╮
@@ -82,7 +74,7 @@ class PSTests(lib.TestCase):
 │ babette     │ 1031   │ net-misc/wget-1.21.4             │ 16:20:02    │ compile      │
 ╰─────────────┴────────┴──────────────────────────────────┴─────────────┴──────────────╯
 """
-        self.assertEqual(console.out.file.getvalue(), expected)
+        self.assertEqual(fixtures.console.out.file.getvalue(), expected)
 
     def test_with_progress(self, fixtures: Fixtures) -> None:
         t = partial(dt.datetime, tzinfo=fixtures.local_timezone)
@@ -92,14 +84,11 @@ class PSTests(lib.TestCase):
             ["net-misc/wget-1.21.4", "compile", t(2023, 11, 11, 16, 20, 2)],
         ]:
             lib.make_build_process(package=cpv, phase=phase, start_time=start_time)
-        cmdline = "gbp ps --progress"
-        args = parse_args(cmdline)
-        console = fixtures.console
 
-        exit_status = ps.handler(args, fixtures.gbp, console)
+        exit_status = fixtures.gbpcli("gbp ps --progress")
 
         self.assertEqual(exit_status, 0)
-        expected = """\
+        expected = """$ gbp ps --progress
                                     Build Processes                                     
 ╭─────────┬──────┬─────────────────────────┬──────────┬────────────────────────────────╮
 │ Machine │ ID   │ Package                 │ Start    │ Phase                          │
@@ -109,7 +98,7 @@ class PSTests(lib.TestCase):
 │ babette │ 1031 │ net-misc/wget-1.21.4    │ 16:20:02 │ compile   ━━━━━━━━━━           │
 ╰─────────┴──────┴─────────────────────────┴──────────┴────────────────────────────────╯
 """
-        self.assertEqual(console.out.file.getvalue(), expected)
+        self.assertEqual(fixtures.console.out.file.getvalue(), expected)
 
     def test_with_node(self, fixtures: Fixtures) -> None:
         t = partial(dt.datetime, tzinfo=fixtures.local_timezone)
@@ -119,12 +108,8 @@ class PSTests(lib.TestCase):
             ["net-misc/wget-1.21.4", "compile", t(2023, 11, 11, 16, 20, 2)],
         ]:
             lib.make_build_process(package=cpv, phase=phase, start_time=start_time)
-        cmdline = "gbp ps --node"
-        args = parse_args(cmdline)
-        console = fixtures.console
 
-        print_command(cmdline, console)
-        exit_status = ps.handler(args, fixtures.gbp, console)
+        exit_status = fixtures.gbpcli("gbp ps --node")
 
         self.assertEqual(exit_status, 0)
         expected = """$ gbp ps --node
@@ -137,7 +122,7 @@ class PSTests(lib.TestCase):
 │ babette   │ 1031  │ net-misc/wget-1.21.4        │ 16:20:02   │ compile     │ jenkins │
 ╰───────────┴───────┴─────────────────────────────┴────────────┴─────────────┴─────────╯
 """
-        self.assertEqual(console.out.file.getvalue(), expected)
+        self.assertEqual(fixtures.console.out.file.getvalue(), expected)
 
     def test_from_install_to_pull(self, fixtures: Fixtures) -> None:
         t = partial(dt.datetime, tzinfo=fixtures.local_timezone)
@@ -146,8 +131,6 @@ class PSTests(lib.TestCase):
         package = "sys-apps/portage-3.0.51"
         build_host = "jenkins"
         orig_start = t(2023, 11, 15, 16, 20, 0)
-        cmdline = "gbp ps --node"
-        args = parse_args(cmdline)
         update = partial(
             lib.make_build_process,
             machine=machine,
@@ -160,12 +143,11 @@ class PSTests(lib.TestCase):
         update(phase="world")
 
         # First compile it
-        console = fixtures.console
-        ps.handler(args, fixtures.gbp, console)
+        fixtures.gbpcli("gbp ps --node")
 
         self.assertEqual(
-            console.out.file.getvalue(),
-            """\
+            fixtures.console.out.file.getvalue(),
+            """$ gbp ps --node
                                     Build Processes                                     
 ╭───────────┬────────┬──────────────────────────────┬─────────┬─────────────┬──────────╮
 │ Machine   │ ID     │ Package                      │ Start   │ Phase       │ Node     │
@@ -177,11 +159,11 @@ class PSTests(lib.TestCase):
 
         # Now it's done compiling
         update(phase="clean", start_time=orig_start + dt.timedelta(seconds=60))
-        console.out.file.seek(0)
-        console.out.file.truncate()
-        ps.handler(args, fixtures.gbp, console)
+        fixtures.console.out.file.seek(0)
+        fixtures.console.out.file.truncate()
+        fixtures.gbpcli("gbp ps --node")
 
-        self.assertEqual(console.out.file.getvalue(), "")
+        self.assertEqual(fixtures.console.out.file.getvalue(), "$ gbp ps --node\n")
 
         # Now it's being pulled by GBP on another node
         update(
@@ -189,13 +171,13 @@ class PSTests(lib.TestCase):
             phase="pull",
             start_time=orig_start + dt.timedelta(seconds=120),
         )
-        console.out.file.seek(0)
-        console.out.file.truncate()
-        ps.handler(args, fixtures.gbp, console)
+        fixtures.console.out.file.seek(0)
+        fixtures.console.out.file.truncate()
+        fixtures.gbpcli("gbp ps --node")
 
         self.assertEqual(
-            console.out.file.getvalue(),
-            """\
+            fixtures.console.out.file.getvalue(),
+            """$ gbp ps --node
                                     Build Processes                                     
 ╭────────────┬────────┬────────────────────────────────┬─────────┬─────────────┬───────╮
 │ Machine    │ ID     │ Package                        │ Start   │ Phase       │ Node  │
@@ -206,37 +188,23 @@ class PSTests(lib.TestCase):
         )
 
     def test_empty(self, fixtures: Fixtures) -> None:
-        cmdline = "gbp ps"
-        args = parse_args(cmdline)
-        console = fixtures.console
-        exit_status = ps.handler(args, fixtures.gbp, console)
+        exit_status = fixtures.gbpcli("gbp ps")
 
         self.assertEqual(exit_status, 0)
-        self.assertEqual(console.out.file.getvalue(), "")
+        self.assertEqual(fixtures.console.out.file.getvalue(), "$ gbp ps\n")
 
     def test_continuous_mode(self, fixtures: Fixtures) -> None:
-        processes = [
+        for cpv, phase in [
+            ["sys-apps/portage-3.0.51", "postinst"],
+            ["sys-apps/shadow-4.14-r4", "package"],
+            ["net-misc/wget-1.21.4", "compile"],
+        ]:
             lib.make_build_process(package=cpv, phase=phase)
-            for cpv, phase in [
-                ["sys-apps/portage-3.0.51", "postinst"],
-                ["sys-apps/shadow-4.14-r4", "package"],
-                ["net-misc/wget-1.21.4", "compile"],
-            ]
-        ]
-        cmdline = "gbp ps -c -i4"
-        args = parse_args(cmdline)
-        console = fixtures.console
 
-        gbp = fixtures.mock_gbp
-        mock_graphql_resp = [process.to_dict() for process in processes]
-        gbp.query.gbp_ps.get_processes.side_effect = (
-            ({"buildProcesses": mock_graphql_resp}, None),
-            KeyboardInterrupt,
-        )
-        exit_status = ps.handler(args, gbp, console)
+        exit_status = fixtures.gbpcli("gbp ps -c -i4")
 
         self.assertEqual(exit_status, 0)
-        expected = """\
+        expected = """$ gbp ps -c -i4
                                     Build Processes                                     
 ╭─────────────┬────────┬──────────────────────────────────┬─────────────┬──────────────╮
 │ Machine     │ ID     │ Package                          │ Start       │ Phase        │
@@ -245,7 +213,7 @@ class PSTests(lib.TestCase):
 │ babette     │ 1031   │ sys-apps/shadow-4.14-r4          │ 05:20:52    │ package      │
 │ babette     │ 1031   │ net-misc/wget-1.21.4             │ 05:20:52    │ compile      │
 ╰─────────────┴────────┴──────────────────────────────────┴─────────────┴──────────────╯"""
-        self.assertEqual(console.out.file.getvalue(), expected)
+        self.assertEqual(fixtures.console.out.file.getvalue(), expected)
         fixtures.sleep.assert_called_with(4)
 
     def test_elapsed_mode(self, fixtures: Fixtures) -> None:
@@ -255,12 +223,8 @@ class PSTests(lib.TestCase):
             ["net-misc/wget-1.21.4", "compile", t(2023, 11, 11, 16, 20, 2)],
         ]:
             lib.make_build_process(package=cpv, phase=phase, start_time=start_time)
-        cmdline = "gbp ps -e"
-        args = parse_args(cmdline)
-        console = fixtures.console
 
-        print_command(cmdline, console)
-        exit_status = ps.handler(args, fixtures.gbp, console)
+        exit_status = fixtures.gbpcli("gbp ps -e")
 
         self.assertEqual(exit_status, 0)
         expected = """$ gbp ps -e
@@ -272,11 +236,10 @@ class PSTests(lib.TestCase):
 │ babette     │ 1031    │ net-misc/wget-1.21.4             │ 0:09:58    │ compile      │
 ╰─────────────┴─────────┴──────────────────────────────────┴────────────┴──────────────╯
 """
-        self.assertEqual(console.out.file.getvalue(), expected)
+        self.assertEqual(fixtures.console.out.file.getvalue(), expected)
 
 
-@given(local_timezone=testkit.patch)
-@given(testkit.console, testkit.gbp, get_today=testkit.patch)
+@given(testkit.gbpcli, local_timezone=testkit.patch, get_today=testkit.patch)
 @where(get_today__target="gbp_ps.cli.ps.utils.get_today")
 @where(get_today__return_value=dt.date(2023, 11, 11))
 @where(local_timezone__target="gbpcli.render.LOCAL_TIMEZONE")
@@ -292,12 +255,7 @@ class PSWithMFlagTests(lib.TestCase):
         lib.make_build_process(machine="babette", package="sys-devel/flex-2.6.4-r6")
         lib.make_build_process(machine="lighthouse", package="media-libs/gd-2.3.3-r4")
 
-        cmdline = "gbp ps -m lighthouse"
-        args = parse_args(cmdline)
-        console = fixtures.console
-
-        print_command(cmdline, console)
-        exit_status = ps.handler(args, fixtures.gbp, console)
+        exit_status = fixtures.gbpcli("gbp ps -m lighthouse")
 
         self.assertEqual(exit_status, 0)
 
@@ -311,7 +269,7 @@ $ gbp ps -m lighthouse
 │ lighthouse     │ 1031   │ media-libs/gd-2.3.3-r4         │ 05:20:52    │ compile     │
 ╰────────────────┴────────┴────────────────────────────────┴─────────────┴─────────────╯
 """
-        self.assertEqual(expected, console.out.file.getvalue())
+        self.assertEqual(expected, fixtures.console.out.file.getvalue())
 
 
 class PSParseArgsTests(lib.TestCase):
