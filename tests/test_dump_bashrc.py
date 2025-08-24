@@ -19,7 +19,7 @@ class DumpBashrcHandlerTests(TestCase):
 
         self.assertEqual(exit_status, 0)
 
-        lines = fixtures.console.out.file.getvalue().split("\n")
+        lines = fixtures.console.stdout.split("\n")
         self.assertTrue(lines[1].startswith("if [[ -f /Makefile.gbp"))
         self.assertTrue("http://gbp.invalid/graphql" in lines[-4], lines[-4])
 
@@ -33,7 +33,7 @@ class DumpBashrcHandlerTests(TestCase):
 
         self.assertEqual(exit_status, 0)
 
-        output = fixtures.console.out.file.getvalue()
+        output = fixtures.console.stdout
         self.assertTrue(f"{tmpdir}/portage/gbpps.db" in output, output)
 
     def test_local_portageq_fail(self, fixtures: Fixtures) -> None:
@@ -44,7 +44,7 @@ class DumpBashrcHandlerTests(TestCase):
 
         self.assertEqual(exit_status, 0)
 
-        output = fixtures.console.out.file.getvalue()
+        output = fixtures.console.stdout
         self.assertTrue("/var/tmp/portage/gbpps.db" in output, output)
 
 

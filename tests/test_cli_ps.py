@@ -52,7 +52,7 @@ class PSTests(lib.TestCase):
 │ babette     │ 1031   │ net-misc/wget-1.21.4             │ 16:20:02    │ compile      │
 ╰─────────────┴────────┴──────────────────────────────────┴─────────────┴──────────────╯
 """
-        self.assertEqual(fixtures.console.out.file.getvalue(), expected)
+        self.assertEqual(fixtures.console.stdout, expected)
 
     def test_without_title(self, fixtures: Fixtures) -> None:
         t = partial(dt.datetime, tzinfo=fixtures.local_timezone)
@@ -74,7 +74,7 @@ class PSTests(lib.TestCase):
 │ babette     │ 1031   │ net-misc/wget-1.21.4             │ 16:20:02    │ compile      │
 ╰─────────────┴────────┴──────────────────────────────────┴─────────────┴──────────────╯
 """
-        self.assertEqual(fixtures.console.out.file.getvalue(), expected)
+        self.assertEqual(fixtures.console.stdout, expected)
 
     def test_with_progress(self, fixtures: Fixtures) -> None:
         t = partial(dt.datetime, tzinfo=fixtures.local_timezone)
@@ -98,7 +98,7 @@ class PSTests(lib.TestCase):
 │ babette │ 1031 │ net-misc/wget-1.21.4    │ 16:20:02 │ compile   ━━━━━━━━━━           │
 ╰─────────┴──────┴─────────────────────────┴──────────┴────────────────────────────────╯
 """
-        self.assertEqual(fixtures.console.out.file.getvalue(), expected)
+        self.assertEqual(fixtures.console.stdout, expected)
 
     def test_with_node(self, fixtures: Fixtures) -> None:
         t = partial(dt.datetime, tzinfo=fixtures.local_timezone)
@@ -122,7 +122,7 @@ class PSTests(lib.TestCase):
 │ babette   │ 1031  │ net-misc/wget-1.21.4        │ 16:20:02   │ compile     │ jenkins │
 ╰───────────┴───────┴─────────────────────────────┴────────────┴─────────────┴─────────╯
 """
-        self.assertEqual(fixtures.console.out.file.getvalue(), expected)
+        self.assertEqual(fixtures.console.stdout, expected)
 
     def test_from_install_to_pull(self, fixtures: Fixtures) -> None:
         t = partial(dt.datetime, tzinfo=fixtures.local_timezone)
@@ -146,7 +146,7 @@ class PSTests(lib.TestCase):
         fixtures.gbpcli("gbp ps --node")
 
         self.assertEqual(
-            fixtures.console.out.file.getvalue(),
+            fixtures.console.stdout,
             """$ gbp ps --node
                                     Build Processes                                     
 ╭───────────┬────────┬──────────────────────────────┬─────────┬─────────────┬──────────╮
@@ -163,7 +163,7 @@ class PSTests(lib.TestCase):
         fixtures.console.out.file.truncate()
         fixtures.gbpcli("gbp ps --node")
 
-        self.assertEqual(fixtures.console.out.file.getvalue(), "$ gbp ps --node\n")
+        self.assertEqual(fixtures.console.stdout, "$ gbp ps --node\n")
 
         # Now it's being pulled by GBP on another node
         update(
@@ -176,7 +176,7 @@ class PSTests(lib.TestCase):
         fixtures.gbpcli("gbp ps --node")
 
         self.assertEqual(
-            fixtures.console.out.file.getvalue(),
+            fixtures.console.stdout,
             """$ gbp ps --node
                                     Build Processes                                     
 ╭────────────┬────────┬────────────────────────────────┬─────────┬─────────────┬───────╮
@@ -191,7 +191,7 @@ class PSTests(lib.TestCase):
         exit_status = fixtures.gbpcli("gbp ps")
 
         self.assertEqual(exit_status, 0)
-        self.assertEqual(fixtures.console.out.file.getvalue(), "$ gbp ps\n")
+        self.assertEqual(fixtures.console.stdout, "$ gbp ps\n")
 
     def test_continuous_mode(self, fixtures: Fixtures) -> None:
         for cpv, phase in [
@@ -213,7 +213,7 @@ class PSTests(lib.TestCase):
 │ babette     │ 1031   │ sys-apps/shadow-4.14-r4          │ 05:20:52    │ package      │
 │ babette     │ 1031   │ net-misc/wget-1.21.4             │ 05:20:52    │ compile      │
 ╰─────────────┴────────┴──────────────────────────────────┴─────────────┴──────────────╯"""
-        self.assertEqual(fixtures.console.out.file.getvalue(), expected)
+        self.assertEqual(fixtures.console.stdout, expected)
         fixtures.sleep.assert_called_with(4)
 
     def test_elapsed_mode(self, fixtures: Fixtures) -> None:
@@ -236,7 +236,7 @@ class PSTests(lib.TestCase):
 │ babette     │ 1031    │ net-misc/wget-1.21.4             │ 0:09:58    │ compile      │
 ╰─────────────┴─────────┴──────────────────────────────────┴────────────┴──────────────╯
 """
-        self.assertEqual(fixtures.console.out.file.getvalue(), expected)
+        self.assertEqual(fixtures.console.stdout, expected)
 
 
 @given(testkit.gbpcli, local_timezone=testkit.patch, get_today=testkit.patch)
@@ -269,7 +269,7 @@ $ gbp ps -m lighthouse
 │ lighthouse     │ 1031   │ media-libs/gd-2.3.3-r4         │ 05:20:52    │ compile     │
 ╰────────────────┴────────┴────────────────────────────────┴─────────────┴─────────────╯
 """
-        self.assertEqual(expected, fixtures.console.out.file.getvalue())
+        self.assertEqual(expected, fixtures.console.stdout)
 
 
 class PSParseArgsTests(lib.TestCase):
