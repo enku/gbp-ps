@@ -16,7 +16,7 @@ from . import lib
 
 
 @given(testkit.gbpcli, local_timezone=testkit.patch, now=testkit.patch)
-@given(sleep=testkit.patch, mock_gbp=testkit.patch)
+@given(sleep=testkit.patch)
 @given(get_today=testkit.patch)
 @where(sleep__target="gbp_ps.cli.ps.time.sleep", sleep__side_effect=KeyboardInterrupt)
 @where(now__target="gbp_ps.utils.now")
