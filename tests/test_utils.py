@@ -5,18 +5,17 @@ import datetime as dt
 from unittest import TestCase
 
 import gbp_testkit.fixtures as testkit
+from gbp_testkit.helpers import LOCAL_TIMEZONE
 from unittest_fixtures import Fixtures, given, where
 
 from gbp_ps import utils
-
-from . import lib
 
 
 @given(local_timezone=testkit.patch, now=testkit.patch)
 @where(now__target="gbp_ps.utils.now")
 @where(now__return_value=dt.datetime(2024, 2, 7, 20, 10, 57, 312885))
 @where(local_timezone__target="gbpcli.render.LOCAL_TIMEZONE")
-@where(local_timezone__new=lib.LOCAL_TIMEZONE)
+@where(local_timezone__new=LOCAL_TIMEZONE)
 class GetTodayTests(TestCase):
     def test(self, fixtures: Fixtures) -> None:
         self.assertEqual(dt.date(2024, 2, 7), utils.get_today())

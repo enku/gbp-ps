@@ -6,7 +6,7 @@ from argparse import ArgumentParser
 from functools import partial
 
 import gbp_testkit.fixtures as testkit
-from gbp_testkit.helpers import parse_args, print_command
+from gbp_testkit.helpers import LOCAL_TIMEZONE, parse_args, print_command
 from unittest_fixtures import Fixtures, given, where
 
 from gbp_ps.cli import ps
@@ -20,11 +20,11 @@ from . import lib
 @given(get_today=testkit.patch)
 @where(sleep__target="gbp_ps.cli.ps.time.sleep")
 @where(now__target="gbp_ps.utils.now")
-@where(now__return_value=dt.datetime(2023, 11, 11, 16, 30, tzinfo=lib.LOCAL_TIMEZONE))
+@where(now__return_value=dt.datetime(2023, 11, 11, 16, 30, tzinfo=LOCAL_TIMEZONE))
 @where(get_today__target="gbp_ps.cli.ps.utils.get_today")
 @where(get_today__return_value=dt.date(2023, 11, 11))
 @where(local_timezone__target="gbpcli.render.LOCAL_TIMEZONE")
-@where(local_timezone__new=lib.LOCAL_TIMEZONE)
+@where(local_timezone__new=LOCAL_TIMEZONE)
 class PSTests(lib.TestCase):
     """Tests for gbp ps"""
 
@@ -280,7 +280,7 @@ class PSTests(lib.TestCase):
 @where(get_today__target="gbp_ps.cli.ps.utils.get_today")
 @where(get_today__return_value=dt.date(2023, 11, 11))
 @where(local_timezone__target="gbpcli.render.LOCAL_TIMEZONE")
-@where(local_timezone__new=lib.LOCAL_TIMEZONE)
+@where(local_timezone__new=LOCAL_TIMEZONE)
 class PSWithMFlagTests(lib.TestCase):
     maxDiff = None
 

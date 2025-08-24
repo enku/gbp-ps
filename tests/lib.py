@@ -12,7 +12,6 @@ from gbp_ps.repository import Repo, RepositoryType, add_or_update_process, sqlit
 from gbp_ps.settings import Settings
 from gbp_ps.types import BuildProcess
 
-LOCAL_TIMEZONE = dt.timezone(dt.timedelta(days=-1, seconds=61200), "PDT")
 PACKAGES = (
     "media-libs/tiff-4.7.0",
     "app-misc/pax-utils-1.3.8",
