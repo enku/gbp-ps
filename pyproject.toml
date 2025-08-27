@@ -101,7 +101,7 @@ dev = [
     "types-redis>=4.6.0.10",
     "fakeredis>=2.20.0",
     "typos>=1.24.5",
-    "unittest-fixtures @ git+https://github.com/enku/unittest-fixtures.git",
     "factory-boy>=3.3.1",
     "gentoo-build-publisher[test] @ git+https://github.com/enku/gentoo-build-publisher.git@master",
+    "unittest-fixtures>=2.3.0",
 ]
