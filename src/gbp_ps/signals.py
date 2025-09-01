@@ -16,6 +16,8 @@ _now = partial(dt.datetime.now, tz=dt.UTC)
 _HANDLERS: list["Handler"] = []
 _NODE = platform.node()
 
+dispatcher.register_event("add_process")
+
 
 class Handler(Protocol):
     # pylint: disable=too-few-public-methods,missing-docstring

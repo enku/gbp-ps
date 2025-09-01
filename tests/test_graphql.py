@@ -5,6 +5,7 @@
 from typing import Any
 
 from django.test.client import Client
+from gentoo_build_publisher.signals import dispatcher
 from unittest_fixtures import Fixtures, given
 
 from . import lib
@@ -94,6 +95,23 @@ class AddBuildProcessesTests(lib.TestCase):
         self.assertNotIn("errors", result)
         processes = [*fixtures.repo.get_processes()]
         self.assertEqual(processes, [process])
+
+    def test_add_process_emits_signal(self, fixtures: Fixtures) -> None:
+        process = lib.make_build_process(add_to_repo=False)
+        callback_args: dict[str, Any] = {}
+
+        def callback(*args: Any, **kwargs: Any) -> None:
+            callback_args["args"] = args
+            callback_args["kwargs"] = kwargs
+
+        dispatcher.bind(add_process=callback)
+
+        try:
+            graphql(self.query, {"process": process.to_dict()})
+        finally:
+            dispatcher.unbind(callback)
+
+        self.assertEqual(callback_args, {"args": (), "kwargs": {"process": process}})
 
     def test_update(self, fixtures: Fixtures) -> None:
         p_dict = lib.make_build_process().to_dict()

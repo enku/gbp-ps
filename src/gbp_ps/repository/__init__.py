@@ -6,6 +6,8 @@ import importlib.metadata
 from collections.abc import Iterable
 from typing import Protocol
 
+from gentoo_build_publisher.signals import dispatcher
+
 from gbp_ps.exceptions import RecordNotFoundError, UpdateNotAllowedError
 from gbp_ps.settings import Settings
 from gbp_ps.types import BuildProcess
@@ -69,5 +71,6 @@ def add_or_update_process(repo: RepositoryType, process: BuildProcess) -> None:
         repo.update_process(process)
     except RecordNotFoundError:
         repo.add_process(process)
+        dispatcher.emit("add_process", process=process)
     except UpdateNotAllowedError:
         pass

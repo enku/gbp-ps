@@ -100,3 +100,24 @@ class SignalsTest(TestCase):
         processes = [*fixtures.repo.get_processes(include_final=True)]
         expected = signals.build_process(BUILD, NODE, "clean", START_TIME)
         self.assertEqual(processes, [expected])
+
+
+class AddProcessSignalTests(TestCase):
+    def test(self) -> None:
+        """dispatcher has the add_process signal"""
+        process = lib.BuildProcessFactory()
+        kwarg: BuildProcess | None = None
+
+        def callback(*, process: BuildProcess) -> None:
+            nonlocal kwarg
+
+            kwarg = process
+
+        dispatcher.bind(add_process=callback)
+
+        try:
+            dispatcher.emit("add_process", process=process)
+        finally:
+            dispatcher.unbind(callback)
+
+        self.assertEqual(kwarg, process)
