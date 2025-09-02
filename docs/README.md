@@ -10,10 +10,9 @@ plugins in one:
   only needed if the storage backend selected is the Django ORM (see below).
   However this is the default.
 - A Gentoo Build Publisher (server) GraphQL plugin. This project exposes a
-  `schema.graphql` file via the `"gentoo_build_publisher.graphql_schema"`
-  entry point. When installed, Gentoo Build Publisher will pick this up and
-  add it to it's GraphQL schema.  This is a new feature added to GBP in [this
-  commit](https://tinyurl.com/3nc7ase9).
+  GraphQL schema file via it's Gentoo Build Publisher plugin definition.  When
+  installed, Gentoo Build Publisher will pick this up and add it to it's
+  GraphQL schema.
 - A [gbpcli](https://github.com/enku/gbpcli) plugin that adds a `ps`
   subcommand to the command-line interface.
 
