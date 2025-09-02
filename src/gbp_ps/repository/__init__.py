@@ -4,13 +4,16 @@ from __future__ import annotations
 
 import importlib.metadata
 from collections.abc import Iterable
-from typing import Protocol
-
-from gentoo_build_publisher.signals import dispatcher
+from typing import Any, Protocol
 
 from gbp_ps.exceptions import RecordNotFoundError, UpdateNotAllowedError
 from gbp_ps.settings import Settings
 from gbp_ps.types import BuildProcess
+
+try:
+    from gentoo_build_publisher.signals import dispatcher
+except ImportError:
+    dispatcher = None  # type: ignore[assignment]
 
 BACKENDS = {ep.name: ep for ep in importlib.metadata.entry_points(group="gbp_ps.repos")}
 
@@ -69,9 +72,20 @@ def add_or_update_process(repo: RepositoryType, process: BuildProcess) -> None:
     """
     try:
         repo.update_process(process)
-        dispatcher.emit("update_process", process=process)
+        maybe_emit("update_process", process=process)
     except RecordNotFoundError:
         repo.add_process(process)
-        dispatcher.emit("add_process", process=process)
+        maybe_emit("add_process", process=process)
     except UpdateNotAllowedError:
         pass
+
+
+def maybe_emit(signal: str, *args: Any, **kwargs: Any) -> bool:
+    """Emit the given signal if running under Gentoo Build Publisher
+
+    Return True if the signal was emitted. Otherwise return False.
+    """
+    if dispatcher:
+        dispatcher.emit(signal, *args, **kwargs)
+        return True
+    return False
