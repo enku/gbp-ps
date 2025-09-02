@@ -2,6 +2,7 @@
 
 # pylint: disable=missing-docstring,unused-argument
 
+from dataclasses import replace
 from typing import Any
 
 from django.test.client import Client
@@ -112,6 +113,24 @@ class AddBuildProcessesTests(lib.TestCase):
             dispatcher.unbind(callback)
 
         self.assertEqual(callback_args, {"args": (), "kwargs": {"process": process}})
+
+    def test_update_process_emits_signal(self, fixtures: Fixtures) -> None:
+        process = lib.make_build_process()
+        updated = replace(process, phase="clean")
+        callback_args: dict[str, Any] = {}
+
+        def callback(*args: Any, **kwargs: Any) -> None:
+            callback_args["args"] = args
+            callback_args["kwargs"] = kwargs
+
+        dispatcher.bind(update_process=callback)
+
+        try:
+            graphql(self.query, {"process": updated.to_dict()})
+        finally:
+            dispatcher.unbind(callback)
+
+        self.assertEqual(callback_args, {"args": (), "kwargs": {"process": updated}})
 
     def test_update(self, fixtures: Fixtures) -> None:
         p_dict = lib.make_build_process().to_dict()

@@ -121,3 +121,24 @@ class AddProcessSignalTests(TestCase):
             dispatcher.unbind(callback)
 
         self.assertEqual(kwarg, process)
+
+
+class UpdateProcessSignalTests(TestCase):
+    def test(self) -> None:
+        """dispatcher has the update_process signal"""
+        process = lib.BuildProcessFactory()
+        kwarg: BuildProcess | None = None
+
+        def callback(*, process: BuildProcess) -> None:
+            nonlocal kwarg
+
+            kwarg = process
+
+        dispatcher.bind(update_process=callback)
+
+        try:
+            dispatcher.emit("update_process", process=process)
+        finally:
+            dispatcher.unbind(callback)
+
+        self.assertEqual(kwarg, process)

@@ -69,6 +69,7 @@ def add_or_update_process(repo: RepositoryType, process: BuildProcess) -> None:
     """
     try:
         repo.update_process(process)
+        dispatcher.emit("update_process", process=process)
     except RecordNotFoundError:
         repo.add_process(process)
         dispatcher.emit("add_process", process=process)

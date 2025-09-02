@@ -17,6 +17,7 @@ _HANDLERS: list["Handler"] = []
 _NODE = platform.node()
 
 dispatcher.register_event("add_process")
+dispatcher.register_event("update_process")
 
 
 class Handler(Protocol):
