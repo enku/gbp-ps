@@ -77,7 +77,7 @@ django_settings_module = "gbp_testkit.settings"
 
 [tool.coverage.run]
 source = ["gbp_ps", "tests"]
-omit = ["src/gbp_ps/migrations/*"]
+omit = ["src/gbp_ps/django/gbp_ps/migrations/*", "tests/__main__.py"]
 
 [tool.isort]
 profile = "black"
