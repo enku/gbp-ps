@@ -10,7 +10,8 @@ from gbpcli.gbp import GBP
 from gbpcli.graphql import check
 from gbpcli.types import Console
 
-from gbp_ps.repository import Repo, add_or_update_process
+from gbp_ps.exceptions import RecordNotFoundError, UpdateNotAllowedError
+from gbp_ps.repository import Repo
 from gbp_ps.settings import Settings
 from gbp_ps.types import BuildProcess
 
@@ -39,10 +40,9 @@ def add_gbp_process(gbp: GBP) -> ProcessAdder:
 
 def add_local_process(database: str) -> ProcessAdder:
     """Return a function that can use SqliteRepository to add/update a given BuildProcess"""
-    repo = Repo(Settings(STORAGE_BACKEND="sqlite", SQLITE_DATABASE=database))
 
     def add_process(process: BuildProcess) -> None:
-        add_or_update_process(repo, process)
+        add_or_update_local_process(process, database)
 
     return add_process
 
@@ -72,3 +72,21 @@ def parse_args(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("number", metavar="NUMBER", help="build number")
     parser.add_argument("package", metavar="PACKAGE", help="package CPV")
     parser.add_argument("phase", metavar="PHASE", help="ebuild phase")
+
+
+def add_or_update_local_process(process: BuildProcess, database: str) -> None:
+    """Add or update the process
+
+    Adds the process to the process table. If the process already exists, does an
+    update.
+
+    If the update is not allowed (e.g. the previous build host is attempting to finalize
+    the process) update is not ignored.
+    """
+    repo = Repo(Settings(STORAGE_BACKEND="sqlite", SQLITE_DATABASE=database))
+    try:
+        repo.update_process(process)
+    except RecordNotFoundError:
+        repo.add_process(process)
+    except UpdateNotAllowedError:
+        pass
