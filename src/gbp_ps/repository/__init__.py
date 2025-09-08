@@ -14,6 +14,8 @@ try:
     from gentoo_build_publisher.signals import dispatcher
 except ImportError:
     dispatcher = None  # type: ignore[assignment]
+else:
+    from gentoo_build_publisher.types import Build
 
 BACKENDS = {ep.name: ep for ep in importlib.metadata.entry_points(group="gbp_ps.repos")}
 
@@ -80,12 +82,13 @@ def add_or_update_process(repo: RepositoryType, process: BuildProcess) -> None:
         pass
 
 
-def maybe_emit(signal: str, *args: Any, **kwargs: Any) -> bool:
+def maybe_emit(signal: str, process: BuildProcess, **kwargs: Any) -> bool:
     """Emit the given signal if running under Gentoo Build Publisher
 
     Return True if the signal was emitted. Otherwise return False.
     """
     if dispatcher:
-        dispatcher.emit(signal, *args, **kwargs)
+        build = Build(machine=process.machine, build_id=process.build_id)
+        dispatcher.emit(signal, build=build, process=process, **kwargs)
         return True
     return False

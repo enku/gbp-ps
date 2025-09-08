@@ -105,10 +105,11 @@ class SignalsTest(TestCase):
 class AddProcessSignalTests(TestCase):
     def test(self) -> None:
         """dispatcher has the add_process signal"""
-        process = lib.BuildProcessFactory()
+        process: BuildProcess = lib.BuildProcessFactory()
+        build = Build(machine=process.machine, build_id=process.build_id)
         kwarg: BuildProcess | None = None
 
-        def callback(*, process: BuildProcess) -> None:
+        def callback(*, build: Build, process: BuildProcess) -> None:
             nonlocal kwarg
 
             kwarg = process
@@ -116,7 +117,7 @@ class AddProcessSignalTests(TestCase):
         dispatcher.bind(add_process=callback)
 
         try:
-            dispatcher.emit("add_process", process=process)
+            dispatcher.emit("add_process", build=build, process=process)
         finally:
             dispatcher.unbind(callback)
 
@@ -126,10 +127,11 @@ class AddProcessSignalTests(TestCase):
 class UpdateProcessSignalTests(TestCase):
     def test(self) -> None:
         """dispatcher has the update_process signal"""
-        process = lib.BuildProcessFactory()
+        process: BuildProcess = lib.BuildProcessFactory()
+        build = Build(machine=process.machine, build_id=process.build_id)
         kwarg: BuildProcess | None = None
 
-        def callback(*, process: BuildProcess) -> None:
+        def callback(*, build: Build, process: BuildProcess) -> None:
             nonlocal kwarg
 
             kwarg = process
@@ -137,7 +139,7 @@ class UpdateProcessSignalTests(TestCase):
         dispatcher.bind(update_process=callback)
 
         try:
-            dispatcher.emit("update_process", process=process)
+            dispatcher.emit("update_process", build=build, process=process)
         finally:
             dispatcher.unbind(callback)
 

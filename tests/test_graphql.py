@@ -7,6 +7,7 @@ from typing import Any
 
 from django.test.client import Client
 from gentoo_build_publisher.signals import dispatcher
+from gentoo_build_publisher.types import Build
 from unittest_fixtures import Fixtures, given
 
 from . import lib
@@ -112,7 +113,10 @@ class AddBuildProcessesTests(lib.TestCase):
         finally:
             dispatcher.unbind(callback)
 
-        self.assertEqual(callback_args, {"args": (), "kwargs": {"process": process}})
+        build = Build(machine=process.machine, build_id=process.build_id)
+        self.assertEqual(
+            callback_args, {"args": (), "kwargs": {"build": build, "process": process}}
+        )
 
     def test_update_process_emits_signal(self, fixtures: Fixtures) -> None:
         process = lib.make_build_process()
@@ -130,7 +134,10 @@ class AddBuildProcessesTests(lib.TestCase):
         finally:
             dispatcher.unbind(callback)
 
-        self.assertEqual(callback_args, {"args": (), "kwargs": {"process": updated}})
+        build = Build(machine=process.machine, build_id=process.build_id)
+        self.assertEqual(
+            callback_args, {"args": (), "kwargs": {"build": build, "process": updated}}
+        )
 
     def test_update(self, fixtures: Fixtures) -> None:
         p_dict = lib.make_build_process().to_dict()
