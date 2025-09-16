@@ -106,7 +106,7 @@ class AddBuildProcessesTests(lib.TestCase):
             callback_args["args"] = args
             callback_args["kwargs"] = kwargs
 
-        dispatcher.bind(add_process=callback)
+        dispatcher.bind(gbp_ps_add_process=callback)
 
         try:
             graphql(self.query, {"process": process.to_dict()})
@@ -127,7 +127,7 @@ class AddBuildProcessesTests(lib.TestCase):
             callback_args["args"] = args
             callback_args["kwargs"] = kwargs
 
-        dispatcher.bind(update_process=callback)
+        dispatcher.bind(gbp_ps_update_process=callback)
 
         try:
             graphql(self.query, {"process": updated.to_dict()})

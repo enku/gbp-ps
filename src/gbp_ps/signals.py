@@ -16,8 +16,8 @@ _now = partial(dt.datetime.now, tz=dt.UTC)
 _HANDLERS: list["Handler"] = []
 _NODE = platform.node()
 
-dispatcher.register_event("add_process")
-dispatcher.register_event("update_process")
+dispatcher.register_event("gbp_ps_add_process")
+dispatcher.register_event("gbp_ps_update_process")
 
 
 class Handler(Protocol):

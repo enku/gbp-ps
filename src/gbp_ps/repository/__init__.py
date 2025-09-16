@@ -74,10 +74,10 @@ def add_or_update_process(repo: RepositoryType, process: BuildProcess) -> None:
     """
     try:
         repo.update_process(process)
-        maybe_emit("update_process", process=process)
+        maybe_emit("gbp_ps_update_process", process=process)
     except RecordNotFoundError:
         repo.add_process(process)
-        maybe_emit("add_process", process=process)
+        maybe_emit("gbp_ps_add_process", process=process)
     except UpdateNotAllowedError:
         pass
 

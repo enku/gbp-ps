@@ -114,10 +114,10 @@ class AddProcessSignalTests(TestCase):
 
             kwarg = process
 
-        dispatcher.bind(add_process=callback)
+        dispatcher.bind(gbp_ps_add_process=callback)
 
         try:
-            dispatcher.emit("add_process", build=build, process=process)
+            dispatcher.emit("gbp_ps_add_process", build=build, process=process)
         finally:
             dispatcher.unbind(callback)
 
@@ -136,10 +136,10 @@ class UpdateProcessSignalTests(TestCase):
 
             kwarg = process
 
-        dispatcher.bind(update_process=callback)
+        dispatcher.bind(gbp_ps_update_process=callback)
 
         try:
-            dispatcher.emit("update_process", build=build, process=process)
+            dispatcher.emit("gbp_ps_update_process", build=build, process=process)
         finally:
             dispatcher.unbind(callback)
 
