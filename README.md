@@ -82,6 +82,8 @@ Start a machine build that will actually build some packages. Then,
 gbp ps
 ```
 
+![screenshot](https://raw.githubusercontent.com/enku/screenshots/refs/heads/master/gbp-ps/ps.svg)
+
 This should display the process table.  When no processes are building the
 output will be empty.
 
@@ -94,6 +96,8 @@ gbp ps -c
 
 To show the processes accompanied by a process bar, pass the `--progress`
 flag.
+
+![screenshot](https://raw.githubusercontent.com/enku/screenshots/refs/heads/master/gbp-ps/progress.svg)
 
 ## Run without Gentoo Build Publisher
 
