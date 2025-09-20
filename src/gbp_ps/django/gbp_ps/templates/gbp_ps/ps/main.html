@@ -1,8 +1,65 @@
 {% extends "gentoo_build_publisher/base.html" %}
+{% load static gbp %}
 {% block title %}Gentoo Build Publisher: Processes{% endblock %}
-{% load static %}
+{% block extra_head %}
+{{ block.super }}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&display=swap" rel="stylesheet">
+<style>
+th {
+  text-transform: uppercase;
+}
+
+.numeric {
+  font-family: "JetBrains Mono", monospace;
+}
+
+.package {
+  max-width: 30ch;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.phase {
+  min-width: 10ch;
+}
+
+.phase-progress {
+  min-width: 150px;
+}
+
+.progress-bar {
+  animation-direction: reverse;
+}
+</style>
+{% endblock %}
 
 {% block main %}
+<div class="container">
+  <div class="row">
+    {% roundrect "Build Processes" "" 0.7 %}
+  </div>
+  <div class="row">
+    <div class="col">
+      <table class="table table-sm process-table">
+        <thead>
+          <tr class="bg-primary">
+            <th scope="col">Machine</th>
+            <th scope="col">ID</th>
+            <th scope="col">Package</th>
+            <th scope="col">Elapsed</th>
+            <th scope="col">Phase</th>
+            <th scope="col"></th>
+          </tr>
+        </thead>
+        <tbody id="processes" class="processes">
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
 {% endblock %}
 
 {% block scripts %}
