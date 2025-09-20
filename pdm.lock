@@ -5,10 +5,10 @@
 groups = ["default", "all", "dev", "redis", "server"]
 strategy = []
 lock_version = "4.5.0"
-content_hash = "sha256:dd2fd1ab6a8c83c5cbeb70fb3b69ab3031dbb9487c7a012c1c0c2555815e7dfe"
+content_hash = "sha256:768f4198dfdef3038ee7931033e6d6c6b66187eebb6efd17a37b45c90b8fdcc9"
 
 [[metadata.targets]]
-requires_python = ">=3.11"
+requires_python = ">=3.12"
 
 [[package]]
 name = "amqp"
@@ -101,16 +101,6 @@ dependencies = [
 files = [
     {file = "astroid-3.3.11-py3-none-any.whl", hash = "sha256:54c760ae8322ece1abd213057c4b5bba7c49818853fc901ef09719a60dbf9dec"},
     {file = "astroid-3.3.11.tar.gz", hash = "sha256:1e5a5011af2920c7c67a53f65d536d65bfa7116feeaf2354d8b94f29573bb0ce"},
-]
-
-[[package]]
-name = "async-timeout"
-version = "5.0.1"
-requires_python = ">=3.8"
-summary = "Timeout context manager for asyncio programs"
-files = [
-    {file = "async_timeout-5.0.1-py3-none-any.whl", hash = "sha256:39e3809566ff85354557ec2398b55e096c8364bacac9405a7a1fa429e77fe76c"},
-    {file = "async_timeout-5.0.1.tar.gz", hash = "sha256:d9321a7a3d5a6a5e187e824d2fa0793ce379a202935782d555d6e9d2735677d3"},
 ]
 
 [[package]]
@@ -754,6 +744,7 @@ revision = "425bd3be74898a028116280816f75af1fafa4b52"
 summary = "Gentoo Build Publisher"
 dependencies = [
     "factory-boy>=3.3.3",
+    "gentoo-build-publisher @ git+https://github.com/enku/gentoo-build-publisher.git@425bd3be74898a028116280816f75af1fafa4b52",
     "gentoo-build-publisher @ git+https://github.com/enku/gentoo-build-publisher.git@master",
     "unittest-fixtures>=2.3.0",
 ]

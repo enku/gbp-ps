@@ -9,7 +9,7 @@ dependencies = [
     "gbpcli>=2.4.0",
     "rich>=13.6.0",
 ]
-requires-python = ">=3.11"
+requires-python = ">=3.12"
 readme = "README.md"
 classifiers = [
     "Environment :: Console",
