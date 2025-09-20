@@ -1,0 +1,11 @@
+{% extends "gentoo_build_publisher/base.html" %}
+{% block title %}Gentoo Build Publisher: Processes{% endblock %}
+{% load static %}
+
+{% block main %}
+{% endblock %}
+
+{% block scripts %}
+  {{ gradient_colors|json_script:'gradientColors' }}
+  <script src="{% static 'gbp_ps/ps.js' %}"></script>
+{% endblock %}
