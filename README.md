@@ -17,10 +17,16 @@ Now there is.
 <img src="https://raw.githubusercontent.com/enku/screenshots/refs/heads/master/gbp-ps/screenshot.gif" alt="gbpcli screenshot" width="100%">
 </p>
 
-**gbp-ps** is a `ps`-like subcommand for the [Gentoo Build Publisher
+**gbp-ps** has a `ps`-like subcommand for the [Gentoo Build Publisher
 CLI](https://github.com/enku/gbpcli). When installed, all you need to do is
 run `gbp ps` to see all the packages being built, for which machines they're
 being built for, and what phase of the build process the package is in.
+
+It also exposes a page in the web UI that displays much the same information.
+
+<p align="center">
+<img src="https://raw.githubusercontent.com/enku/screenshots/refs/heads/master/gbp-ps/ps-web.png" alt="gbpcli screenshot" width="100%">
+</p>
 
 ## How does it work?
 
