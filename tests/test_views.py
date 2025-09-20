@@ -35,3 +35,11 @@ class PSViewTests(TestCase):
         path = finders.find("gbp_ps/ps.js")
 
         self.assertIsNotNone(path)
+
+    def test_gradient_for_phases(self, fixtures: Fixtures) -> None:
+        """Each ebuild phase has its own color"""
+        response = fixtures.response
+        context = response.context
+        gradient = context["gradient_colors"]
+
+        self.assertEqual(len(gradient), 12)
