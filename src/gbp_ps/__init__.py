@@ -11,4 +11,5 @@ plugin = {
     "description": "A plugin to display your Gentoo Build Publisher processes",
     "app": "gbp_ps.django.gbp_ps",
     "graphql": "gbp_ps.graphql",
+    "priority": -10,
 }
