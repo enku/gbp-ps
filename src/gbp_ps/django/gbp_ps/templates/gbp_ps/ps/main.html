@@ -6,35 +6,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&display=swap" rel="stylesheet">
-<style>
-th {
-  text-transform: uppercase;
-}
-
-.numeric {
-  font-family: "JetBrains Mono", monospace;
-}
-
-.package {
-  max-width: 30ch;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.phase {
-  min-width: 10ch;
-}
-
-.phase-progress {
-  min-width: 150px;
-  vertical-align: middle;
-}
-
-.progress-bar {
-  animation-direction: reverse;
-}
-</style>
+<link rel="stylesheet" href="{% static 'gbp_ps/ps.css' %}">
 {% endblock %}
 
 {% block main %}
