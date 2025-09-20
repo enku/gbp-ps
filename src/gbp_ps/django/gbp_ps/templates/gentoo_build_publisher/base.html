@@ -1,0 +1,6 @@
+{% extends "gentoo_build_publisher/base.html" %}
+{% load gbp %}
+{% block navlinks %}
+{{ block.super }}
+{% navlink "gbp-ps-main" "Processes" %}
+{% endblock %}
