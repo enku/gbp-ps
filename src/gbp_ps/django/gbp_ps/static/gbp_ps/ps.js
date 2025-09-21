@@ -29,6 +29,7 @@ const colorMap = buildPhases.reduce((acc, phase, index) => {
   acc[phase] = gradientColors[index];
   return acc;
 }, {});
+let interval;
 
 /*
  * Calculate the elapsed time since the given dateString
@@ -81,7 +82,19 @@ function setProcesses(processes, now) {
   tbody.replaceChildren(...rows);
 }
 
+function getInterval() {
+  const defaultInterval = '500';
+  const currentUrl = window.location.href;
+  const url = new URL(currentUrl);
+  const params = new URLSearchParams(url.search);
+  const param = params.get('update_interval') || defaultInterval;
+
+  return parseInt(param, 10);
+}
+
 function getProcesses() {
+  interval = interval || getInterval();
+
   fetch('/graphql', {
     method: 'POST',
     headers: {
@@ -96,7 +109,7 @@ function getProcesses() {
       setProcesses(result.data.buildProcesses, now);
     })
     .catch(() => {})
-    .finally(() => setTimeout(getProcesses, 500));
+    .finally(() => setTimeout(getProcesses, interval));
 }
 
 document.addEventListener('DOMContentLoaded', getProcesses);
