@@ -1,4 +1,5 @@
 const gradientColors = JSON.parse(document.getElementById('gradientColors').textContent);
+const defaultInterval = JSON.parse(document.getElementById('defaultInterval').textContent);
 const tbody = document.getElementById('processes');
 const query = `
 query BuildProcesses($machine: String = null) {
@@ -119,9 +120,7 @@ function setProcesses(processes, now) {
 }
 
 function getInterval() {
-  const defaultInterval = '500';
-  const currentUrl = window.location.href;
-  const url = new URL(currentUrl);
+  const url = new URL(window.location.href);
   const params = new URLSearchParams(url.search);
   const param = params.get('update_interval') || defaultInterval;
 

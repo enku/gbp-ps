@@ -37,5 +37,6 @@
 
 {% block scripts %}
   {{ gradient_colors|json_script:'gradientColors' }}
+  {{ default_interval|json_script:'defaultInterval' }}
   <script src="{% static 'gbp_ps/ps.js' %}"></script>
 {% endblock %}

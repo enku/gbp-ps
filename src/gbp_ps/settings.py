@@ -20,3 +20,6 @@ class Settings(BaseSettings):
     REDIS_URL: str = "redis://redis.invalid:6379/0"
     SQLITE_DATABASE: str = ":memory:"
     STORAGE_BACKEND: str = "django"
+
+    # time inverval for the web ui to update the process table, in milliseconds
+    WEB_UI_UPDATE_INTERVAL: int = 500
