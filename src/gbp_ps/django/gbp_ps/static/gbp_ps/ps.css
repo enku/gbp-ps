@@ -25,3 +25,14 @@ th {
 .progress-bar {
   animation-direction: reverse;
 }
+
+.offline {
+  animation: blinker 0.8s linear infinite;
+  display: none;
+}
+
+@keyframes blinker {
+  50% {
+    opacity: 0;
+  }
+}
