@@ -40,6 +40,20 @@ class BuildProcessFactory(factory.Factory):
     )
 
 
+def add_process(
+    data: str, add_to_repo: bool = True, update_repo: bool = False
+) -> BuildProcess:
+    machine, build_id, package, phase = data.split()
+    return make_build_process(
+        machine=machine,
+        build_id=build_id,
+        package=package,
+        phase=phase,
+        add_to_repo=add_to_repo,
+        update_repo=update_repo,
+    )
+
+
 def make_build_process(**kwargs: Any) -> BuildProcess:
     """Create (and save) a BuildProcess"""
     settings = Settings.from_environ()

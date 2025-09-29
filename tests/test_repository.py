@@ -112,27 +112,10 @@ class RepositoryTests(lib.TestCase):
         # In this scenario, the update in t3 should not wipe out t2
         repo = fixtures.repo
 
-        t1 = lib.make_build_process(
-            machine="babette",
-            build_id="1",
-            package="pipeline",
-            phase="clean",
-            add_to_repo=False,
-        )
-        t2 = lib.make_build_process(
-            machine="babette",
-            build_id="2",
-            package="pipeline",
-            phase="world",
-            add_to_repo=False,
-        )
-        t3 = lib.make_build_process(
-            machine="babette",
-            build_id="1",
-            package="pipeline",
-            phase="index",
-            add_to_repo=False,
-        )
+        t1 = lib.add_process("babette 1 pipeline clean", add_to_repo=False)
+        t2 = lib.add_process("babette 2 pipeline world", add_to_repo=False)
+        t3 = lib.add_process("babette 1 pipeline index", add_to_repo=False)
+
         add_or_update_process(repo, t1)
         add_or_update_process(repo, t2)
         add_or_update_process(repo, t3)
