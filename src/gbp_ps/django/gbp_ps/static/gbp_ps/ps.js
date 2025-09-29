@@ -127,16 +127,16 @@ function getInterval() {
   return parseInt(param, 10);
 }
 
-function show(selector, display = 'block') {
+function offline(selector) {
   const element = document.querySelector(selector);
 
-  element.style.display = display;
+  element.classList.add('offline');
 }
 
-function hide(selector) {
+function online(selector) {
   const element = document.querySelector(selector);
 
-  element.style.display = 'none';
+  element.classList.remove('offline');
 }
 
 function getProcesses() {
@@ -153,10 +153,10 @@ function getProcesses() {
     .then((r) => r.json())
     .then((result) => {
       const now = new Date();
-      hide('.offline');
+      online('.roundrec');
       setProcesses(result.data.buildProcesses, now);
     })
-    .catch(() => show('.offline'))
+    .catch(() => offline('.roundrec'))
     .finally(() => setTimeout(getProcesses, interval));
 }
 
