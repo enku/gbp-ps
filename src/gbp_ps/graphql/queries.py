@@ -1,6 +1,6 @@
 """Query GraphQL resolver for gbp-ps"""
 
-from typing import Any, Iterable, TypeAlias
+from typing import Any, Iterable
 
 from ariadne import ObjectType, convert_kwargs_to_snake_case
 from graphql import GraphQLResolveInfo
@@ -9,7 +9,7 @@ from gbp_ps.repository import Repo
 from gbp_ps.settings import Settings
 from gbp_ps.types import BuildProcess
 
-Info: TypeAlias = GraphQLResolveInfo
+type Info = GraphQLResolveInfo
 Query = ObjectType("Query")
 
 

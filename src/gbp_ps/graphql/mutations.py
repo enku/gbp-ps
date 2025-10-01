@@ -1,6 +1,6 @@
 """Mutation GraphQL type for gbp-ps"""
 
-from typing import Any, TypeAlias
+from typing import Any
 
 from ariadne import ObjectType, convert_kwargs_to_snake_case
 from graphql import GraphQLResolveInfo
@@ -9,7 +9,7 @@ from gbp_ps.repository import Repo, add_or_update_process
 from gbp_ps.settings import Settings
 from gbp_ps.types import BuildProcess
 
-Info: TypeAlias = GraphQLResolveInfo
+type Info = GraphQLResolveInfo
 Mutation = ObjectType("Mutation")
 
 ADD_BUILD_FIELDS = {"machine", "id", "package", "phase"}

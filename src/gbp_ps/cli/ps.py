@@ -3,7 +3,7 @@
 import argparse
 import datetime as dt
 import time
-from typing import Any, Callable, NoReturn, TypeAlias
+from typing import Any, Callable, NoReturn
 
 from gbpcli import render
 from gbpcli.gbp import GBP
@@ -21,8 +21,8 @@ from gbp_ps.repository import Repo
 from gbp_ps.settings import Settings
 from gbp_ps.types import BuildProcess
 
-ProcessList: TypeAlias = list[BuildProcess]
-ProcessGetter: TypeAlias = Callable[[], ProcessList]
+type ProcessList = list[BuildProcess]
+type ProcessGetter = Callable[[], ProcessList]
 ModeHandler = Callable[[argparse.Namespace, ProcessGetter, Console], int]
 
 BUILD_PHASE_COUNT = len(BuildProcess.build_phases)

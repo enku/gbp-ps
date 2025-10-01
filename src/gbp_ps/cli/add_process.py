@@ -4,7 +4,7 @@ import argparse
 import datetime as dt
 import platform
 from functools import partial
-from typing import Any, Callable, TypeAlias
+from typing import Any, Callable
 
 from gbpcli.gbp import GBP
 from gbpcli.graphql import check
@@ -14,7 +14,7 @@ from gbp_ps.repository import Repo, add_or_update_process
 from gbp_ps.settings import Settings
 from gbp_ps.types import BuildProcess
 
-ProcessAdder: TypeAlias = Callable[[BuildProcess], Any]
+type ProcessAdder = Callable[[BuildProcess], Any]
 now = partial(dt.datetime.now, tz=dt.UTC)
 
 
