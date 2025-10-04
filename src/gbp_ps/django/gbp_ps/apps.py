@@ -1,5 +1,7 @@
 """AppConfigs for gbp-ps"""
 
+import importlib
+
 from django.apps import AppConfig
 
 
@@ -12,6 +14,7 @@ class GBPPSConfig(AppConfig):
 
     def ready(self) -> None:
         """Django app initialization"""
-        # pylint: disable=import-outside-toplevel,unused-import
         # register signal handlers
-        import gbp_ps.signals
+        signals = importlib.import_module("gbp_ps.signals")
+
+        signals.init()

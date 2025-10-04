@@ -60,7 +60,9 @@ def set_process(build: Build, phase: str) -> None:
     add_or_update_process(repo(), build_process(build, _NODE, phase, _now()))
 
 
-dispatcher.bind(prepull=handle("pull"))
-dispatcher.bind(postpull=handle("clean"))
-dispatcher.bind(predelete=handle("delete"))
-dispatcher.bind(postdelete=handle("clean"))
+def init() -> None:
+    """Initialize signal handlers"""
+    dispatcher.bind(prepull=handle("pull"))
+    dispatcher.bind(postpull=handle("clean"))
+    dispatcher.bind(predelete=handle("delete"))
+    dispatcher.bind(postdelete=handle("clean"))
