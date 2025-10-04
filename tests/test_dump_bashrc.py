@@ -1,4 +1,4 @@
-"""CLI unit tests for gbp-ps add-process subcommand"""
+"""CLI unit tests for gbp-ps ps-dump-bashrc subcommand"""
 
 # pylint: disable=missing-docstring
 import argparse
