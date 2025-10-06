@@ -3,6 +3,7 @@
 from typing import TypedDict
 
 from django.http import HttpRequest
+from django.urls import reverse
 from gentoo_build_publisher.django.gentoo_build_publisher.views.utils import (
     Gradient,
     color_range_from_settings,
@@ -22,6 +23,7 @@ class MainContext(TypedDict):
 
     default_interval: int
     gradient_colors: Gradient
+    graphql_endpoint: str
 
 
 @view("ps/", name="gbp-ps-main")
@@ -34,4 +36,5 @@ def _(request: HttpRequest) -> MainContext:
         "gradient_colors": gradient_colors(
             *color_range_from_settings(), BUILD_PHASE_COUNT
         ),
+        "graphql_endpoint": reverse("graphql"),
     }

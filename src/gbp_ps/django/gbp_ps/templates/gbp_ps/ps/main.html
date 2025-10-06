@@ -38,5 +38,6 @@
 {% block scripts %}
   {{ gradient_colors|json_script:'gradientColors' }}
   {{ default_interval|json_script:'defaultInterval' }}
+  {{ graphql_endpoint|json_script:'graphQLEndpoint' }}
   <script src="{% static 'gbp_ps/ps.js' %}"></script>
 {% endblock %}

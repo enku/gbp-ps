@@ -1,6 +1,7 @@
 const gradientColors = JSON.parse(document.getElementById('gradientColors').textContent);
 const defaultInterval = JSON.parse(document.getElementById('defaultInterval').textContent);
 const tbody = document.getElementById('processes');
+const graphQLEndpoint = document.getElementById('graphQLEndpoint');
 const query = `
 query BuildProcesses($machine: String = null) {
   buildProcesses(machine: $machine) {
@@ -142,7 +143,7 @@ function online(selector) {
 function getProcesses() {
   interval = interval || getInterval();
 
-  fetch('/graphql', {
+  fetch(graphQLEndpoint, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
