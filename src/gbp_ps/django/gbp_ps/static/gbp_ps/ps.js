@@ -1,7 +1,7 @@
 const gradientColors = JSON.parse(document.getElementById('gradientColors').textContent);
 const defaultInterval = JSON.parse(document.getElementById('defaultInterval').textContent);
 const tbody = document.getElementById('processes');
-const graphQLEndpoint = document.getElementById('graphQLEndpoint');
+const graphQLEndpoint = JSON.parse(document.getElementById('graphQLEndpoint').textContent);
 const query = `
 query BuildProcesses($machine: String = null) {
   buildProcesses(machine: $machine) {
