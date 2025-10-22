@@ -36,6 +36,7 @@ ps-dump-bashrc = "gbp_ps.cli.dump_bashrc"
 django = "gbp_ps.repository.django:DjangoRepository"
 redis = "gbp_ps.repository.redis:RedisRepository"
 sqlite = "gbp_ps.repository.sqlite:SqliteRepository"
+sitecache = "gbp_ps.repository.sitecache:SiteCacheRepository"
 
 [project.optional-dependencies]
 server = [

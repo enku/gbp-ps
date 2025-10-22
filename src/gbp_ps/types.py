@@ -21,7 +21,7 @@ class BuildProcess:
     start_time: dt.datetime
 
     # BuildProcesses in any of these phases are considered "final"
-    final_phases = {"", "clean", "cleanrm", "postrm"}
+    final_phases = {"", "clean", "cleanrm", "prerm", "postrm"}
 
     # Build phases, in order (best as I can determine)
     build_phases = (
