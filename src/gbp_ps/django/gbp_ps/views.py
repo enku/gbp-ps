@@ -1,6 +1,7 @@
 """Django views for gbp-ps"""
 
-from typing import TypedDict
+from dataclasses import dataclass
+from typing import Self
 
 from django.http import HttpRequest
 from django.urls import reverse
@@ -18,23 +19,29 @@ from gbp_ps.types import BuildProcess
 BUILD_PHASE_COUNT = len(BuildProcess.build_phases)
 
 
-class MainContext(TypedDict):
+@dataclass(kw_only=True, frozen=True)
+class MainContext:
     """Template context for the main ps page"""
 
     default_interval: int
     gradient_colors: Gradient
     graphql_endpoint: str
 
+    @classmethod
+    def create(cls) -> Self:
+        """Create the TemplateContext"""
+        settings = Settings.from_environ()
+
+        return cls(
+            default_interval=settings.WEB_UI_UPDATE_INTERVAL,
+            gradient_colors=gradient_colors(
+                *color_range_from_settings(), BUILD_PHASE_COUNT
+            ),
+            graphql_endpoint=reverse("graphql"),
+        )
+
 
 @view("ps/", name="gbp-ps-main")
 @render("gbp_ps/ps/main.html")
 def _(request: HttpRequest) -> MainContext:
-    settings = Settings.from_environ()
-
-    return {
-        "default_interval": settings.WEB_UI_UPDATE_INTERVAL,
-        "gradient_colors": gradient_colors(
-            *color_range_from_settings(), BUILD_PHASE_COUNT
-        ),
-        "graphql_endpoint": reverse("graphql"),
-    }
+    return MainContext.create()
