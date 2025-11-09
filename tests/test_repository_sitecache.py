@@ -166,6 +166,23 @@ class SiteCachePSTests(lib.TestCase):
         del table[key]
         self.assertEqual(entries, set(table.values()))
 
+    def test_expired_keys_are_purged(self, fixtures: Fixtures) -> None:
+        repo: SiteCacheRepository = fixtures.repo
+        table = fixtures.table
+        item_count = len(table)
+
+        for key, process in list(table.items())[:2]:
+            table[key] = replace(
+                process, start_time=process.start_time - repo.expiration
+            )
+        repo.set_table(table)
+
+        self.assertEqual(item_count, len(repo.get_table()))
+
+        list(repo.ps())
+
+        self.assertEqual(item_count - 2, len(repo.get_table()))
+
 
 def lock_in_thread(
     repo: SiteCacheRepository, locked: threading.Event, release: threading.Event
