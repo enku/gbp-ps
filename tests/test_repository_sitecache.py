@@ -182,6 +182,7 @@ class SiteCachePSTests(lib.TestCase):
         list(repo.ps())
 
         self.assertEqual(item_count - 2, len(repo.get_table()))
+        self.assertTrue(repo.cache.contains("purged"))
 
 
 def lock_in_thread(
