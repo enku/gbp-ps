@@ -3,8 +3,7 @@
 from __future__ import annotations
 
 import datetime as dt
-from dataclasses import asdict, dataclass
-from typing import Any
+from dataclasses import dataclass
 
 from .exceptions import UpdateNotAllowedError
 
@@ -54,14 +53,16 @@ class BuildProcess:
         if self.build_host != new.build_host and new.phase in BuildProcess.final_phases:
             raise UpdateNotAllowedError(self, new)
 
-    def to_dict(self) -> dict[str, Any]:
+    def to_dict(self) -> dict[str, str]:
         """Return BuildProcess as a GraphQL dict"""
-        bp_dict = asdict(self)
-        bp_dict["buildHost"] = bp_dict.pop("build_host")
-        bp_dict["id"] = bp_dict.pop("build_id")
-        bp_dict["startTime"] = bp_dict.pop("start_time").isoformat()
-
-        return bp_dict
+        return {
+            "machine": self.machine,
+            "id": self.build_id,
+            "buildHost": self.build_host,
+            "package": self.package,
+            "phase": self.phase,
+            "startTime": self.start_time.isoformat(),
+        }
 
     def is_finished(self) -> bool:
         """Return True iff the BuildProcess is in a "final" phase"""
