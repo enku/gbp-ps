@@ -1,7 +1,5 @@
 """gbp-ps data types"""
 
-from __future__ import annotations
-
 import datetime as dt
 from dataclasses import dataclass
 
@@ -38,7 +36,7 @@ class BuildProcess:
         "postinst",
     )
 
-    def is_same_as(self, other: BuildProcess) -> bool:
+    def is_same_as(self, other: "BuildProcess") -> bool:
         """Return true if the other build process is the same process
 
         Two process are considered the "same" if the machine, package and build_id are
@@ -48,7 +46,7 @@ class BuildProcess:
 
         return all(getattr(self, f) == getattr(other, f) for f in fields)
 
-    def ensure_updateable(self, new: BuildProcess) -> None:
+    def ensure_updateable(self, new: "BuildProcess") -> None:
         """Raise an exception if process should not be updated to new"""
         if self.build_host != new.build_host and new.phase in BuildProcess.final_phases:
             raise UpdateNotAllowedError(self, new)
