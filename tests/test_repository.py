@@ -9,7 +9,7 @@ from unittest import mock
 import fakeredis
 from gbp_testkit import fixtures as testkit
 from gentoo_build_publisher.cache import clear as cache_clear
-from unittest_fixtures import Fixtures, given, params, where
+from unittest_fixtures import FixtureContext, Fixtures, fixture, given, params, where
 
 from gbp_ps.exceptions import (
     RecordAlreadyExists,
@@ -17,7 +17,6 @@ from gbp_ps.exceptions import (
     UpdateNotAllowedError,
 )
 from gbp_ps.repository import Repo, RepositoryType, add_or_update_process, sqlite
-from gbp_ps.settings import Settings
 from gbp_ps.types import BuildProcess
 
 from . import lib
@@ -32,9 +31,10 @@ HOST = 0
 REDIS_FROM_URL = "gbp_ps.repository.redis.redis.Redis.from_url"
 
 
-def get_repo(backend: str, settings: Settings) -> RepositoryType:
+@fixture(lib.settings)
+def repo_fixture(fixtures: Fixtures) -> FixtureContext[RepositoryType]:
     global HOST  # pylint: disable=global-statement
-    settings = replace(settings, STORAGE_BACKEND=backend)
+    backend = fixtures.backend
     if backend == "redis":
         fake_redis = fakeredis.FakeRedis(host=f"host{(HOST := HOST + 1)}")
         repo_patch = mock.patch(REDIS_FROM_URL, return_value=fake_redis)
@@ -45,16 +45,15 @@ def get_repo(backend: str, settings: Settings) -> RepositoryType:
         repo_patch = mock.MagicMock()
 
     with repo_patch:
-        return Repo(settings)
+        yield Repo(replace(fixtures.settings, STORAGE_BACKEND=backend))
 
 
-@params(backend=BACKENDS)
-@given(repo=lambda f: get_repo(f.backend, f.settings))
-@given(lib.settings, lib.build_process)
+@given(lib.build_process, repo_fixture)
 @where(environ=ENVIRON, build_process__phase="compile")
 @given(sitecache_now=testkit.patch)
 @where(sitecache_now__target="gbp_ps.repository.sitecache.now")
 @where(sitecache_now__return_value=dt.datetime(2020, 4, 20, tzinfo=dt.UTC))
+@params(backend=BACKENDS)
 class RepositoryTests(lib.TestCase):
     def test_add_process(self, fixtures: Fixtures) -> None:
         repo = fixtures.repo
