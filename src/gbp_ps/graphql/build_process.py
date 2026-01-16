@@ -5,12 +5,12 @@ from graphql import GraphQLResolveInfo
 
 from gbp_ps import types
 
-BuildProcess = ObjectType("BuildProcess")
+BUILD_PROCESS = ObjectType("BuildProcess")
 type Info = GraphQLResolveInfo
 
-# pylint: disable=missing-docstring
+# pylint: disable=missing-docstring,redefined-builtin
 
 
-@BuildProcess.field("id")
-def _(process: types.BuildProcess, _info: Info) -> str:
+@BUILD_PROCESS.field("id")
+def id(process: types.BuildProcess, _info: Info) -> str:
     return process.build_id

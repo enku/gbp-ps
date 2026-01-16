@@ -10,15 +10,15 @@ from gbp_ps.settings import Settings
 from gbp_ps.types import BuildProcess
 
 type Info = GraphQLResolveInfo
-Query = ObjectType("Query")
+QUERY = ObjectType("Query")
 
 
 get_processes = Repo(Settings.from_environ()).get_processes
 
 
-@Query.field("buildProcesses")
+@QUERY.field("buildProcesses")
 @convert_kwargs_to_snake_case
-def _(
+def build_processes(
     _obj: Any, _info: Info, *, include_final: bool = False, machine: str
 ) -> Iterable[BuildProcess]:
     """Return the list of BuildProcesses
