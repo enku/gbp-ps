@@ -1,12 +1,11 @@
 """CLI unit tests for gbp-ps add-process subcommand"""
 
 # pylint: disable=missing-docstring,unused-argument
-import datetime as dt
 import platform
 from argparse import ArgumentParser
 
 import gbp_testkit.fixtures as testkit
-from gbp_testkit.helpers import parse_args
+from gbp_testkit.helpers import parse_args, ts
 from unittest_fixtures import Fixtures, given, where
 
 from gbp_ps.cli import add_process
@@ -16,7 +15,7 @@ from . import lib
 
 @given(lib.repo, testkit.gbpcli, now=testkit.patch)
 @where(now__target="gbp_ps.cli.add_process.now")
-@where(now__return_value=dt.datetime(2023, 11, 20, 17, 57, tzinfo=dt.UTC))
+@where(now__return_value=ts("2023-11-20 17:57:00"))
 class AddProcessTests(lib.TestCase):
     """Tests for gbp add-process"""
 

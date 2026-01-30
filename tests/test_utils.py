@@ -5,7 +5,7 @@ import datetime as dt
 from unittest import TestCase
 
 import gbp_testkit.fixtures as testkit
-from gbp_testkit.helpers import LOCAL_TIMEZONE
+from gbp_testkit.helpers import LOCAL_TIMEZONE, ts
 from unittest_fixtures import Fixtures, given, where
 
 from gbp_ps import utils
@@ -26,7 +26,7 @@ class GetTodayTests(TestCase):
 class FormatTimestampTests(TestCase):
 
     def test_when_today(self, fixtures: Fixtures) -> None:
-        timestamp = dt.datetime(2024, 2, 7, 20, 10)
+        timestamp = ts("2024-02-07 20:10:00")
         today = timestamp.date()
         fixtures.get_today.return_value = today
 
@@ -35,7 +35,7 @@ class FormatTimestampTests(TestCase):
         self.assertEqual(date_str, "[timestamp]20:10:00[/timestamp]")
 
     def test_when_not_today(self, fixtures: Fixtures) -> None:
-        timestamp = dt.datetime(2024, 2, 7, 20, 10)
+        timestamp = ts("2024-02-07 20:10:00")
         today = (timestamp + dt.timedelta(hours=24)).date()
         fixtures.get_today.return_value = today
 
@@ -48,16 +48,16 @@ class FormatTimestampTests(TestCase):
 @where(now__target="gbp_ps.utils.now")
 class FormatElapsedTests(TestCase):
     def test(self, fixtures: Fixtures) -> None:
-        timestamp = dt.datetime(2024, 2, 7, 20, 10, 37)
-        since = dt.datetime(2024, 2, 7, 20, 14, 51)
+        timestamp = ts("2024-02-07 20:10:37", tzinfo=None)
+        since = ts("2024-02-07 20:14:51", tzinfo=None)
 
         date_str = utils.format_elapsed(timestamp, since)
 
         self.assertEqual("[timestamp]0:04:14[/timestamp]", date_str)
 
     def test_with_default_since(self, fixtures: Fixtures) -> None:
-        timestamp = dt.datetime(2024, 2, 7, 20, 10, 37)
-        since = dt.datetime(2024, 2, 7, 20, 14, 51)
+        timestamp = ts("2024-02-07 20:10:37", tzinfo=None)
+        since = ts("2024-02-07 20:14:51", tzinfo=None)
         fixtures.now.return_value = since
 
         date_str = utils.format_elapsed(timestamp)

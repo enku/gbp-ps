@@ -1,13 +1,13 @@
 """Tests for gbp-ps repositories"""
 
 # pylint: disable=missing-docstring, duplicate-code
-import datetime as dt
 import importlib.metadata
 from dataclasses import replace
 from unittest import mock
 
 import fakeredis
 from gbp_testkit import fixtures as testkit
+from gbp_testkit.helpers import ts
 from gentoo_build_publisher.cache import clear as cache_clear
 from unittest_fixtures import FixtureContext, Fixtures, fixture, given, params, where
 
@@ -52,7 +52,7 @@ def repo_fixture(fixtures: Fixtures) -> FixtureContext[RepositoryType]:
 @where(environ=ENVIRON, build_process__phase="compile")
 @given(sitecache_now=testkit.patch)
 @where(sitecache_now__target="gbp_ps.repository.sitecache.now")
-@where(sitecache_now__return_value=dt.datetime(2020, 4, 20, tzinfo=dt.UTC))
+@where(sitecache_now__return_value=ts("2020-04-20 00:00:00"))
 @params(backend=BACKENDS)
 class RepositoryTests(lib.TestCase):
     def test_add_process(self, fixtures: Fixtures) -> None:

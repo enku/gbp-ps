@@ -6,7 +6,7 @@ from argparse import ArgumentParser
 from functools import partial
 
 import gbp_testkit.fixtures as testkit
-from gbp_testkit.helpers import LOCAL_TIMEZONE
+from gbp_testkit.helpers import LOCAL_TIMEZONE, ts
 from unittest_fixtures import Fixtures, fixture, given, where
 
 from gbp_ps.cli import ps
@@ -32,7 +32,7 @@ def build_processes_fixture(fixtures: Fixtures) -> list[BuildProcess]:
 @given(testkit.gbpcli, now=testkit.patch, sleep=testkit.patch, get_today=testkit.patch)
 @where(sleep__target="gbp_ps.cli.ps.time.sleep", sleep__side_effect=KeyboardInterrupt)
 @where(now__target="gbp_ps.utils.now")
-@where(now__return_value=dt.datetime(2023, 11, 11, 16, 30, tzinfo=LOCAL_TIMEZONE))
+@where(now__return_value=ts("2023-11-11 16:30:00", tzinfo=LOCAL_TIMEZONE))
 @where(get_today__target="gbp_ps.cli.ps.utils.get_today")
 @where(get_today__return_value=dt.date(2023, 11, 11))
 @where(local_timezone__target="gbpcli.render.LOCAL_TIMEZONE")
@@ -109,12 +109,12 @@ class PSTests(lib.TestCase):
         for bp in fixtures.build_processes:
             lib.make_build_process(package=bp.package, phase="clean", update_repo=True)
 
-        t = partial(dt.datetime, tzinfo=fixtures.local_timezone)
+        t = partial(ts, tzinfo=fixtures.local_timezone)
         machine = "babette"
         build_id = "1032"
         package = "sys-apps/portage-3.0.51"
         build_host = "jenkins"
-        orig_start = t(2023, 11, 15, 16, 20, 0)
+        orig_start = t("2023-11-15 16:20:00")
         update = partial(
             lib.make_build_process,
             machine=machine,

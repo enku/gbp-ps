@@ -1,9 +1,8 @@
 """Tests for gbp-ps signal handlers"""
 
 # pylint: disable=missing-docstring,unused-argument
-import datetime as dt
-
 import gbp_testkit.fixtures as testkit
+from gbp_testkit.helpers import ts
 from gentoo_build_publisher.signals import dispatcher
 from gentoo_build_publisher.types import Build
 from unittest_fixtures import Fixtures, given, where
@@ -14,7 +13,7 @@ from gbp_ps.types import BuildProcess
 from . import lib
 
 NODE = "wopr"
-START_TIME = dt.datetime(2023, 12, 10, 13, 53, 46, tzinfo=dt.UTC)
+START_TIME = ts("2023-12-10 13:53:46")
 BUILD = Build(machine="babette", build_id="10")
 
 TestCase = lib.TestCase

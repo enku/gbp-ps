@@ -6,6 +6,7 @@ from typing import Any
 import factory
 import gbp_testkit.fixtures as testkit
 from django.test import TestCase as DjangoTestCase
+from gbp_testkit.helpers import ts
 from unittest_fixtures import Fixtures, fixture
 
 from gbp_ps.repository import Repo, RepositoryType, add_or_update_process, sqlite
@@ -65,7 +66,7 @@ def make_build_process(**kwargs: Any) -> BuildProcess:
         "machine": "babette",
         "package": "sys-apps/systemd-254.5-r1",
         "phase": "compile",
-        "start_time": dt.datetime(2023, 11, 11, 12, 20, 52, tzinfo=dt.timezone.utc),
+        "start_time": ts("2023-11-11 12:20:52"),
     }
     attrs.update(**kwargs)
     build_process = BuildProcess(**attrs)
