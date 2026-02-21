@@ -2,7 +2,7 @@
 
 from typing import Any, Iterable
 
-from ariadne import ObjectType, convert_kwargs_to_snake_case
+from ariadne import ObjectType
 from graphql import GraphQLResolveInfo
 
 from gbp_ps.repository import Repo
@@ -17,7 +17,6 @@ get_processes = Repo(Settings.from_environ()).get_processes
 
 
 @QUERY.field("buildProcesses")
-@convert_kwargs_to_snake_case
 def build_processes(
     _obj: Any, _info: Info, *, include_final: bool = False, machine: str
 ) -> Iterable[BuildProcess]:

@@ -2,7 +2,7 @@
 
 from typing import Any
 
-from ariadne import ObjectType, convert_kwargs_to_snake_case
+from ariadne import ObjectType
 from graphql import GraphQLResolveInfo
 
 from gbp_ps.repository import Repo, add_or_update_process
@@ -16,7 +16,6 @@ ADD_BUILD_FIELDS = {"machine", "id", "package", "phase"}
 
 
 @MUTATION.field("addBuildProcess")
-@convert_kwargs_to_snake_case
 def add_build_process(_obj: Any, _info: Info, process: dict[str, Any]) -> None:
     """Add the given process to the process table
 
