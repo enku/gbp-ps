@@ -5,7 +5,7 @@
 groups = ["default", "all", "dev", "redis", "server"]
 strategy = ["inherit_metadata"]
 lock_version = "4.5.0"
-content_hash = "sha256:fcc3b2c920f77234730aea82959ac7b42a39f0d43e61dc6c3515e6d16fc26917"
+content_hash = "sha256:165b3668983b3452334e06146d5fcc3a6863ce394c2058e26b415486f49b7423"
 
 [[metadata.targets]]
 requires_python = ">=3.12"
@@ -762,7 +762,7 @@ files = [
 
 [[package]]
 name = "gentoo-build-publisher"
-version = "3.3.1.dev19"
+version = "3.4.0"
 requires_python = ">=3.12"
 git = "https://github.com/enku/gentoo-build-publisher.git"
 ref = "master"
@@ -784,7 +784,7 @@ dependencies = [
 
 [[package]]
 name = "gentoo-build-publisher"
-version = "3.3.1.dev19"
+version = "3.4.0"
 extras = ["test"]
 requires_python = ">=3.12"
 git = "https://github.com/enku/gentoo-build-publisher.git"
