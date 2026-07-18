@@ -7,8 +7,8 @@ from django.http import HttpRequest
 from django.urls import reverse
 from gentoo_build_publisher.django.gentoo_build_publisher.views.utils import (
     Gradient,
-    color_range_from_settings,
-    gradient_colors,
+    color_range_from_settings2,
+    get_primary_colors,
     render,
     view,
 )
@@ -34,8 +34,8 @@ class MainContext:
 
         return cls(
             default_interval=settings.WEB_UI_UPDATE_INTERVAL,
-            gradient_colors=gradient_colors(
-                *color_range_from_settings(), BUILD_PHASE_COUNT
+            gradient_colors=get_primary_colors(
+                color_range_from_settings2(), BUILD_PHASE_COUNT
             ),
             graphql_endpoint=reverse("graphql"),
         )
