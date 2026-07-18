@@ -62,7 +62,7 @@ def portage_tmpdir() -> str:
     with sp.Popen(["portageq", "envvar", "PORTAGE_TMPDIR"], stdout=sp.PIPE) as proc:
         stdout = proc.stdout
         assert stdout
-        output = stdout.read().decode("utf-8")
+        output: str = stdout.read().decode("utf-8")
 
     if proc.wait() == 0:
         return output.strip()
