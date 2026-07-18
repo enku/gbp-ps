@@ -11,6 +11,16 @@ from unittest_fixtures import Fixtures, given, where
 @given(response=lambda f: f.client.get("/ps/"))
 @given(testkit.client, testkit.environ)
 @where(environ={"GBP_PS_WEB_UI_UPDATE_INTERVAL": "20250922"})
+@given(settings=testkit.patch)
+@where(
+    settings__target="gentoo_build_publisher.django.gentoo_build_publisher.views.utils.GBP_SETTINGS"
+)
+@where(
+    settings__new={
+        "COLOR_START": ((255, 0, 0), (255, 255, 255), (0, 0, 255)),
+        "COLOR_STOP": (255, 0, 0),
+    }
+)
 class PSViewTests(TestCase):
     def test_200(self, fixtures: Fixtures) -> None:
         """Returns 200 response"""
