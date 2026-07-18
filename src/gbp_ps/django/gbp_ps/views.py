@@ -31,11 +31,12 @@ class MainContext:
     def create(cls) -> Self:
         """Create the TemplateContext"""
         settings = Settings.from_environ()
-        color1, color2 = color_range_from_settings()[:2]
 
         return cls(
             default_interval=settings.WEB_UI_UPDATE_INTERVAL,
-            gradient_colors=gradient_colors(color1, color2, BUILD_PHASE_COUNT),
+            gradient_colors=gradient_colors(
+                *color_range_from_settings(), BUILD_PHASE_COUNT
+            ),
             graphql_endpoint=reverse("graphql"),
         )
 
