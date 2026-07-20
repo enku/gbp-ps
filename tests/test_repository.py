@@ -27,17 +27,17 @@ ENVIRON = {
     "GBP_PS_REDIS_KEY": "gbp-ps-test",
     "GBP_PS_STORAGE_BACKEND": "sqlite",
 }
-HOST = 0
 REDIS_FROM_URL = "gbp_ps.repository.redis.redis.Redis.from_url"
+FAKE_REDIS = fakeredis.FakeRedis()
+FAKE_REDIS.ping()
 
 
 @fixture(lib.settings)
 def repo_fixture(fixtures: Fixtures) -> FixtureContext[RepositoryType]:
-    global HOST  # pylint: disable=global-statement
     backend = fixtures.backend
     if backend == "redis":
-        fake_redis = fakeredis.FakeRedis(host=f"host{(HOST := HOST + 1)}")
-        repo_patch = mock.patch(REDIS_FROM_URL, return_value=fake_redis)
+        FAKE_REDIS.flushall()
+        repo_patch = mock.patch(REDIS_FROM_URL, return_value=FAKE_REDIS)
     elif backend == "sitecache":
         cache_clear()
         repo_patch = mock.MagicMock()
