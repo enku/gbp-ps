@@ -13,4 +13,5 @@ plugin = {
     "urls": "gbp_ps.django.gbp_ps.views",
     "graphql": "gbp_ps.graphql",
     "priority": -10,
+    "link": "https://github.com/enku/gbp-ps",
 }
