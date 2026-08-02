@@ -76,7 +76,7 @@ function setProcesses(processes, now) {
     const { phase } = process;
     let progressWidth = 100;
     let progressClass = 'progress-bar progress-bar-striped progress-bar-animated';
-    let progressColor = gradientColors[0];
+    let progressColor = gradientColors.at(-1);
     const index = buildPhases.indexOf(phase);
 
     if (index >= 0) {
